@@ -85,3 +85,4 @@
 - **Code Explainability:** Confirmed. The candidate can walk through every component and modify code live during evaluation.
 - **Data Privacy & Secrets:** Confirmed. Synthetic test data only. Zero secrets, API keys, or live patient data committed.
 - **Link Accessibility:** Confirmed. All links tested in incognito / private browser window.
+

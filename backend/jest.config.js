@@ -15,3 +15,4 @@ export default {
   },
   testMatch: ['**/tests/**/*.test.ts']
 };
+

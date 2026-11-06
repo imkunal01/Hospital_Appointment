@@ -11,3 +11,4 @@ Tests:       2 passed, 2 total
 Snapshots:   0 total
 Time:        1.238 s
 Ran all test suites.
+

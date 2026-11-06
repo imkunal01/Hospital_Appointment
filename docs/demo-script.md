@@ -15,3 +15,4 @@
 | **1:55 - 2:40** | Offline Resiliency & Cache (Test A4) | - Switch device to Airplane Mode.<br>- Observe offline banner appearing immediately.<br>- Browse cached doctor lists and appointment history.<br>- Show that booking and reschedule buttons are disabled to prevent false confirmations.<br>- Turn off Airplane Mode and demonstrate seamless reconnection without crashes. |
 | **2:40 - 3:20** | Appointment Management & Reports | - Navigate to "My Appointments" (Upcoming / Past tabs).<br>- Demonstrate rescheduling an upcoming appointment to a new slot.<br>- Demonstrate cancellation (with confirmation prompt); verify status updates to `CANCELLED`.<br>- View past visit reports; **highlight strictly non-diagnostic metadata** (title, report type, file size). |
 | **3:20 - 3:45** | Preferences & Wrap-Up | - Show notification reminder preferences screen.<br>- Briefly show test evidence in repository and conclude. |
+

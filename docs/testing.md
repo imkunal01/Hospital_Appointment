@@ -51,3 +51,4 @@ npm test
    - Verify offline banner appears: "You are currently offline. Bookings are disabled."
    - Confirm booking button is disabled.
    - Turn off Airplane Mode: banner clears and actions re-enable without restarting app.
+

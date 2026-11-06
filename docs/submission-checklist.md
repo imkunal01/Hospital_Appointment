@@ -50,3 +50,4 @@
 - [ ] Final commit tagged (`v1.0.0`) and commit hash recorded.
 - [ ] Render service and Supabase database are awake and verified responsive.
 - [ ] Every submission link verified in an incognito window.
+

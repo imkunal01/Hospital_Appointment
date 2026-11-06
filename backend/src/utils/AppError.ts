@@ -54,3 +54,4 @@ export class AppError extends Error {
     return new AppError(500, 'INTERNAL', message);
   }
 }
+

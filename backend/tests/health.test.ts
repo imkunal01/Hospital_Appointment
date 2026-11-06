@@ -19,3 +19,4 @@ describe('GET /health', () => {
     expect(res.body.error).toHaveProperty('message');
   });
 });
+

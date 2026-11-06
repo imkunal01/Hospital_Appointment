@@ -56,3 +56,4 @@ All external dependencies utilized in this project are permissible open-source s
 - `expo-secure-store` — MIT License (Encrypted hardware keystore storage)
 - `@react-native-community/netinfo` — MIT License (Network connectivity detection)
 - `axios` — MIT License (Promise-based HTTP client)
+

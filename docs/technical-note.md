@@ -58,3 +58,4 @@
 - Crash reporting and performance monitoring integration (e.g. Sentry).
 - Push notifications via Firebase Cloud Messaging (FCM) replacing in-app simulation.
 - Multi-region database read replicas for global low-latency catalog queries.
+

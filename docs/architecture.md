@@ -166,3 +166,4 @@ erDiagram
 2. **Metadata-Only Reports:** Schema strictly enforces that visit reports have only `title`, `report_type`, `report_date`, and `file_size_kb`. No medical diagnoses or treatment recommendations exist.
 3. **Database Security (RLS Enabled):** All 8 PostgreSQL tables have Row Level Security enabled with 0 policies. Public anonymous access to Supabase PostgREST endpoints is completely blocked. Access is only permitted through the trusted backend server connecting via the PostgreSQL connection string.
 4. **Atomic Concurrency Protection:** Slots are reserved via `UPDATE slots SET status='BOOKED' WHERE id=$1 AND status='AVAILABLE'` inside an explicit database transaction. Concurrency conflicts trigger HTTP 409 `SLOT_TAKEN` with automatic UI refetching.
+

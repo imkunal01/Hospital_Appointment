@@ -30,3 +30,4 @@ export async function checkDbConnection(): Promise<{ ok: boolean; latencyMs?: nu
     return { ok: false, error: err.message };
   }
 }
+

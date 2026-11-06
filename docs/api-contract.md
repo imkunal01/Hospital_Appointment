@@ -101,3 +101,4 @@ Returns the status of the server and database connectivity. Used for initial wak
 | `GET` | `/appointments/:id/reports` | Authenticated | Retrieve visit report metadata (strictly non-diagnostic). | Phase 2 |
 | `GET` | `/me/preferences` | Authenticated | Retrieve reminder preferences. | Phase 2 |
 | `PUT` | `/me/preferences` | Authenticated | Update reminder notification preferences. | Phase 2 |
+
