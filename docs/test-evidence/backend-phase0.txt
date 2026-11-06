@@ -1,0 +1,13 @@
+> hospital-appointment-backend@1.0.0 test
+> jest --runInBand --detectOpenHandles
+
+PASS tests/health.test.ts
+  GET /health
+    √ returns a valid health check payload structure (86 ms)
+    √ returns 404 for unknown endpoints in standardized error shape (12 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       2 passed, 2 total
+Snapshots:   0 total
+Time:        1.238 s
+Ran all test suites.
