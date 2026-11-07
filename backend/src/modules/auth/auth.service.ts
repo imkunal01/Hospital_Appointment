@@ -112,3 +112,4 @@ export async function logoutUser(rawRefreshToken: string): Promise<void> {
     [tokenHash]
   );
 }
+

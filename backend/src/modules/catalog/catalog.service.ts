@@ -97,3 +97,4 @@ export async function listDoctorSlots(doctorId: string, dateStr: string): Promis
     status: row.status
   }));
 }
+

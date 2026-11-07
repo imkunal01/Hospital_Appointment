@@ -23,7 +23,7 @@ app.use(express.json({ limit: '10kb' }));
 // Health Check Endpoint (Public)
 app.get('/health', async (_req: Request, res: Response) => {
   const dbHealth = await checkDbConnection();
-  
+
   res.status(dbHealth.ok ? 200 : 503).json({
     status: dbHealth.ok ? 'healthy' : 'degraded',
     service: 'hospital-appointment-backend',

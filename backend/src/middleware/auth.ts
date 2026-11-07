@@ -37,3 +37,4 @@ export function requireRole(...allowedRoles: Array<'PATIENT' | 'ADMIN'>) {
     next();
   };
 }
+

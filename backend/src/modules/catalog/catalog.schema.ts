@@ -17,3 +17,4 @@ export const getDoctorSlotsQuerySchema = z.object({
 export type GetDoctorsQuery = z.infer<typeof getDoctorsQuerySchema>;
 export type GetDoctorSlotsParams = z.infer<typeof getDoctorSlotsParamsSchema>;
 export type GetDoctorSlotsQuery = z.infer<typeof getDoctorSlotsQuerySchema>;
+
