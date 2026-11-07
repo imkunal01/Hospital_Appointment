@@ -4,6 +4,7 @@ import cors from 'cors';
 import { env } from './config/env.js';
 import { checkDbConnection } from './config/db.js';
 import { errorHandler } from './middleware/errorHandler.js';
+import { requestCorrelation, requestLogger } from './middleware/requestLogger.js';
 import { AppError } from './utils/AppError.js';
 import { authRouter } from './modules/auth/auth.routes.js';
 import { departmentsRouter, doctorsRouter } from './modules/catalog/catalog.routes.js';
@@ -12,12 +13,19 @@ import { preferencesRouter } from './modules/preferences/preferences.routes.js';
 
 export const app = express();
 
+// Request Correlation ID (Assigns unique req.id and sets X-Request-ID response header)
+app.use(requestCorrelation);
+
+// HTTP Access Logging
+app.use(requestLogger);
+
 // Security and utility middleware
 app.use(helmet());
 app.use(
   cors({
     origin: env.CORS_ORIGIN === '*' ? true : env.CORS_ORIGIN,
-    credentials: true
+    credentials: true,
+    exposedHeaders: ['X-Request-ID', 'Idempotency-Key']
   })
 );
 app.use(express.json({ limit: '10kb' }));

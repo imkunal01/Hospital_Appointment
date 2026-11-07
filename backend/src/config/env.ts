@@ -6,6 +6,7 @@ dotenv.config();
 const envSchema = z.object({
   PORT: z.string().default('4000').transform((val) => parseInt(val, 10)),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+  LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).optional(),
   DATABASE_URL: z.string().min(1, 'DATABASE_URL is required').default('postgresql://postgres:postgres@localhost:5432/hospital_db'),
   JWT_SECRET: z.string().min(16, 'JWT_SECRET must be at least 16 characters').default('development_jwt_secret_min_16_characters_long'),
   JWT_EXPIRES_IN: z.string().default('15m'),
@@ -22,5 +23,14 @@ if (!parsedEnv.success) {
   process.exit(1);
 }
 
-export const env = parsedEnv.data;
+const parsedData = parsedEnv.data;
+
+export const env = {
+  ...parsedData,
+  LOG_LEVEL: (parsedData.LOG_LEVEL ?? (parsedData.NODE_ENV === 'test' ? 'error' : 'info')) as
+    | 'debug'
+    | 'info'
+    | 'warn'
+    | 'error'
+};
 

@@ -7,9 +7,9 @@
 
 ## 1. Automated Test Execution
 
-The codebase contains **65 automated tests** across 11 test suites covering backend services, database transactions, concurrency, security policies, mobile components, and state management.
+The codebase contains **77 automated tests** across 12 test suites covering backend services, database transactions, concurrency, security policies, mobile components, and state management.
 
-### 1.1 Backend Test Suite (35 Tests)
+### 1.1 Backend Test Suite (47 Tests)
 The backend uses **Jest** with **Supertest** for integration, security, and transaction verification:
 
 ```bash
@@ -18,6 +18,7 @@ npm test
 ```
 
 **Coverage Breakdown:**
+- `tests/logger.test.ts` (12 tests): PII and secret redaction (passwords, JWTs, Bearer tokens, patient email/phone/name/dob, circular objects), `X-Request-ID` correlation ID generation and propagation, log level filtering (`debug`, `info`, `warn`, `error`), HTTP access logging on completion, and operational error logging.
 - `tests/health.test.ts` (2 tests): Health check endpoint and graceful DB ping failure handling.
 - `tests/auth.test.ts` (9 tests): User login, bcrypt validation, JWT access issuance, SHA-256 hashed refresh token generation, token refresh cycle, logout invalidation, and rate limiting (10 req/15 min).
 - `tests/catalog.test.ts` (8 tests): Department listing, doctor filtering by department, and slot queries with date validation and status filtering.

@@ -1,7 +1,11 @@
 import request from 'supertest';
 import { app } from '../src/app.js';
+import { pool } from '../src/config/db.js';
 
 describe('GET /health', () => {
+  afterAll(async () => {
+    await pool.end();
+  });
   it('returns a valid health check payload structure', async () => {
     const res = await request(app).get('/health');
     expect(res.body).toHaveProperty('status');

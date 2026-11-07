@@ -131,10 +131,10 @@ All seed accounts are synthetic. Passwords use standard bcrypt hashing.
 
 ## 10. Running Tests
 
-Comprehensive test suites (65 tests across 11 suites) verify backend domain logic, atomic transactions, concurrency, mobile UI flows, offline states, and failure recovery.
+Comprehensive test suites (77 tests across 12 suites) verify backend domain logic, atomic transactions, concurrency, mobile UI flows, offline states, and failure recovery.
 
 ```bash
-# Backend unit & integration tests (35 tests)
+# Backend unit & integration tests (47 tests)
 cd backend
 npm test
 

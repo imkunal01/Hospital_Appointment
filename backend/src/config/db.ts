@@ -1,5 +1,6 @@
 import { Pool, PoolClient, QueryResult, QueryResultRow } from 'pg';
 import { env } from './env.js';
+import { logger } from '../utils/logger.js';
 
 const isProduction = env.NODE_ENV === 'production';
 const requiresSSL = env.DATABASE_URL.includes('supabase.com') || env.DATABASE_URL.includes('sslmode=require') || isProduction;
@@ -34,7 +35,7 @@ export async function withTransaction<T>(
     try {
       await client.query('ROLLBACK');
     } catch (rollbackErr) {
-      console.error('Error rolling back transaction:', rollbackErr);
+      logger.error('Error rolling back transaction', rollbackErr);
     }
     throw err;
   } finally {

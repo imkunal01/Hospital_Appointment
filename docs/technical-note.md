@@ -50,6 +50,12 @@
 - Every database query touching patient appointments or medical visit report metadata strictly applies `WHERE patient_id = $userId`.
 - Attempting to access or alter another patient's appointment returns HTTP `404 NOT_FOUND` rather than `403 FORBIDDEN` to prevent ID enumeration and metadata probing.
 
+### 1.7 Structured Observability, Correlation & Zero-PII Logging
+- **Structured JSON Architecture:** The backend features a purpose-built, zero-dependency structured logger (`src/utils/logger.ts`) emitting single-line JSON logs with ISO-8601 timestamps, log level priority (`DEBUG`, `INFO`, `WARN`, `ERROR`), and machine-parseable context.
+- **End-to-End Request Correlation (`X-Request-ID`):** Incoming HTTP requests are intercepted by `requestCorrelation` middleware which assigns a cryptographically unique UUID v4 (or honors an incoming client `X-Request-ID` header) to `req.id` and sets the `X-Request-ID` response header. Every HTTP completion log, operational warning, and server error includes this correlation ID for end-to-end tracing.
+- **Strict PII & Secret Redaction:** In compliance with healthcare privacy mandates and assessment rules, all log context objects undergo recursive deep sanitization (`redactSensitive`). Passwords, authentication headers, JWT signatures (`Bearer [REDACTED]`, `[REDACTED_TOKEN]`), session cookies, and patient identifiers (`email`, `phone`, `name`, `dob`, `ssn`) are automatically scrubbed before emission.
+- **Log Level Filtering & Noise Suppression:** Configurable via `LOG_LEVEL` environment variable. Health check pings (`/health`) are logged at `DEBUG` level to prevent log pollution during automated Render keep-alive polling. In automated test environments (`NODE_ENV=test`), the logger defaults to `ERROR` to maintain silent, clean test execution.
+
 ---
 
 ## 2. Concurrency, Atomicity & Idempotency

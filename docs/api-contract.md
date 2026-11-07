@@ -14,6 +14,8 @@
 - **Authentication Scheme:** `Bearer <JWT_ACCESS_TOKEN>` in the `Authorization` HTTP header.
 - **Access Token Lifetime:** 15 minutes.
 - **Refresh Token Lifetime:** 7 days (Hashed server-side; stored in `expo-secure-store` client-side).
+- **Request Tracing:** All HTTP responses include `X-Request-ID` (UUID v4) for distributed correlation and debugging. Clients may optionally send `X-Request-ID` to preserve end-to-end trace correlation.
+- **Exposed CORS Headers:** `X-Request-ID`, `Idempotency-Key`.
 
 ---
 
