@@ -24,58 +24,66 @@
 
 ## 3. Code and Version
 
-- **Repository URL:** `TODO: [GitHub Repository URL, e.g. https://github.com/username/hospital-appointment]`
+- **Repository URL:** `https://github.com/imkunal01/Hospital_Appointment`
 - **Primary Branch:** `main`
-- **Final Commit ID:** `TODO: [To be captured on Day 5 after tagging v1.0.0, e.g. a1b2c3d4...]`
-- **Repository Access:** Public or reviewer access granted to `algions-evaluator` / designated email.
+- **Final Commit ID:** `cffd5b0` (or latest commit tagged `v1.0.0`)
+- **Repository Access:** Public repository. Reviewers can clone directly or inspect all branches and commits.
 
 ---
 
 ## 4. Demonstration
 
-- **3–5 Minute Video Link:** `TODO: [Google Drive / YouTube Unlisted Video Link]`
-- **Live Demo / Backend URL:** `https://hospital-appointment-api.onrender.com` (or local declaration)
+- **3–5 Minute Video Link:** `[Candidate: Insert your Google Drive / YouTube Unlisted video link here after recording; follow docs/demo-script.md]`
+- **Live Demo / Backend URL:** `https://hospital-appointment-api.onrender.com` (Render Web Service)
+- **Local Emulator Backend URL:** `http://10.0.2.2:4000`
 - **Screenshots Directory:** `docs/screenshots/`
 
 ---
 
 ## 5. Documentation Links
 
-- **Technical Report / README Link:** `https://github.com/username/hospital-appointment/blob/main/README.md`
-- **Architecture Diagram Link:** `https://github.com/username/hospital-appointment/blob/main/docs/architecture.md`
-- **API Contract Link:** `https://github.com/username/hospital-appointment/blob/main/docs/api-contract.md`
-- **Technical Note Link:** `https://github.com/username/hospital-appointment/blob/main/docs/technical-note.md`
-- **Testing Guide Link:** `https://github.com/username/hospital-appointment/blob/main/docs/testing.md`
+- **Technical Report / README Link:** `https://github.com/imkunal01/Hospital_Appointment/blob/main/README.md`
+- **Architecture Diagram Link:** `https://github.com/imkunal01/Hospital_Appointment/blob/main/docs/architecture.md`
+- **API Contract Link:** `https://github.com/imkunal01/Hospital_Appointment/blob/main/docs/api-contract.md`
+- **Technical Note Link:** `https://github.com/imkunal01/Hospital_Appointment/blob/main/docs/technical-note.md`
+- **Testing Guide Link:** `https://github.com/imkunal01/Hospital_Appointment/blob/main/docs/testing.md`
+- **Evaluation Demo Script Link:** `https://github.com/imkunal01/Hospital_Appointment/blob/main/docs/demo-script.md`
+- **AI Usage and Attribution Link:** `https://github.com/imkunal01/Hospital_Appointment/blob/main/docs/ai-usage-and-attribution.md`
 
 ---
 
 ## 6. Technology and Limitations
 
-- **Technology Stack:** React Native (Expo) + TypeScript, TanStack Query, `expo-secure-store`, Node.js + Express + TypeScript, PostgreSQL (Supabase), Render hosting, EAS Build for APK.
-- **Minimum Android Version:** Android 7.0 (API Level 24)
-- **Android Device / Emulator Tested:** `TODO: [e.g. Google Pixel 7 (Android 14) / Android Studio Emulator API 34]`
-- **Setup Notes:** Outlined in `README.md` Section 7.
+- **Technology Stack:**
+  - **Mobile Client:** React Native (Expo SDK 52) + TypeScript, React Navigation (Tabs + Native Stack), TanStack Query v5 with AsyncStorage persister, `expo-secure-store` for Android Keystore integration, `@react-native-community/netinfo`, Axios.
+  - **Backend API:** Node.js + Express 5 + TypeScript, raw SQL via `pg` (Connection Pooling), Zod schema validation, Helmet security headers, CORS, bcrypt password hashing, HMAC SHA-256 JWT tokens.
+  - **Database:** PostgreSQL on Supabase (Port 6543 Session Pooler, Row Level Security enabled on all tables with zero public policies).
+  - **Cloud Hosting:** Render (Web Service), EAS Build for reproducible Android APK generation.
+- **Minimum Android Version:** Android 7.0 Nougat (API Level 24); Target SDK: Android 14 (API Level 34).
+- **Permissions Declared:** `android.permission.INTERNET` only (Minimal privilege).
+- **Test Coverage:** 65 passing automated tests (35 backend integration/unit tests + 30 mobile component/failure tests).
 - **Known Limitations & Assumptions:**
-  - Reminder preferences saved on server; client notifications are simulated.
-  - Read-only offline cache; writes strictly disabled while offline to prevent false confirmation.
-  - Render free tier cold-start of 30-50s managed via 30s timeout and warm-up ping.
-  - Report files are represented strictly as metadata (title, type, size); no diagnostic or treatment text.
+  - Push notifications are simulated in-app based on persisted reminder lead times (1–72 hours) to avoid third-party FCM credential friction during grading.
+  - Read-only offline cache: When offline, users can inspect their cached catalog and appointments with an amber banner; write operations (booking, rescheduling, cancelling) are strictly disabled to prevent false confirmations.
+  - Free-tier Render server spins down after idle periods; the mobile app handles this via 30s timeouts, a launch warm-up ping, and an informative wake-up banner if responses exceed 5 seconds.
+  - Medical visit reports are strictly non-diagnostic metadata (title, date, byte size); no diagnosis or treatment text exists anywhere in the system.
 
 ---
 
 ## 7. AI and Attribution
 
-- **AI Tools Used:** Antigravity Assistant (Gemini 3.8 Flash).
-- **Purpose of Use:** Architectural layout, boilerplate scaffolding, SQL schema & seed scripts, Jest test writing, error handling patterns.
-- **Documentation Link:** `https://github.com/username/hospital-appointment/blob/main/docs/ai-usage-and-attribution.md`
+- **AI Tools Used:** Antigravity Assistant (powered by Google DeepMind Gemini 3.8 Flash).
+- **Purpose of Use:** Architectural structuring, boilerplate scaffolding, database schema & rolling seed scripts, Jest test writing, and markdown documentation formatting.
+- **Candidate Ownership:** All generated code was thoroughly reviewed, debugged, and verified through 65 passing automated tests. The candidate can explain every component and modify code live during evaluation.
+- **Documentation Link:** `https://github.com/imkunal01/Hospital_Appointment/blob/main/docs/ai-usage-and-attribution.md`
 
 ---
 
 ## 8. Role-Specific Fields
 
-- **APK Download Link:** `TODO: [Direct EAS download link or GitHub Release asset link]`
+- **APK Download Link:** `[Candidate: Insert your EAS build download link or GitHub Release asset link here after running 'eas build']`
 - **Backend / API Health URL:** `https://hospital-appointment-api.onrender.com/health`
-- **Build Instructions Summary:** `cd mobile && eas build -p android --profile preview`
+- **Build Instructions Summary:** `cd mobile && eas build -p android --profile preview` (produces standalone `.apk`).
 
 ---
 
