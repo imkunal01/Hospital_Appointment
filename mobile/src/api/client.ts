@@ -1,8 +1,25 @@
+import { Platform } from 'react-native';
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { getInMemoryAccessToken, setInMemoryAccessToken, clearSession } from '../auth/sessionStore';
 import { getRefreshToken, saveRefreshToken } from '../auth/secureStorage';
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://10.0.2.2:4000';
+const getBaseUrl = (): string => {
+  if (process.env.EXPO_PUBLIC_API_URL) {
+    return process.env.EXPO_PUBLIC_API_URL;
+  }
+  // Web browser on the developer PC
+  if (Platform.OS === 'web') {
+    return 'http://localhost:4000';
+  }
+  // Android emulator loopback alias to host PC
+  if (Platform.OS === 'android') {
+    return 'http://10.0.2.2:4000';
+  }
+  // iOS simulator or fallback
+  return 'http://localhost:4000';
+};
+
+const API_BASE_URL = getBaseUrl();
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
