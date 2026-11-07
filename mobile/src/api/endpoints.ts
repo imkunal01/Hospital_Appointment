@@ -107,3 +107,4 @@ export async function updatePreferencesApi(
   const res = await apiClient.put<ReminderPreferences>('/me/preferences', prefs);
   return res.data;
 }
+

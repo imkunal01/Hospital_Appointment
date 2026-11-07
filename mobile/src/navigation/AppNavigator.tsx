@@ -2,8 +2,8 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Text } from 'react-native';
 import { DoctorsStackNavigator } from './DoctorsStackNavigator.js';
-import { AppointmentsTabPlaceholder } from '../screens/AppointmentsTabPlaceholder.js';
-import { ProfileScreen } from '../screens/ProfileScreen.js';
+import { AppointmentsStackNavigator } from './AppointmentsStackNavigator.js';
+import { ProfileStackNavigator } from './ProfileStackNavigator.js';
 import { colors } from '../theme/colors.js';
 
 const Tab = createBottomTabNavigator();
@@ -12,13 +12,7 @@ export const AppNavigator: React.FC = () => {
   return (
     <Tab.Navigator
       screenOptions={{
-        headerStyle: {
-          backgroundColor: colors.surface
-        },
-        headerTintColor: colors.textPrimary,
-        headerTitleStyle: {
-          fontWeight: '700'
-        },
+        headerShown: false,
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textSecondary,
         tabBarStyle: {
@@ -32,25 +26,22 @@ export const AppNavigator: React.FC = () => {
         name="DoctorsTab"
         component={DoctorsStackNavigator}
         options={{
-          headerShown: false,
           tabBarLabel: 'Doctors',
           tabBarIcon: ({ color }) => <Text style={{ color, fontSize: 18 }}>🩺</Text>
         }}
       />
       <Tab.Screen
         name="AppointmentsTab"
-        component={AppointmentsTabPlaceholder}
+        component={AppointmentsStackNavigator}
         options={{
-          title: 'My Appointments',
           tabBarLabel: 'Appointments',
           tabBarIcon: ({ color }) => <Text style={{ color, fontSize: 18 }}>📅</Text>
         }}
       />
       <Tab.Screen
         name="ProfileTab"
-        component={ProfileScreen}
+        component={ProfileStackNavigator}
         options={{
-          title: 'My Profile',
           tabBarLabel: 'Profile',
           tabBarIcon: ({ color }) => <Text style={{ color, fontSize: 18 }}>👤</Text>
         }}

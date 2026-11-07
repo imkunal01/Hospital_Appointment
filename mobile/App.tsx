@@ -1,7 +1,9 @@
 import React, { useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient } from '@tanstack/react-query';
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
+import { asyncStoragePersister } from './src/storage/queryPersister.js';
 import { RootNavigator } from './src/navigation/RootNavigator.js';
 import { warmUpBackend } from './src/api/client.js';
 
@@ -9,7 +11,8 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 2,
-      staleTime: 60 * 1000
+      staleTime: 60 * 1000,
+      gcTime: 24 * 60 * 60 * 1000 // 24 hours cache retention for offline browsing
     }
   }
 });
@@ -22,10 +25,16 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <QueryClientProvider client={queryClient}>
+      <PersistQueryClientProvider
+        client={queryClient}
+        persistOptions={{
+          persister: asyncStoragePersister,
+          maxAge: 24 * 60 * 60 * 1000
+        }}
+      >
         <StatusBar style="dark" />
         <RootNavigator />
-      </QueryClientProvider>
+      </PersistQueryClientProvider>
     </SafeAreaProvider>
   );
 }

@@ -64,3 +64,4 @@ export interface ReminderPreferences {
   enabled: boolean;
   hoursBefore: number;
 }
+

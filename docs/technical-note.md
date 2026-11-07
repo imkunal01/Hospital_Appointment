@@ -2,7 +2,7 @@
 
 > Assessment: Algions AI Labs — Hospital Appointment Android Application  
 > Domain: Hospital Management  
-> Version: 2.0.0
+> Version: 4.0.0
 
 ---
 
@@ -99,26 +99,54 @@ Rescheduling an appointment requires moving from an old slot to a new slot:
 
 ## 3. State Persistence & Offline Policy
 
-*(To be implemented in Phase 3 & 4)*
-- **TanStack Query + AsyncStorage Persister:** Cache read-only catalog data (departments, doctors, upcoming slots) for instant access.
-- **Strict No-False-Success Offline Guarantee:** When offline (`@react-native-community/netinfo`), write actions (Book, Reschedule, Cancel) are disabled with clear UI indicators. No booking is ever reported as confirmed until the backend returns HTTP 201/200.
+### 3.1 What is Cached vs What is Not
+- **What is Cached in AsyncStorage:**
+  - Read-only catalog metadata: departments, doctors list, and previously loaded slot schedules.
+  - Previously confirmed appointments list (`upcoming` and `past`) and patient reminder preferences.
+  - Cached via `PersistQueryClientProvider` using `@tanstack/query-async-storage-persister` with a 24-hour maximum garbage collection lifetime (`gcTime: 24h`).
+- **What is NEVER Cached or Persisted Unencrypted:**
+  - JWT access tokens (stored in volatile RAM memory only).
+  - Partial or optimistic unconfirmed bookings.
+  - Passwords and user credentials.
+
+### 3.2 Offline vs Server-Confirmed Distinction (Rule A4 & A5)
+- Mobile devices inevitably experience airplane mode, elevator connectivity dropouts, and Wi-Fi handoffs.
+- **Architectural Policy:** Offline mode is strictly **Read-Only Cache**.
+- When `@react-native-community/netinfo` signals network loss:
+  1. A persistent top [`OfflineBanner`](file:///c:/Users/Kunal/Desktop/Projects/Hospital_Appointment/mobile/src/components/OfflineBanner.tsx) renders on all screens.
+  2. Mutating action controls (**Book Appointment**, **Reschedule**, **Cancel**, and **Save Preferences**) are immediately **disabled** in the UI.
+  3. The app **never** records an unconfirmed offline write into a local queue that pretends to be confirmed. A booking only transitions to confirmed status after the server returns HTTP 201/200.
+
+### 3.3 Repeated-Tap Safety (Client-Side Debouncing)
+- Mutating actions (Booking, Rescheduling, Cancelling) maintain synchronous `useRef` locks (`isCancellingRef`, `isReschedulingRef`) alongside TanStack Mutation `isPending` state.
+- Even if a user rapidly double-taps or triple-taps a touch target before React performs a state re-render, only exactly one HTTP request is dispatched.
 
 ---
 
 ## 4. Accessibility & UI/UX Standards
 
-*(To be implemented in Phase 4)*
-- Minimum touch targets of 48×48dp across all buttons, inputs, and slot chips.
-- Semantic accessibility labels (`accessibilityLabel` and `accessibilityRole`) on all interactive controls.
-- Dynamic text scaling resilience without layout clipping or text overlap.
-- High-contrast visual hierarchy; status indicators combine color with text labels and iconography (never color alone).
+### 4.1 Touch Targets (48dp Minimum)
+- Every interactive button, text input, date selector chip, slot pill, and segmented control enforces a `minHeight: 48` and `minWidth: 48` density-independent pixels constraint (`spacing.minTouchTarget`), exceeding Android Material and WCAG 2.1 AAA touch target standards.
+
+### 4.2 Semantic Screen Reader Roles & Labels
+- Interactive controls specify explicit `accessibilityRole` (`button`, `tab`, `switch`, `alert`, `text`) and descriptive `accessibilityLabel` attributes.
+- Error alerts and offline warnings declare `accessibilityRole="alert"` so Android TalkBack announces them immediately upon appearance.
+
+### 4.3 Visual Hierarchy & Non-Color Dependent Status
+- Contrast ratios exceed WCAG AA 4.5:1 standards for all body copy and interactive headers.
+- Appointment status badges combine **3 distinct sensory indicators**:
+  1. Text label (`CONFIRMED`, `CANCELLED`, `COMPLETED`).
+  2. Distinct icon symbol (`✓`, `✕`, `●`).
+  3. High-contrast border and background color.
+  *Color is never used as the sole conveyor of information.*
 
 ---
 
 ## 5. Release-Readiness & Production Roadmap
 
-- Certificate pinning for API calls to prevent Man-In-The-Middle attacks.
-- Crash reporting and performance monitoring integration (e.g. Sentry).
-- Push notifications via Firebase Cloud Messaging (FCM) replacing in-app simulation.
-- Multi-region database read replicas for global low-latency catalog queries.
-- Automated token refresh rotation with single-use refresh token invalidation.
+1. **Certificate Pinning:** Implement SSL/TLS certificate pinning via `react-native-ssl-pinning` to protect against corporate proxy interception and Man-In-The-Middle attacks on public Wi-Fi.
+2. **Refresh Token Single-Use Rotation:** Implement server-side automatic refresh token rotation (issuing a new refresh token on every `/auth/refresh` call and revoking the previous one).
+3. **Push Notifications via FCM:** Replace in-app reminder preference simulation with real Google Firebase Cloud Messaging (FCM) integration for background alerts.
+4. **Offline Write Queue with "Pending" Indicator:** If offline bookings are required in future phases, implement a persistent write queue that displays status `PENDING_SYNC` with visual amber badges until the server responds with 201.
+5. **Crash Reporting & APM:** Integrate Sentry / Datadog for automated mobile crash reporting and distributed tracing.
+6. **Paid-Tier API Hosting:** Upgrade Render and Supabase from free sleep tiers to dedicated instances with persistent connections to eliminate 30-50s cold-start delays.

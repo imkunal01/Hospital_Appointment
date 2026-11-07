@@ -31,3 +31,4 @@ export function formatTimeRange(startString: string, endString: string): string 
 export function toISODateString(date: Date): string {
   return date.toISOString().slice(0, 10);
 }
+

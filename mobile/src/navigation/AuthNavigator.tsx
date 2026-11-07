@@ -11,3 +11,4 @@ export const AuthNavigator: React.FC = () => {
     </Stack.Navigator>
   );
 };
+

@@ -1,0 +1,58 @@
+> hospital-appointment-mobile@1.0.0 test
+> jest --detectOpenHandles --forceExit
+
+PASS __tests__/booking.test.tsx
+  Booking Flow, Concurrency & State Integrity
+    √ book button is disabled initially until a slot is selected (82 ms)
+    √ enables book button when a slot is tapped (94 ms)
+    √ RULE A5: Does NOT navigate to Confirmation before server confirmation (HTTP 200/201) (142 ms)
+    √ RULE A1: On SLOT_TAKEN (409 conflict), shows actionable error and triggers slots refetch (115 ms)
+
+PASS __tests__/offlineAndFailure.test.tsx
+  Offline Resiliency & Network Failure Recovery
+    √ renders OfflineBanner when device is offline (48 ms)
+    √ hides OfflineBanner when device is online (22 ms)
+    √ disables Reschedule and Cancel buttons when offline (84 ms)
+    √ handles simulated Network Failure gracefully without crashing (Assessment Brief Requirement) (72 ms)
+    √ handles malformed API response without application crash (68 ms)
+
+PASS __tests__/appointmentManagement.test.tsx
+  Appointment Management & Lifecycle Safe Behavior
+    √ cancel action requires confirmation dialog before sending request (64 ms)
+    √ double-tap cancel sends only one mutation request (Repeated-tap protection) (86 ms)
+
+PASS __tests__/loginValidation.test.tsx
+  Login Screen Validation & Error Handling
+    √ validates empty email and password inputs (38 ms)
+    √ validates invalid email format (32 ms)
+    √ validates password length minimum (6 characters) (28 ms)
+    √ quick demo fill chip populates valid credentials (24 ms)
+
+PASS __tests__/authStore.test.ts
+  Auth Store & Secure Storage Isolation
+    √ keeps access token strictly in memory (4 ms)
+    √ setSession stores refresh token in SecureStore and access token in memory (8 ms)
+    √ clearSession wipes in-memory access token and removes refresh token from SecureStore (6 ms)
+
+PASS __tests__/errors.test.ts
+  Error Code Mapper & Error Extractor
+    mapErrorCodeToMessage
+      √ maps SLOT_TAKEN to actionable re-selection guidance (2 ms)
+      √ maps VALIDATION_ERROR to user form validation notice (1 ms)
+      √ maps UNAUTHORIZED to invalid credential message (1 ms)
+      √ maps TOKEN_EXPIRED to session expiry notice (1 ms)
+      √ maps NOT_FOUND to resource missing message (1 ms)
+      √ maps RATE_LIMITED to rate limiting guidance (1 ms)
+      √ maps INTERNAL to polite server error notice (1 ms)
+      √ falls back to default message when code is unknown (1 ms)
+    extractErrorMessage
+      √ extracts direct backend response message if present (1 ms)
+      √ falls back to code mapping if message is omitted in response (1 ms)
+      √ handles network disconnection errors cleanly without crashing (1 ms)
+      √ handles server cold-start timeouts cleanly without crashing (1 ms)
+
+Test Suites: 6 passed, 6 total
+Tests:       30 passed, 30 total
+Snapshots:   0 total
+Time:        6.49 s
+Ran all test suites.

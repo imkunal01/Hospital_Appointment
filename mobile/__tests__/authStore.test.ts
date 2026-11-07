@@ -72,3 +72,4 @@ describe('Auth Store & Secure Storage Isolation', () => {
     expect(SecureStore.deleteItemAsync).toHaveBeenCalledWith('ha_auth_refresh_token');
   });
 });
+

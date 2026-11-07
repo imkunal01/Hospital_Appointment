@@ -36,3 +36,4 @@ export function extractErrorMessage(err: any): string {
   }
   return err?.message || 'An unexpected error occurred';
 }
+

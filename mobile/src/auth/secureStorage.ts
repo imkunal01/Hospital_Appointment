@@ -39,3 +39,4 @@ export async function removeRefreshToken(): Promise<void> {
     console.error('Failed to remove refresh token from SecureStore');
   }
 }
+

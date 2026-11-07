@@ -131,19 +131,19 @@ All seed accounts are synthetic. Passwords use standard bcrypt hashing.
 
 ## 10. Running Tests
 
-Comprehensive tests verify backend domain logic and mobile UI flows.
+Comprehensive test suites (65 tests across 11 suites) verify backend domain logic, atomic transactions, concurrency, mobile UI flows, offline states, and failure recovery.
 
 ```bash
-# Backend unit & integration tests
+# Backend unit & integration tests (35 tests)
 cd backend
 npm test
 
-# Mobile tests (Jest + React Native Testing Library)
+# Mobile component, state & failure tests (30 tests)
 cd mobile
 npm test
 ```
 
-See [docs/testing.md](docs/testing.md) for step-by-step test suites and manual failure simulation procedures.
+See [docs/testing.md](docs/testing.md) for step-by-step test breakdowns and manual failure simulation procedures.
 
 ---
 

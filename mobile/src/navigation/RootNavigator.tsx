@@ -7,6 +7,7 @@ import { apiClient } from '../api/client.js';
 import { AuthNavigator } from './AuthNavigator.js';
 import { AppNavigator } from './AppNavigator.js';
 import { WakingUpBanner } from '../components/WakingUpBanner.js';
+import { OfflineBanner } from '../components/OfflineBanner.js';
 import { colors } from '../theme/colors.js';
 
 export const RootNavigator: React.FC = () => {
@@ -29,8 +30,7 @@ export const RootNavigator: React.FC = () => {
         const newAccessToken = response.data.accessToken;
         setInMemoryAccessToken(newAccessToken);
 
-        // Fetch patient profile details
-        // For Phase 3, we can parse user claim from token or use stored user
+        // Session restored
         setInitialized(true);
       } catch (err) {
         // Refresh token invalid or revoked; clear SecureStore
@@ -54,6 +54,7 @@ export const RootNavigator: React.FC = () => {
     <NavigationContainer>
       <View style={styles.container}>
         <WakingUpBanner />
+        <OfflineBanner />
         {isAuthenticated ? <AppNavigator /> : <AuthNavigator />}
       </View>
     </NavigationContainer>
@@ -72,3 +73,4 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background
   }
 });
+

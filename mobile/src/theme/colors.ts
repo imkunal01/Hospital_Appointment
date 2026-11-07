@@ -28,3 +28,4 @@ export const colors = {
   disabled: '#CED4DA',
   disabledText: '#6C757D'
 };
+
