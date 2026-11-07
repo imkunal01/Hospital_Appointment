@@ -2,9 +2,9 @@ import React from 'react';
 import { Alert } from 'react-native';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { DoctorDetailScreen } from '../src/screens/DoctorDetailScreen.js';
-import * as endpoints from '../src/api/endpoints.js';
-import { Doctor, Slot, Appointment } from '../src/api/types.js';
+import { DoctorDetailScreen } from '../src/screens/DoctorDetailScreen';
+import * as endpoints from '../src/api/endpoints';
+import { Doctor, Slot, Appointment } from '../src/api/types';
 
 jest.mock('../src/api/endpoints.js');
 

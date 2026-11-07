@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
-import { subscribeToWakingUp } from '../api/client.js';
-import { colors } from '../theme/colors.js';
-import { spacing } from '../theme/spacing.js';
+import { subscribeToWakingUp } from '../api/client';
+import { colors } from '../theme/colors';
+import { spacing } from '../theme/spacing';
 
 export const WakingUpBanner: React.FC = () => {
   const [isWakingUp, setIsWakingUp] = useState(false);

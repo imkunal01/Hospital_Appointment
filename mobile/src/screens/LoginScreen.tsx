@@ -8,13 +8,13 @@ import {
   Platform,
   TouchableOpacity
 } from 'react-native';
-import { Input } from '../components/Input.js';
-import { Button } from '../components/Button.js';
-import { loginApi } from '../api/endpoints.js';
-import { setSession } from '../auth/sessionStore.js';
-import { extractErrorMessage } from '../utils/errors.js';
-import { colors } from '../theme/colors.js';
-import { spacing, borderRadius } from '../theme/spacing.js';
+import { Input } from '../components/Input';
+import { Button } from '../components/Button';
+import { loginApi } from '../api/endpoints';
+import { setSession } from '../auth/sessionStore';
+import { extractErrorMessage } from '../utils/errors';
+import { colors } from '../theme/colors';
+import { spacing, borderRadius } from '../theme/spacing';
 
 export const LoginScreen: React.FC = () => {
   const [email, setEmail] = useState('');

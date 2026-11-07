@@ -1,14 +1,14 @@
 import React, { useEffect } from 'react';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
-import { useSession, setInMemoryAccessToken, setSession, setInitialized } from '../auth/sessionStore.js';
-import { getRefreshToken, removeRefreshToken } from '../auth/secureStorage.js';
-import { apiClient } from '../api/client.js';
-import { AuthNavigator } from './AuthNavigator.js';
-import { AppNavigator } from './AppNavigator.js';
-import { WakingUpBanner } from '../components/WakingUpBanner.js';
-import { OfflineBanner } from '../components/OfflineBanner.js';
-import { colors } from '../theme/colors.js';
+import { useSession, setInMemoryAccessToken, setSession, setInitialized } from '../auth/sessionStore';
+import { getRefreshToken, removeRefreshToken } from '../auth/secureStorage';
+import { apiClient } from '../api/client';
+import { AuthNavigator } from './AuthNavigator';
+import { AppNavigator } from './AppNavigator';
+import { WakingUpBanner } from '../components/WakingUpBanner';
+import { OfflineBanner } from '../components/OfflineBanner';
+import { colors } from '../theme/colors';
 
 export const RootNavigator: React.FC = () => {
   const { isAuthenticated, isInitialized } = useSession();

@@ -7,15 +7,15 @@ import {
   StyleSheet,
   Alert
 } from 'react-native';
-import { Doctor, Slot } from '../api/types.js';
-import { useDoctorSlots } from '../hooks/useCatalog.js';
-import { useBookSlot } from '../hooks/useBooking.js';
-import { ScreenState } from '../components/ScreenState.js';
-import { Button } from '../components/Button.js';
-import { formatDate, formatTimeRange, toISODateString } from '../utils/dates.js';
-import { extractErrorMessage } from '../utils/errors.js';
-import { colors } from '../theme/colors.js';
-import { spacing, borderRadius } from '../theme/spacing.js';
+import { Doctor, Slot } from '../api/types';
+import { useDoctorSlots } from '../hooks/useCatalog';
+import { useBookSlot } from '../hooks/useBooking';
+import { ScreenState } from '../components/ScreenState';
+import { Button } from '../components/Button';
+import { formatDate, formatTimeRange, toISODateString } from '../utils/dates';
+import { extractErrorMessage } from '../utils/errors';
+import { colors } from '../theme/colors';
+import { spacing, borderRadius } from '../theme/spacing';
 
 interface DoctorDetailScreenProps {
   route: {

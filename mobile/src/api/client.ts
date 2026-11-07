@@ -1,6 +1,6 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
-import { getInMemoryAccessToken, setInMemoryAccessToken, clearSession } from '../auth/sessionStore.js';
-import { getRefreshToken, saveRefreshToken } from '../auth/secureStorage.js';
+import { getInMemoryAccessToken, setInMemoryAccessToken, clearSession } from '../auth/sessionStore';
+import { getRefreshToken, saveRefreshToken } from '../auth/secureStorage';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://10.0.2.2:4000';
 

@@ -5,8 +5,8 @@ import {
   rescheduleAppointmentApi,
   cancelAppointmentApi,
   getAppointmentReportsApi
-} from '../api/endpoints.js';
-import { Appointment, VisitReportMetadata } from '../api/types.js';
+} from '../api/endpoints';
+import { Appointment, VisitReportMetadata } from '../api/types';
 
 export function useAppointments(scope: 'upcoming' | 'past') {
   return useQuery({

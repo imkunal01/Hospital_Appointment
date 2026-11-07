@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
-import { LoginScreen } from '../src/screens/LoginScreen.js';
-import * as endpoints from '../src/api/endpoints.js';
+import { LoginScreen } from '../src/screens/LoginScreen';
+import * as endpoints from '../src/api/endpoints';
 
 jest.mock('../src/api/endpoints.js');
 

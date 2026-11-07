@@ -1,10 +1,10 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Text } from 'react-native';
-import { DoctorsStackNavigator } from './DoctorsStackNavigator.js';
-import { AppointmentsStackNavigator } from './AppointmentsStackNavigator.js';
-import { ProfileStackNavigator } from './ProfileStackNavigator.js';
-import { colors } from '../theme/colors.js';
+import { DoctorsStackNavigator } from './DoctorsStackNavigator';
+import { AppointmentsStackNavigator } from './AppointmentsStackNavigator';
+import { ProfileStackNavigator } from './ProfileStackNavigator';
+import { colors } from '../theme/colors';
 
 const Tab = createBottomTabNavigator();
 

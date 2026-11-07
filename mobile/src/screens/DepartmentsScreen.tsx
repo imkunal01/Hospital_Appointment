@@ -7,12 +7,12 @@ import {
   StyleSheet,
   RefreshControl
 } from 'react-native';
-import { useDepartments } from '../hooks/useCatalog.js';
-import { ScreenState } from '../components/ScreenState.js';
-import { Department } from '../api/types.js';
-import { extractErrorMessage } from '../utils/errors.js';
-import { colors } from '../theme/colors.js';
-import { spacing, borderRadius } from '../theme/spacing.js';
+import { useDepartments } from '../hooks/useCatalog';
+import { ScreenState } from '../components/ScreenState';
+import { Department } from '../api/types';
+import { extractErrorMessage } from '../utils/errors';
+import { colors } from '../theme/colors';
+import { spacing, borderRadius } from '../theme/spacing';
 
 interface DepartmentsScreenProps {
   navigation: any;

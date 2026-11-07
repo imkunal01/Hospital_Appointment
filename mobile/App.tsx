@@ -3,9 +3,9 @@ import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { QueryClient } from '@tanstack/react-query';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
-import { asyncStoragePersister } from './src/storage/queryPersister.js';
-import { RootNavigator } from './src/navigation/RootNavigator.js';
-import { warmUpBackend } from './src/api/client.js';
+import { asyncStoragePersister } from './src/storage/queryPersister';
+import { RootNavigator } from './src/navigation/RootNavigator';
+import { warmUpBackend } from './src/api/client';
 
 const queryClient = new QueryClient({
   defaultOptions: {

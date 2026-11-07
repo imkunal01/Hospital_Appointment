@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { colors } from '../theme/colors.js';
-import { spacing } from '../theme/spacing.js';
+import { colors } from '../theme/colors';
+import { spacing } from '../theme/spacing';
 
 export const AppointmentsTabPlaceholder: React.FC = () => {
   return (

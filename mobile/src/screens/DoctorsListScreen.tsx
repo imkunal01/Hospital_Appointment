@@ -7,12 +7,12 @@ import {
   StyleSheet,
   RefreshControl
 } from 'react-native';
-import { useDoctors } from '../hooks/useCatalog.js';
-import { ScreenState } from '../components/ScreenState.js';
-import { Doctor } from '../api/types.js';
-import { extractErrorMessage } from '../utils/errors.js';
-import { colors } from '../theme/colors.js';
-import { spacing, borderRadius } from '../theme/spacing.js';
+import { useDoctors } from '../hooks/useCatalog';
+import { ScreenState } from '../components/ScreenState';
+import { Doctor } from '../api/types';
+import { extractErrorMessage } from '../utils/errors';
+import { colors } from '../theme/colors';
+import { spacing, borderRadius } from '../theme/spacing';
 
 interface DoctorsListScreenProps {
   route: {

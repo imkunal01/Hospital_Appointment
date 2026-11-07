@@ -1,4 +1,4 @@
-import { apiClient } from './client.js';
+import { apiClient } from './client';
 import {
   AuthSession,
   Department,
@@ -7,7 +7,7 @@ import {
   Appointment,
   VisitReportMetadata,
   ReminderPreferences
-} from './types.js';
+} from './types';
 
 // Auth Endpoints
 export async function loginApi(email: string, password: string): Promise<AuthSession> {

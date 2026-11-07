@@ -14,17 +14,17 @@ import {
   useRescheduleAppointment,
   useCancelAppointment,
   useAppointmentReports
-} from '../hooks/useAppointments.js';
-import { useDoctorSlots } from '../hooks/useCatalog.js';
-import { useNetwork } from '../hooks/useNetwork.js';
-import { ScreenState } from '../components/ScreenState.js';
-import { StatusBadge } from '../components/StatusBadge.js';
-import { Button } from '../components/Button.js';
-import { formatDate, formatTimeRange, toISODateString } from '../utils/dates.js';
-import { extractErrorMessage } from '../utils/errors.js';
-import { Slot } from '../api/types.js';
-import { colors } from '../theme/colors.js';
-import { spacing, borderRadius } from '../theme/spacing.js';
+} from '../hooks/useAppointments';
+import { useDoctorSlots } from '../hooks/useCatalog';
+import { useNetwork } from '../hooks/useNetwork';
+import { ScreenState } from '../components/ScreenState';
+import { StatusBadge } from '../components/StatusBadge';
+import { Button } from '../components/Button';
+import { formatDate, formatTimeRange, toISODateString } from '../utils/dates';
+import { extractErrorMessage } from '../utils/errors';
+import { Slot } from '../api/types';
+import { colors } from '../theme/colors';
+import { spacing, borderRadius } from '../theme/spacing';
 
 interface AppointmentDetailScreenProps {
   route: {

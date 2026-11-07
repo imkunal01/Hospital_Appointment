@@ -4,8 +4,8 @@ import {
   clearSession,
   getInMemoryAccessToken,
   setInMemoryAccessToken
-} from '../src/auth/sessionStore.js';
-import { UserProfile } from '../src/api/types.js';
+} from '../src/auth/sessionStore';
+import { UserProfile } from '../src/api/types';
 
 // Mock expo-secure-store
 jest.mock('expo-secure-store', () => {

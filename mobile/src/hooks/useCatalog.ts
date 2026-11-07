@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { getDepartmentsApi, getDoctorsApi, getDoctorSlotsApi } from '../api/endpoints.js';
+import { getDepartmentsApi, getDoctorsApi, getDoctorSlotsApi } from '../api/endpoints';
 
 export function useDepartments() {
   return useQuery({

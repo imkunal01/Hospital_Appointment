@@ -1,11 +1,11 @@
 import React from 'react';
 import { View, Text, StyleSheet, Alert, TouchableOpacity } from 'react-native';
-import { useSession } from '../auth/sessionStore.js';
-import { getRefreshToken } from '../auth/secureStorage.js';
-import { logoutApi } from '../api/endpoints.js';
-import { Button } from '../components/Button.js';
-import { colors } from '../theme/colors.js';
-import { spacing, borderRadius } from '../theme/spacing.js';
+import { useSession } from '../auth/sessionStore';
+import { getRefreshToken } from '../auth/secureStorage';
+import { logoutApi } from '../api/endpoints';
+import { Button } from '../components/Button';
+import { colors } from '../theme/colors';
+import { spacing, borderRadius } from '../theme/spacing';
 
 interface ProfileScreenProps {
   navigation: any;

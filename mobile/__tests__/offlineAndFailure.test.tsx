@@ -1,12 +1,12 @@
 import React from 'react';
 import { render, waitFor } from '@testing-library/react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { OfflineBanner } from '../src/components/OfflineBanner.js';
-import { AppointmentDetailScreen } from '../src/screens/AppointmentDetailScreen.js';
-import { DepartmentsScreen } from '../src/screens/DepartmentsScreen.js';
-import * as networkHook from '../src/hooks/useNetwork.js';
-import * as endpoints from '../src/api/endpoints.js';
-import { Appointment } from '../src/api/types.js';
+import { OfflineBanner } from '../src/components/OfflineBanner';
+import { AppointmentDetailScreen } from '../src/screens/AppointmentDetailScreen';
+import { DepartmentsScreen } from '../src/screens/DepartmentsScreen';
+import * as networkHook from '../src/hooks/useNetwork';
+import * as endpoints from '../src/api/endpoints';
+import { Appointment } from '../src/api/types';
 
 jest.mock('../src/hooks/useNetwork.js');
 jest.mock('../src/api/endpoints.js');

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { UserProfile } from '../api/types.js';
-import { saveRefreshToken, getRefreshToken, removeRefreshToken } from './secureStorage.js';
+import { UserProfile } from '../api/types';
+import { saveRefreshToken, getRefreshToken, removeRefreshToken } from './secureStorage';
 
 interface SessionState {
   user: UserProfile | null;

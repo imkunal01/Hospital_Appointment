@@ -7,14 +7,14 @@ import {
   StyleSheet,
   RefreshControl
 } from 'react-native';
-import { useAppointments } from '../hooks/useAppointments.js';
-import { ScreenState } from '../components/ScreenState.js';
-import { StatusBadge } from '../components/StatusBadge.js';
-import { Appointment } from '../api/types.js';
-import { formatDate, formatTimeRange } from '../utils/dates.js';
-import { extractErrorMessage } from '../utils/errors.js';
-import { colors } from '../theme/colors.js';
-import { spacing, borderRadius } from '../theme/spacing.js';
+import { useAppointments } from '../hooks/useAppointments';
+import { ScreenState } from '../components/ScreenState';
+import { StatusBadge } from '../components/StatusBadge';
+import { Appointment } from '../api/types';
+import { formatDate, formatTimeRange } from '../utils/dates';
+import { extractErrorMessage } from '../utils/errors';
+import { colors } from '../theme/colors';
+import { spacing, borderRadius } from '../theme/spacing';
 
 interface AppointmentsScreenProps {
   navigation: any;

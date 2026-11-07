@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { useNetwork } from '../hooks/useNetwork.js';
-import { colors } from '../theme/colors.js';
-import { spacing } from '../theme/spacing.js';
+import { useNetwork } from '../hooks/useNetwork';
+import { colors } from '../theme/colors';
+import { spacing } from '../theme/spacing';
 
 export const OfflineBanner: React.FC = () => {
   const { isOffline } = useNetwork();

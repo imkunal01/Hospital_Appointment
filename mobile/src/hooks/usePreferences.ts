@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getPreferencesApi, updatePreferencesApi } from '../api/endpoints.js';
-import { ReminderPreferences } from '../api/types.js';
+import { getPreferencesApi, updatePreferencesApi } from '../api/endpoints';
+import { ReminderPreferences } from '../api/types';
 
 export function usePreferences() {
   return useQuery({

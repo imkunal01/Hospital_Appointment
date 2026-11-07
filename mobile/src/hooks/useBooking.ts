@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { bookAppointmentApi } from '../api/endpoints.js';
-import { Appointment } from '../api/types.js';
+import { bookAppointmentApi } from '../api/endpoints';
+import { Appointment } from '../api/types';
 
 interface BookSlotParams {
   slotId: string;

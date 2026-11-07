@@ -1,11 +1,11 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import { Appointment } from '../api/types.js';
-import { StatusBadge } from '../components/StatusBadge.js';
-import { Button } from '../components/Button.js';
-import { formatDate, formatTimeRange } from '../utils/dates.js';
-import { colors } from '../theme/colors.js';
-import { spacing, borderRadius } from '../theme/spacing.js';
+import { Appointment } from '../api/types';
+import { StatusBadge } from '../components/StatusBadge';
+import { Button } from '../components/Button';
+import { formatDate, formatTimeRange } from '../utils/dates';
+import { colors } from '../theme/colors';
+import { spacing, borderRadius } from '../theme/spacing';
 
 interface ConfirmationScreenProps {
   route: {

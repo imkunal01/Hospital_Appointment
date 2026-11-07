@@ -1,4 +1,4 @@
-import { mapErrorCodeToMessage, extractErrorMessage } from '../src/utils/errors.js';
+import { mapErrorCodeToMessage, extractErrorMessage } from '../src/utils/errors';
 
 describe('Error Code Mapper & Error Extractor', () => {
   describe('mapErrorCodeToMessage', () => {

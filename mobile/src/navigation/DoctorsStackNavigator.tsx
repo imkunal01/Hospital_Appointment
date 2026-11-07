@@ -1,11 +1,11 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { DepartmentsScreen } from '../screens/DepartmentsScreen.js';
-import { DoctorsListScreen } from '../screens/DoctorsListScreen.js';
-import { DoctorDetailScreen } from '../screens/DoctorDetailScreen.js';
-import { ConfirmationScreen } from '../screens/ConfirmationScreen.js';
-import { Doctor, Appointment } from '../api/types.js';
-import { colors } from '../theme/colors.js';
+import { DepartmentsScreen } from '../screens/DepartmentsScreen';
+import { DoctorsListScreen } from '../screens/DoctorsListScreen';
+import { DoctorDetailScreen } from '../screens/DoctorDetailScreen';
+import { ConfirmationScreen } from '../screens/ConfirmationScreen';
+import { Doctor, Appointment } from '../api/types';
+import { colors } from '../theme/colors';
 
 export type DoctorsStackParamList = {
   Departments: undefined;

@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Switch, TouchableOpacity, Alert } from 'react-native';
-import { usePreferences, useUpdatePreferences } from '../hooks/usePreferences.js';
-import { useNetwork } from '../hooks/useNetwork.js';
-import { ScreenState } from '../components/ScreenState.js';
-import { Button } from '../components/Button.js';
-import { extractErrorMessage } from '../utils/errors.js';
-import { colors } from '../theme/colors.js';
-import { spacing, borderRadius } from '../theme/spacing.js';
+import { usePreferences, useUpdatePreferences } from '../hooks/usePreferences';
+import { useNetwork } from '../hooks/useNetwork';
+import { ScreenState } from '../components/ScreenState';
+import { Button } from '../components/Button';
+import { extractErrorMessage } from '../utils/errors';
+import { colors } from '../theme/colors';
+import { spacing, borderRadius } from '../theme/spacing';
 
 const HOUR_OPTIONS = [6, 12, 24, 48];
 

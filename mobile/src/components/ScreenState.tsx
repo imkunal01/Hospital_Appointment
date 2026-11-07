@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, Text, ActivityIndicator, StyleSheet, ViewStyle } from 'react-native';
-import { Button } from './Button.js';
-import { colors } from '../theme/colors.js';
-import { spacing } from '../theme/spacing.js';
+import { Button } from './Button';
+import { colors } from '../theme/colors';
+import { spacing } from '../theme/spacing';
 
 interface ScreenStateProps {
   loading?: boolean;

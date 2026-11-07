@@ -2,10 +2,10 @@ import React from 'react';
 import { Alert } from 'react-native';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { AppointmentDetailScreen } from '../src/screens/AppointmentDetailScreen.js';
-import * as endpoints from '../src/api/endpoints.js';
-import * as networkHook from '../src/hooks/useNetwork.js';
-import { Appointment } from '../src/api/types.js';
+import { AppointmentDetailScreen } from '../src/screens/AppointmentDetailScreen';
+import * as endpoints from '../src/api/endpoints';
+import * as networkHook from '../src/hooks/useNetwork';
+import { Appointment } from '../src/api/types';
 
 jest.mock('../src/api/endpoints.js');
 jest.mock('../src/hooks/useNetwork.js');

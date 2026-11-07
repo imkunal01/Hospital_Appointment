@@ -1,8 +1,8 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { AppointmentsScreen } from '../screens/AppointmentsScreen.js';
-import { AppointmentDetailScreen } from '../screens/AppointmentDetailScreen.js';
-import { colors } from '../theme/colors.js';
+import { AppointmentsScreen } from '../screens/AppointmentsScreen';
+import { AppointmentDetailScreen } from '../screens/AppointmentDetailScreen';
+import { colors } from '../theme/colors';
 
 export type AppointmentsStackParamList = {
   AppointmentsList: undefined;
