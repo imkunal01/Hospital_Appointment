@@ -38,3 +38,4 @@ export const AppointmentsStackNavigator: React.FC = () => {
     </Stack.Navigator>
   );
 };
+

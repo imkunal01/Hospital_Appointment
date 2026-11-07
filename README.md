@@ -149,6 +149,7 @@ See [docs/testing.md](docs/testing.md) for step-by-step test breakdowns and manu
 
 ## 11. Documentation Index
 
+- [DEVELOPMENT_RECORD.md](DEVELOPMENT_RECORD.md) — Comprehensive development record detailing what was built in each phase (Phases 0–5), architecture decisions, 65 automated tests matrix, bug resolution log, and AI context protocol.
 - [docs/architecture.md](docs/architecture.md) — System architecture, Mermaid ER diagram, booking sequence diagram, and mobile layering.
 - [docs/api-contract.md](docs/api-contract.md) — Complete REST API specification with request/response schemas and standardized error codes.
 - [docs/technical-note.md](docs/technical-note.md) — Technical notes on secure storage, state persistence, accessibility, and release-readiness.

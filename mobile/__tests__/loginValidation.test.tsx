@@ -61,3 +61,4 @@ describe('Login Screen Validation & Error Handling', () => {
     expect(getByDisplayValue('Password123!')).toBeTruthy();
   });
 });
+

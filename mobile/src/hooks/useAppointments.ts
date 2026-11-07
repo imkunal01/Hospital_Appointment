@@ -78,3 +78,4 @@ export function useAppointmentReports(appointmentId: string) {
     staleTime: 5 * 60 * 1000
   });
 }
+

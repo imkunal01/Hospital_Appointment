@@ -38,3 +38,4 @@ export const ProfileStackNavigator: React.FC = () => {
     </Stack.Navigator>
   );
 };
+

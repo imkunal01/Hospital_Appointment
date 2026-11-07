@@ -6,3 +6,4 @@ export const asyncStoragePersister = createAsyncStoragePersister({
   key: 'HOSPITAL_APPOINTMENT_QUERY_CACHE',
   throttleTime: 1000
 });
+
