@@ -13,18 +13,23 @@
 - The authentication service (`auth.service.ts`) executes timing-safe password verification via `bcrypt.compare`.
 - Generic, ambiguous error messages (`"Invalid email or password"`) are returned for both nonexistent users and bad passwords to prevent username enumeration attacks.
 
-### 1.2 Access & Refresh Token Dual-Token Strategy
+### 1.2 Access & Refresh Token Dual-Token Strategy & Platform Secure Storage
 - **Access Tokens:**
   - Token format: Signed JSON Web Token (HMAC SHA-256).
   - Lifetime: **15 minutes**.
   - Payload: Contains minimal claims (`userId`, `email`, `role`).
-  - Storage: Held **strictly in-memory** within the mobile application runtime state. Never written to unencrypted persistent storage (e.g. AsyncStorage), preventing token exfiltration via backup extraction.
+  - Storage: Held **strictly in-memory** within the mobile application runtime state (`sessionStore.ts`).
+  - Rationale: Never written to unencrypted persistent storage (such as plain `AsyncStorage`), completely preventing token exfiltration via unencrypted device backups or root filesystem inspection.
 - **Refresh Tokens:**
   - Token format: 40-byte cryptographically secure random hexadecimal string (`crypto.randomBytes(40)`).
-  - Storage Client-Side: Persisted exclusively in **`expo-secure-store`** (backed by hardware Android Keystore with AES-GCM encryption).
-  - Storage Server-Side: Only the **SHA-256 hash** of the refresh token is stored in the `refresh_tokens` database table. Even in the event of an unauthorized database read, raw refresh tokens cannot be reversed or stolen.
+  - Storage Client-Side: Persisted exclusively in **`expo-secure-store`**.
+  - Hardware Keystore Integration: On Android, `expo-secure-store` encrypts data using **AES-256-GCM**, storing encryption keys in the hardware-backed **Android Keystore System**. The data cannot be decrypted outside the application container or without hardware cryptographic verification.
+  - Accessibility Level: Configured with `WHEN_UNLOCKED_THIS_DEVICE_ONLY`, ensuring secrets are inaccessible when the device is locked.
+  - Storage Server-Side: Only the **SHA-256 hash** of the refresh token is stored in the `refresh_tokens` database table. Even in the event of an unauthorized database dump, raw refresh tokens cannot be reversed or replayed.
   - Expiry: Fixed 7-day expiration.
+  - Transparent Refresh & Concurrency: The mobile HTTP interceptor uses a single in-flight shared promise (`refreshPromise`). If multiple parallel requests encounter an expired access token simultaneously, they all wait on the single `/auth/refresh` round-trip rather than blasting duplicate refresh requests.
   - Revocation: Explicit revocation timestamp (`revoked_at`) on logout or session reset.
+  - Logging Policy: Sensitive tokens, passwords, and user PII are never printed to console logs or error diagnostics.
 
 ### 1.3 Row Level Security (RLS) Without Public Policies
 - A key architectural decision is that PostgreSQL is hosted on Supabase, but client access flows exclusively through our custom Node.js Express backend.

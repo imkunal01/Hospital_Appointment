@@ -1,0 +1,31 @@
+{
+  "expo": {
+    "name": "Hospital Appointment",
+    "slug": "hospital-appointment",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": false,
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.algions.hospitalappointment"
+    },
+    "android": {
+      "package": "com.algions.hospitalappointment",
+      "adaptiveIcon": {
+        "backgroundColor": "#ffffff"
+      },
+      "permissions": [
+        "android.permission.INTERNET"
+      ]
+    },
+    "plugins": [
+      "expo-secure-store"
+    ]
+  }
+}
