@@ -1,0 +1,72 @@
+> hospital-appointment-backend@1.0.0 test
+> jest --runInBand --detectOpenHandles
+
+PASS tests/appointments.test.ts
+  Appointments & Concurrency Domain Tests
+    POST /appointments (Atomic Booking & Concurrency)
+      √ successfully books an available future slot (HTTP 201) (84 ms)
+      √ rejects booking past slots (HTTP 400 VALIDATION_ERROR) (15 ms)
+      √ returns HTTP 409 SLOT_TAKEN on concurrency conflict (16 ms)
+      √ simulates concurrent double-booking: exactly one succeeds (201), one fails (409) (32 ms)
+      √ returns existing appointment on idempotent retry with same Idempotency-Key (HTTP 200) (15 ms)
+    Ownership Isolation & Access Control
+      √ Patient B cannot read Patient A appointment (returns HTTP 404 NOT_FOUND) (14 ms)
+      √ Patient B cannot cancel Patient A appointment (returns HTTP 404 NOT_FOUND) (15 ms)
+      √ Patient B cannot reschedule Patient A appointment (returns HTTP 404 NOT_FOUND) (16 ms)
+    PATCH /appointments/:id/reschedule
+      √ returns HTTP 409 when target new slot is taken; leaves original untouched (22 ms)
+    POST /appointments/:id/cancel
+      √ cancels an appointment and makes it safe to cancel again (idempotent) (28 ms)
+    GET /appointments/:id/reports (Metadata Only)
+      √ returns report metadata with strictly no diagnosis or treatment fields (21 ms)
+
+PASS tests/preferences.test.ts
+  Preferences Module Integration Tests
+    GET /me/preferences
+      √ returns user reminder preferences (18 ms)
+      √ returns 401 UNAUTHORIZED when no token is supplied (12 ms)
+    PUT /me/preferences
+      √ successfully updates preferences with valid values (18 ms)
+      √ returns 400 VALIDATION_ERROR when hoursBefore is out of valid range (1-72) (14 ms)
+      √ returns 400 VALIDATION_ERROR when hoursBefore is 0 (12 ms)
+
+PASS tests/catalog.test.ts
+  Catalog Module Integration Tests
+    Authentication Gates
+      √ returns 401 UNAUTHORIZED when no token is supplied to /departments (82 ms)
+      √ returns 401 UNAUTHORIZED when no token is supplied to /doctors (12 ms)
+      √ returns 401 UNAUTHORIZED when an invalid token is provided (14 ms)
+    GET /departments
+      √ returns a list of departments with expected fields (16 ms)
+    GET /doctors
+      √ returns a list of all doctors (15 ms)
+      √ filters doctors by departmentId when provided (14 ms)
+      √ returns 400 VALIDATION_ERROR if departmentId query param is not a valid UUID (15 ms)
+    GET /doctors/:id/slots
+      √ returns slots for a doctor on a given date (18 ms)
+      √ returns 404 NOT_FOUND if doctor does not exist (14 ms)
+      √ returns 400 VALIDATION_ERROR if date format is invalid (14 ms)
+
+PASS tests/auth.test.ts
+  Auth Module Integration Tests
+    POST /auth/login
+      √ returns access and refresh tokens on valid credentials (132 ms)
+      √ returns 401 UNAUTHORIZED when password is wrong (112 ms)
+      √ returns 401 UNAUTHORIZED when user is not found (12 ms)
+      √ returns 400 VALIDATION_ERROR on malformed request body (16 ms)
+    POST /auth/refresh
+      √ returns new access token with valid refresh token (18 ms)
+      √ returns 401 UNAUTHORIZED for revoked or invalid refresh token (15 ms)
+    POST /auth/logout
+      √ successfully revokes the provided refresh token (14 ms)
+
+PASS tests/health.test.ts
+  GET /health
+    √ returns a valid health check payload structure (76 ms)
+    √ returns 404 for unknown endpoints in standardized error shape (12 ms)
+
+Test Suites: 5 passed, 5 total
+Tests:       35 passed, 35 total
+Snapshots:   0 total
+Time:        3.33 s
+Ran all test suites.

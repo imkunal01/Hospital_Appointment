@@ -2,7 +2,7 @@
 
 > Assessment: Algions AI Labs — Hospital Appointment Android Application  
 > Domain: Hospital Management  
-> Version: 1.1.0 (Phase 1 Complete)
+> Version: 2.0.0 (Backend Feature-Complete)
 
 ---
 
@@ -13,7 +13,7 @@
 - **Content-Type:** `application/json`
 - **Authentication Scheme:** `Bearer <JWT_ACCESS_TOKEN>` in the `Authorization` HTTP header.
 - **Access Token Lifetime:** 15 minutes.
-- **Refresh Token Lifetime:** 7 days (Cryptographically random, hashed server-side with SHA-256; stored in `expo-secure-store` client-side).
+- **Refresh Token Lifetime:** 7 days (Hashed server-side; stored in `expo-secure-store` client-side).
 
 ---
 
@@ -35,20 +35,30 @@ All non-2xx responses strictly conform to the following schema:
 
 | HTTP Status | Error Code | Description | Typical Action |
 |---|---|---|---|
-| `400` | `VALIDATION_ERROR` | Request payload fails schema validation or is malformed. | Inspect `details` array; highlight input fields in UI. |
+| `400` | `VALIDATION_ERROR` | Request payload fails schema validation, slot in past, or invalid state transition. | Inspect `details` array; highlight input fields in UI. |
 | `401` | `UNAUTHORIZED` | Missing, malformed, or invalid access token; or invalid login credentials. | Prompt user to log in or initiate refresh flow. |
 | `401` | `TOKEN_EXPIRED` | Access token has expired. | Attempt transparent refresh via `/auth/refresh`. |
 | `403` | `FORBIDDEN` | Authenticated user lacks permission for the target resource. | Block navigation; display forbidden message. |
-| `404` | `NOT_FOUND` | Resource not found or owned by another user. | Show 404 empty state; navigate back. |
+| `404` | `NOT_FOUND` | Resource not found or owned by another user (ownership isolation). | Show 404 empty state; navigate back. |
 | `409` | `SLOT_TAKEN` | Slot was booked by another user before confirmation. | Invalidate slots query, refresh view, prompt user to select another slot. |
 | `429` | `RATE_LIMITED` | Too many requests sent in a short window. | Show retry-after countdown; disable submit button. |
 | `500` | `INTERNAL` | Unexpected internal server error. | Display friendly fallback error; offer manual retry. |
 
 ---
 
-## 3. Implemented Endpoints (Phase 0 & 1)
+## 3. Appointment Lifecycle & Status States
 
-### 3.1 Health Check (Public)
+| State | Description | Permitted Next States |
+|---|---|---|
+| `CONFIRMED` | Initial status upon successful booking. Slot is marked `BOOKED`. | `CANCELLED`, `COMPLETED` |
+| `CANCELLED` | Patient cancelled appointment. Slot is released back to `AVAILABLE`. Safe idempotent no-op on re-cancellation. | *Terminal state* (Cannot reschedule or complete). |
+| `COMPLETED` | Patient attended visit. Visit report metadata is attached. | *Terminal state* (Cannot reschedule or cancel). |
+
+---
+
+## 4. Endpoints
+
+### 4.1 Health Check (Public)
 
 #### `GET /health`
 Returns the status of the server and database connectivity. Used for initial wake-up ping and health monitoring.
@@ -69,13 +79,10 @@ Returns the status of the server and database connectivity. Used for initial wak
 
 ---
 
-### 3.2 Authentication Endpoints
+### 4.2 Authentication Endpoints
 
 #### `POST /auth/login`
 Authenticates a user via email and password. Protected by in-memory rate limiting (10 attempts per 15 minutes per IP).
-
-**Request Headers:**
-`Content-Type: application/json`
 
 **Request Body:**
 ```json
@@ -100,38 +107,6 @@ Authenticates a user via email and password. Protected by in-memory rate limitin
 }
 ```
 
-**Error Responses:**
-- `400 VALIDATION_ERROR` (malformed email, password < 6 chars):
-  ```json
-  {
-    "error": {
-      "code": "VALIDATION_ERROR",
-      "message": "Invalid request input",
-      "details": [{ "field": "email", "message": "Invalid email address" }]
-    }
-  }
-  ```
-- `401 UNAUTHORIZED` (invalid credentials):
-  ```json
-  {
-    "error": {
-      "code": "UNAUTHORIZED",
-      "message": "Invalid email or password"
-    }
-  }
-  ```
-- `429 RATE_LIMITED` (too many failed attempts):
-  ```json
-  {
-    "error": {
-      "code": "RATE_LIMITED",
-      "message": "Too many login attempts. Please try again in 840 seconds."
-    }
-  }
-  ```
-
----
-
 #### `POST /auth/refresh`
 Exchanges a valid, unrevoked refresh token for a fresh 15-minute access token.
 
@@ -150,21 +125,8 @@ Exchanges a valid, unrevoked refresh token for a fresh 15-minute access token.
 }
 ```
 
-**Error Responses:**
-- `401 UNAUTHORIZED` (revoked, expired, or non-existent refresh token):
-  ```json
-  {
-    "error": {
-      "code": "UNAUTHORIZED",
-      "message": "Invalid refresh token"
-    }
-  }
-  ```
-
----
-
 #### `POST /auth/logout`
-Revokes the provided refresh token so it cannot be used again.
+Revokes the provided refresh token in the database.
 
 **Request Body:**
 ```json
@@ -183,54 +145,25 @@ Revokes the provided refresh token so it cannot be used again.
 
 ---
 
-### 3.3 Catalog Endpoints (Authenticated)
+### 4.3 Catalog Endpoints (Authenticated)
 
 #### `GET /departments`
 Returns all hospital departments sorted alphabetically.
 
-**Headers:**
-`Authorization: Bearer <accessToken>`
+**Headers:** `Authorization: Bearer <accessToken>`
 
 **Response `200 OK`:**
 ```json
 [
-  {
-    "id": "d1111111-1111-1111-1111-111111111111",
-    "name": "Cardiology"
-  },
-  {
-    "id": "d4444444-4444-4444-4444-444444444444",
-    "name": "Dermatology"
-  },
-  {
-    "id": "d5555555-5555-5555-5555-555555555555",
-    "name": "General Medicine"
-  },
-  {
-    "id": "d2222222-2222-2222-2222-222222222222",
-    "name": "Orthopedics"
-  },
-  {
-    "id": "d3333333-3333-3333-3333-333333333333",
-    "name": "Pediatrics"
-  }
+  { "id": "d1111111-1111-1111-1111-111111111111", "name": "Cardiology" },
+  { "id": "d4444444-4444-4444-4444-444444444444", "name": "Dermatology" }
 ]
 ```
 
-**Error Responses:**
-- `401 UNAUTHORIZED`: Missing, invalid, or malformed Bearer token.
-- `401 TOKEN_EXPIRED`: Access token expired. Client should call `/auth/refresh`.
-
----
-
-#### `GET /doctors`
+#### `GET /doctors?departmentId=`
 Returns doctors, optionally filtered by `departmentId`.
 
-**Headers:**
-`Authorization: Bearer <accessToken>`
-
-**Query Parameters:**
-- `departmentId` (optional, UUID format): Filter by department.
+**Headers:** `Authorization: Bearer <accessToken>`
 
 **Response `200 OK`:**
 ```json
@@ -241,71 +174,226 @@ Returns doctors, optionally filtered by `departmentId`.
     "departmentName": "Cardiology",
     "name": "Dr. Sarah Mitchell",
     "specialty": "Interventional Cardiology",
-    "bio": "Board-certified cardiologist specializing in preventive cardiac health and vascular assessments."
-  },
-  {
-    "id": "c2222222-2222-2222-2222-222222222222",
-    "departmentId": "d1111111-1111-1111-1111-111111111111",
-    "departmentName": "Cardiology",
-    "name": "Dr. Robert Chen",
-    "specialty": "Electrophysiology",
-    "bio": "Experienced in heart rhythm monitoring and non-invasive cardiovascular evaluations."
+    "bio": "Board-certified cardiologist specializing in preventive cardiac health."
   }
 ]
 ```
 
-**Error Responses:**
-- `400 VALIDATION_ERROR`: If `departmentId` is not a valid UUID format.
-
----
-
 #### `GET /doctors/:id/slots?date=YYYY-MM-DD`
-Returns available, unbooked appointment slots for a specific doctor on a target date.
+Returns available, unbooked slots for a doctor on a target date.
 
-**Headers:**
-`Authorization: Bearer <accessToken>`
-
-**URL Parameters:**
-- `id` (required, UUID): Doctor's unique identifier.
-
-**Query Parameters:**
-- `date` (required, string in `YYYY-MM-DD` format): Target calendar date.
+**Headers:** `Authorization: Bearer <accessToken>`
 
 **Response `200 OK`:**
 ```json
 [
   {
-    "id": "s2222222-2222-2222-2222-222222222222",
+    "id": "e2222222-2222-2222-2222-222222222222",
     "doctorId": "c1111111-1111-1111-1111-111111111111",
     "startsAt": "2026-11-08T09:00:00.000Z",
     "endsAt": "2026-11-08T09:45:00.000Z",
-    "status": "AVAILABLE"
-  },
-  {
-    "id": "s3333333-3333-3333-3333-333333333333",
-    "doctorId": "c1111111-1111-1111-1111-111111111111",
-    "startsAt": "2026-11-08T10:00:00.000Z",
-    "endsAt": "2026-11-08T10:45:00.000Z",
     "status": "AVAILABLE"
   }
 ]
 ```
 
+---
+
+### 4.4 Booking & Appointment Endpoints (Authenticated)
+
+#### `POST /appointments`
+Atomically books an appointment for the authenticated patient.
+
+**Headers:**
+- `Authorization: Bearer <accessToken>`
+- `Idempotency-Key: <unique-client-uuid>` *(Recommended)*: Prevents duplicate bookings from network retries or repeated user taps.
+
+**Request Body:**
+```json
+{
+  "slotId": "e2222222-2222-2222-2222-222222222222"
+}
+```
+
+**Response `201 Created` (New Booking):**
+```json
+{
+  "id": "b2222222-2222-2222-2222-222222222222",
+  "reference": "HA-20261108-A93F",
+  "patientId": "a1111111-1111-1111-1111-111111111111",
+  "slotId": "e2222222-2222-2222-2222-222222222222",
+  "status": "CONFIRMED",
+  "startsAt": "2026-11-08T09:00:00.000Z",
+  "endsAt": "2026-11-08T09:45:00.000Z",
+  "doctorId": "c1111111-1111-1111-1111-111111111111",
+  "doctorName": "Dr. Sarah Mitchell",
+  "specialty": "Interventional Cardiology",
+  "departmentId": "d1111111-1111-1111-1111-111111111111",
+  "departmentName": "Cardiology",
+  "createdAt": "2026-11-07T08:00:00.000Z",
+  "updatedAt": "2026-11-07T08:00:00.000Z"
+}
+```
+
+**Response `200 OK` (Idempotent Match):**
+Returned when an appointment with the identical `Idempotency-Key` was already created for this patient. Body is the existing appointment record.
+
 **Error Responses:**
-- `400 VALIDATION_ERROR`: If `:id` is not a valid UUID or `date` is not formatted as `YYYY-MM-DD`.
-- `404 NOT_FOUND`: If doctor ID does not exist in database.
+- `400 VALIDATION_ERROR`: If slot ID is not a UUID or slot starts in the past.
+- `409 SLOT_TAKEN` (Concurrency conflict):
+  ```json
+  {
+    "error": {
+      "code": "SLOT_TAKEN",
+      "message": "Selected appointment slot is no longer available"
+    }
+  }
+  ```
 
 ---
 
-## 4. Upcoming Phase 2 Endpoints (Booking Engine)
+#### `GET /appointments?scope=upcoming|past`
+Lists appointments for the authenticated patient.
 
-| Method | Endpoint | Auth | Purpose |
-|---|---|---|---|
-| `POST` | `/appointments` | Authenticated | Book a slot with `Idempotency-Key` header. |
-| `GET` | `/appointments` | Authenticated | List patient's appointments (`?scope=upcoming\|past`). |
-| `GET` | `/appointments/:id` | Authenticated | Get appointment details (scoped to patient). |
-| `PATCH` | `/appointments/:id/reschedule`| Authenticated | Atomically switch slot to `newSlotId`. |
-| `POST` | `/appointments/:id/cancel` | Authenticated | Cancel appointment and free the slot. |
-| `GET` | `/appointments/:id/reports` | Authenticated | Retrieve visit report metadata (strictly non-diagnostic). |
-| `GET` | `/me/preferences` | Authenticated | Retrieve reminder preferences. |
-| `PUT` | `/me/preferences` | Authenticated | Update reminder notification preferences. |
+**Headers:** `Authorization: Bearer <accessToken>`
+
+**Query Parameters:**
+- `scope` (optional, `upcoming` or `past`, default `upcoming`):
+  - `upcoming`: `status = 'CONFIRMED' AND starts_at >= NOW()` (sorted ascending).
+  - `past`: `status IN ('CANCELLED', 'COMPLETED') OR (status = 'CONFIRMED' AND starts_at < NOW())` (sorted descending).
+
+**Response `200 OK`:**
+```json
+[
+  {
+    "id": "b2222222-2222-2222-2222-222222222222",
+    "reference": "HA-20261108-A93F",
+    "patientId": "a1111111-1111-1111-1111-111111111111",
+    "slotId": "e2222222-2222-2222-2222-222222222222",
+    "status": "CONFIRMED",
+    "startsAt": "2026-11-08T09:00:00.000Z",
+    "endsAt": "2026-11-08T09:45:00.000Z",
+    "doctorId": "c1111111-1111-1111-1111-111111111111",
+    "doctorName": "Dr. Sarah Mitchell",
+    "specialty": "Interventional Cardiology",
+    "departmentId": "d1111111-1111-1111-1111-111111111111",
+    "departmentName": "Cardiology",
+    "createdAt": "2026-11-07T08:00:00.000Z",
+    "updatedAt": "2026-11-07T08:00:00.000Z"
+  }
+]
+```
+
+---
+
+#### `GET /appointments/:id`
+Retrieves single appointment details. Scoped strictly to the authenticated patient.
+
+**Headers:** `Authorization: Bearer <accessToken>`
+
+**Error Responses:**
+- `404 NOT_FOUND`: If appointment ID does not exist or belongs to another patient.
+
+---
+
+#### `PATCH /appointments/:id/reschedule`
+Atomically moves an appointment to a new slot within a database transaction. Releases previous slot. If the new slot is taken, returns 409 and leaves the existing appointment untouched.
+
+**Headers:** `Authorization: Bearer <accessToken>`
+
+**Request Body:**
+```json
+{
+  "newSlotId": "e3333333-3333-3333-3333-333333333333"
+}
+```
+
+**Response `200 OK`:** Updated appointment record.
+
+**Error Responses:**
+- `400 VALIDATION_ERROR`: If appointment is already cancelled/completed, new slot is in past, or same slot ID.
+- `404 NOT_FOUND`: If appointment does not belong to user or target slot doesn't exist.
+- `409 SLOT_TAKEN`: If target slot is already booked. Original appointment remains untouched.
+
+---
+
+#### `POST /appointments/:id/cancel`
+Cancels an appointment, transitions status to `CANCELLED`, and frees the slot back to `AVAILABLE`. Idempotent.
+
+**Headers:** `Authorization: Bearer <accessToken>`
+
+**Response `200 OK`:**
+```json
+{
+  "appointment": {
+    "id": "b2222222-2222-2222-2222-222222222222",
+    "reference": "HA-20261108-A93F",
+    "status": "CANCELLED",
+    "slotId": "e2222222-2222-2222-2222-222222222222",
+    ...
+  },
+  "message": "Appointment successfully cancelled"
+}
+```
+
+---
+
+#### `GET /appointments/:id/reports`
+Retrieves visit report metadata for an appointment. **Strictly non-diagnostic metadata only.**
+
+**Headers:** `Authorization: Bearer <accessToken>`
+
+**Response `200 OK`:**
+```json
+[
+  {
+    "id": "f1111111-1111-1111-1111-111111111111",
+    "appointmentId": "b1111111-1111-1111-1111-111111111111",
+    "title": "Routine Cardiac ECG Tracing Summary",
+    "reportType": "ECG_METADATA",
+    "reportDate": "2026-11-04",
+    "fileSizeKb": 342
+  }
+]
+```
+
+---
+
+### 4.5 User Reminder Preferences
+
+#### `GET /me/preferences`
+Retrieves authenticated user's reminder notification preferences.
+
+**Headers:** `Authorization: Bearer <accessToken>`
+
+**Response `200 OK`:**
+```json
+{
+  "enabled": true,
+  "hoursBefore": 24
+}
+```
+
+#### `PUT /me/preferences`
+Updates user's reminder notification preferences.
+
+**Headers:** `Authorization: Bearer <accessToken>`
+
+**Request Body:**
+```json
+{
+  "enabled": true,
+  "hoursBefore": 12
+}
+```
+
+**Response `200 OK`:**
+```json
+{
+  "enabled": true,
+  "hoursBefore": 12
+}
+```
+
+**Error Responses:**
+- `400 VALIDATION_ERROR`: If `hoursBefore` is not between 1 and 72.

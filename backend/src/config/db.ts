@@ -1,4 +1,4 @@
-import { Pool, QueryResult, QueryResultRow } from 'pg';
+import { Pool, PoolClient, QueryResult, QueryResultRow } from 'pg';
 import { env } from './env.js';
 
 const isProduction = env.NODE_ENV === 'production';
@@ -20,6 +20,28 @@ export async function query<T extends QueryResultRow = any>(
   return pool.query<T>(text, params);
 }
 
+// Transaction execution helper
+export async function withTransaction<T>(
+  callback: (client: PoolClient) => Promise<T>
+): Promise<T> {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const result = await callback(client);
+    await client.query('COMMIT');
+    return result;
+  } catch (err) {
+    try {
+      await client.query('ROLLBACK');
+    } catch (rollbackErr) {
+      console.error('Error rolling back transaction:', rollbackErr);
+    }
+    throw err;
+  } finally {
+    client.release();
+  }
+}
+
 // Quick health check helper
 export async function checkDbConnection(): Promise<{ ok: boolean; latencyMs?: number; error?: string }> {
   const start = Date.now();
@@ -30,4 +52,3 @@ export async function checkDbConnection(): Promise<{ ok: boolean; latencyMs?: nu
     return { ok: false, error: err.message };
   }
 }
-

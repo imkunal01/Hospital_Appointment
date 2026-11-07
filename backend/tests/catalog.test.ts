@@ -142,7 +142,7 @@ describe('Catalog Module Integration Tests', () => {
           return {
             rows: [
               {
-                id: 's1111111-1111-1111-1111-111111111111',
+                id: 'e1111111-1111-1111-1111-111111111111',
                 doctor_id: doctorId,
                 starts_at: new Date('2026-11-08T09:00:00.000Z'),
                 ends_at: new Date('2026-11-08T09:45:00.000Z'),
@@ -163,7 +163,7 @@ describe('Catalog Module Integration Tests', () => {
       expect(Array.isArray(res.body)).toBe(true);
       expect(res.body.length).toBe(1);
       expect(res.body[0]).toEqual({
-        id: 's1111111-1111-1111-1111-111111111111',
+        id: 'e1111111-1111-1111-1111-111111111111',
         doctorId: doctorId,
         startsAt: '2026-11-08T09:00:00.000Z',
         endsAt: '2026-11-08T09:45:00.000Z',

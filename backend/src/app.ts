@@ -7,6 +7,8 @@ import { errorHandler } from './middleware/errorHandler.js';
 import { AppError } from './utils/AppError.js';
 import { authRouter } from './modules/auth/auth.routes.js';
 import { departmentsRouter, doctorsRouter } from './modules/catalog/catalog.routes.js';
+import { appointmentsRouter } from './modules/appointments/appointments.routes.js';
+import { preferencesRouter } from './modules/preferences/preferences.routes.js';
 
 export const app = express();
 
@@ -23,7 +25,7 @@ app.use(express.json({ limit: '10kb' }));
 // Health Check Endpoint (Public)
 app.get('/health', async (_req: Request, res: Response) => {
   const dbHealth = await checkDbConnection();
-
+  
   res.status(dbHealth.ok ? 200 : 503).json({
     status: dbHealth.ok ? 'healthy' : 'degraded',
     service: 'hospital-appointment-backend',
@@ -41,6 +43,8 @@ app.get('/health', async (_req: Request, res: Response) => {
 app.use('/auth', authRouter);
 app.use('/departments', departmentsRouter);
 app.use('/doctors', doctorsRouter);
+app.use('/appointments', appointmentsRouter);
+app.use('/me/preferences', preferencesRouter);
 
 // 404 Catch-All Route
 app.use((req: Request, _res: Response, next) => {
