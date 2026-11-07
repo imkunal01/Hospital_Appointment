@@ -5,6 +5,8 @@ import { env } from './config/env.js';
 import { checkDbConnection } from './config/db.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { AppError } from './utils/AppError.js';
+import { authRouter } from './modules/auth/auth.routes.js';
+import { departmentsRouter, doctorsRouter } from './modules/catalog/catalog.routes.js';
 
 export const app = express();
 
@@ -18,7 +20,7 @@ app.use(
 );
 app.use(express.json({ limit: '10kb' }));
 
-// Health Check Endpoint
+// Health Check Endpoint (Public)
 app.get('/health', async (_req: Request, res: Response) => {
   const dbHealth = await checkDbConnection();
   
@@ -35,6 +37,11 @@ app.get('/health', async (_req: Request, res: Response) => {
   });
 });
 
+// Domain Routes
+app.use('/auth', authRouter);
+app.use('/departments', departmentsRouter);
+app.use('/doctors', doctorsRouter);
+
 // 404 Catch-All Route
 app.use((req: Request, _res: Response, next) => {
   next(AppError.notFound(`Route ${req.method} ${req.originalUrl} not found`));
@@ -42,4 +49,3 @@ app.use((req: Request, _res: Response, next) => {
 
 // Central Error Handler
 app.use(errorHandler);
-

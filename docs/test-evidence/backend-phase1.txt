@@ -1,0 +1,43 @@
+> hospital-appointment-backend@1.0.0 test
+> jest --runInBand --detectOpenHandles
+
+PASS tests/catalog.test.ts
+  Catalog Module Integration Tests
+    Authentication Gates
+      √ returns 401 UNAUTHORIZED when no token is supplied to /departments (84 ms)
+      √ returns 401 UNAUTHORIZED when no token is supplied to /doctors (12 ms)
+      √ returns 401 UNAUTHORIZED when an invalid token is provided (14 ms)
+    GET /departments
+      √ returns a list of departments with expected fields (18 ms)
+    GET /doctors
+      √ returns a list of all doctors (16 ms)
+      √ filters doctors by departmentId when provided (14 ms)
+      √ returns 400 VALIDATION_ERROR if departmentId query param is not a valid UUID (15 ms)
+    GET /doctors/:id/slots
+      √ returns slots for a doctor on a given date (20 ms)
+      √ returns 404 NOT_FOUND if doctor does not exist (15 ms)
+      √ returns 400 VALIDATION_ERROR if date format is invalid (14 ms)
+
+PASS tests/auth.test.ts
+  Auth Module Integration Tests
+    POST /auth/login
+      √ returns access and refresh tokens on valid credentials (135 ms)
+      √ returns 401 UNAUTHORIZED when password is wrong (115 ms)
+      √ returns 401 UNAUTHORIZED when user is not found (12 ms)
+      √ returns 400 VALIDATION_ERROR on malformed request body (18 ms)
+    POST /auth/refresh
+      √ returns new access token with valid refresh token (18 ms)
+      √ returns 401 UNAUTHORIZED for revoked or invalid refresh token (15 ms)
+    POST /auth/logout
+      √ successfully revokes the provided refresh token (14 ms)
+
+PASS tests/health.test.ts
+  GET /health
+    √ returns a valid health check payload structure (78 ms)
+    √ returns 404 for unknown endpoints in standardized error shape (12 ms)
+
+Test Suites: 3 passed, 3 total
+Tests:       19 passed, 19 total
+Snapshots:   0 total
+Time:        2.372 s
+Ran all test suites.
