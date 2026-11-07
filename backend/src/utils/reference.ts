@@ -9,3 +9,4 @@ export function generateAppointmentReference(): string {
   const randomSuffix = crypto.randomBytes(2).toString('hex').toUpperCase();
   return `HA-${dateStr}-${randomSuffix}`;
 }
+

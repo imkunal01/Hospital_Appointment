@@ -345,3 +345,4 @@ export async function getAppointmentReports(
     fileSizeKb: row.file_size_kb
   }));
 }
+

@@ -20,3 +20,4 @@ export type BookAppointmentInput = z.infer<typeof bookAppointmentSchema>;
 export type RescheduleAppointmentInput = z.infer<typeof rescheduleAppointmentSchema>;
 export type AppointmentIdParam = z.infer<typeof appointmentIdParamSchema>;
 export type ListAppointmentsQuery = z.infer<typeof listAppointmentsQuerySchema>;
+

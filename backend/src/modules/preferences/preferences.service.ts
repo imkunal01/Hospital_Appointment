@@ -47,3 +47,4 @@ export async function updateUserPreferences(
     hoursBefore: result.rows[0].hours_before
   };
 }
+

@@ -98,3 +98,4 @@ describe('Preferences Module Integration Tests', () => {
     });
   });
 });
+
