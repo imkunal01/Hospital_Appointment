@@ -6,22 +6,22 @@
 > **Domain:** Hospital Management  
 > **Repository:** `https://github.com/imkunal01/Hospital_Appointment`  
 > **Primary Branch:** `main`  
-> **Current Version:** `1.0.0` (Milestone Phase 5 Complete)  
-> **Total Automated Tests:** **65 / 65 Passing** (35 Backend + 30 Mobile)
+> **Development State:** **Completed up to Phase 4** (Phase 5 Pending)  
+> **Automated Test Coverage So Far:** **65 / 65 Passing** (35 Backend + 30 Mobile)
 
 ---
 
 ## 1. Document Purpose & Future Chat Protocol
 
-This document serves as the **single source of truth** for the architecture, implementation history, decision rationale, test matrix, and current state of the project.
+This document is the **authoritative development log** recording what has been designed, implemented, and verified in the codebase across each phase completed so far.
 
 > [!IMPORTANT]
 > **Instructions for Future AI Chat Threads:**
 > If you are an AI assistant opening this project in a new conversation:
-> 1. Read this file first. It contains the complete context of everything built across Phases 0 through 5.
-> 2. Respect the non-negotiables in Section 2 at all times.
-> 3. Do not rewrite or modify already-tested core modules unless explicitly requested by the user.
-> 4. Ensure all documentation and test suites remain aligned with any future changes.
+> 1. Read this file first. It contains the exact state of what has been built **so far** (Phases 0, 1, 2, 3, and 4).
+> 2. **Phase 5 is pending.** Do not assume Phase 5 has been executed. When the user asks for the next phase, proceed with Phase 5.
+> 3. Respect the non-negotiables in Section 2 at all times.
+> 4. Do not rewrite or modify already-tested core modules unless explicitly requested by the user.
 
 ---
 
@@ -62,113 +62,115 @@ This document serves as the **single source of truth** for the architecture, imp
 
 ---
 
-## 3. Phase-by-Phase Development Record
+## 3. Phase-by-Phase Development Record (Done So Far)
 
-### Phase 0: Foundation, Skeletons, Database Schema & Seed Data
-- **Objective:** Establish repository structure, database schema, synthetic data, backend skeleton, and documentation frameworks.
+### Phase 0: Foundation, Skeletons, Database Schema & Seed Data (COMPLETED)
+- **Status:** Complete & Committed
 - **Git Commit:** `a736649`
-- **Key Deliverables:**
-  - Database schema (`backend/sql/001_schema.sql`): 8 tables (`users`, `refresh_tokens`, `departments`, `doctors`, `slots`, `appointments`, `visit_reports`, `patient_preferences`) with UUID primary keys and `UNIQUE (doctor_id, starts_at)` on slots. RLS enabled on all tables with zero policies.
-  - Seed script (`backend/sql/002_seed.sql`): 5 departments (Cardiology, Dermatology, Orthopedics, Pediatrics, Neurology), 12 doctors, rolling 14-day appointment slots, 2 synthetic patients, and non-diagnostic report metadata.
-  - Backend skeleton: Express 5 + TypeScript, Zod environment validation (`src/config/env.ts`), PostgreSQL connection pool (`src/config/db.ts`), custom `AppError` class, central error handling middleware (`src/middleware/errorHandler.ts`), and `/health` route.
-  - Documentation skeletons: `README.md`, `docs/architecture.md`, `docs/api-contract.md`, `docs/technical-note.md`, `docs/testing.md`, `docs/demo-script.md`, `docs/ai-usage-and-attribution.md`, `docs/submission-form-answers.md`, `docs/submission-checklist.md`.
-  - Tests: `backend/tests/health.test.ts` (2 tests passed).
+- **What Was Built:**
+  - **Database schema** (`backend/sql/001_schema.sql`): 8 PostgreSQL tables (`users`, `refresh_tokens`, `departments`, `doctors`, `slots`, `appointments`, `visit_reports`, `patient_preferences`) with UUID primary keys, foreign key constraints with cascades, and `UNIQUE (doctor_id, starts_at)` on slots. RLS enabled on all 8 tables with zero policies.
+  - **Seed script** (`backend/sql/002_seed.sql`): 5 hospital departments (Cardiology, Dermatology, Orthopedics, Pediatrics, Neurology), 12 doctors, rolling 14-day appointment slots, 2 synthetic patients (`patient1@example.test`, `patient2@example.test` / `Password123!`), and non-diagnostic report metadata.
+  - **Backend skeleton:** Express 5 + TypeScript, Zod environment validation (`src/config/env.ts`), PostgreSQL connection pool (`src/config/db.ts`), custom `AppError` class, central error handling middleware (`src/middleware/errorHandler.ts`), and `/health` route.
+  - **Documentation skeletons:** `README.md`, `docs/architecture.md`, `docs/api-contract.md`, `docs/technical-note.md`, `docs/testing.md`, `docs/demo-script.md`, `docs/ai-usage-and-attribution.md`, `docs/submission-form-answers.md`, `docs/submission-checklist.md`.
+  - **Verification:** `backend/tests/health.test.ts` (2 tests passing). Evidence in `docs/test-evidence/backend-phase0.txt`.
 
-### Phase 1: Authentication, Catalog Read APIs & Security
-- **Objective:** Implement secure dual-token authentication, catalog discovery APIs, rate limiting, and request validation.
+### Phase 1: Authentication, Catalog Read APIs & Security (COMPLETED)
+- **Status:** Complete & Committed
 - **Git Commit:** `1107a45`
-- **Key Deliverables:**
-  - Token service (`backend/src/utils/token.ts`): 15-minute signed JWT access tokens, 7-day SHA-256 hashed refresh tokens.
-  - Middleware:
-    - `requireAuth`: Verifies Bearer JWT, extracts user identity, and handles `TOKEN_EXPIRED`.
+- **What Was Built:**
+  - **Token utilities** (`backend/src/utils/token.ts`): 15-minute signed JWT access tokens, 7-day cryptographically secure random hexadecimal refresh tokens, and SHA-256 token hashing for database storage.
+  - **Middleware stack:**
+    - `requireAuth`: Verifies Bearer JWT, extracts user claims, and rejects expired tokens with 401 `TOKEN_EXPIRED`.
     - `requireRole`: Enforces role-based permissions (`PATIENT` vs `ADMIN`).
-    - `validate`: Express middleware executing Zod schema validation on request body/query/params.
-    - `loginRateLimiter`: Express rate limiter (10 attempts / 15 minutes per IP).
-  - Auth routes (`backend/src/modules/auth/`): `POST /auth/login`, `POST /auth/refresh`, `POST /auth/logout`.
-  - Catalog routes (`backend/src/modules/catalog/`): `GET /departments`, `GET /doctors?departmentId=`, `GET /doctors/:id/slots?date=YYYY-MM-DD`.
-  - Tests: `backend/tests/auth.test.ts` (9 tests), `backend/tests/catalog.test.ts` (8 tests). Total backend tests: 19 passing.
+    - `validate`: Express middleware executing Zod schema validation on request body, query, and params.
+    - `loginRateLimiter`: Express rate limiter restricting `/auth/login` to 10 requests per 15 minutes per IP.
+  - **Auth routes** (`backend/src/modules/auth/`): `POST /auth/login`, `POST /auth/refresh`, `POST /auth/logout`.
+  - **Catalog routes** (`backend/src/modules/catalog/`): `GET /departments`, `GET /doctors?departmentId=`, `GET /doctors/:id/slots?date=YYYY-MM-DD`.
+  - **Verification:** `backend/tests/auth.test.ts` (9 tests), `backend/tests/catalog.test.ts` (8 tests). Total backend tests: 19 passing. Evidence in `docs/test-evidence/backend-phase1.txt`.
 
-### Phase 2: Booking Engine, Concurrency & Management
-- **Objective:** Build atomic booking engine, race condition locks, rescheduling swap transactions, idempotent cancellations, patient scoping, and non-diagnostic report retrieval.
+### Phase 2: Booking Engine, Concurrency & Management (COMPLETED)
+- **Status:** Complete & Committed
 - **Git Commit:** `80aecd2`
-- **Key Deliverables:**
-  - Transaction runner (`withTransaction` in `backend/src/config/db.ts`) providing transactional client lifecycle with automatic `COMMIT` and `ROLLBACK`.
-  - Reference code generator (`backend/src/utils/reference.ts`): Format `HA-YYYYMMDD-XXXX`.
-  - Appointments module (`backend/src/modules/appointments/`):
-    - `POST /appointments`: Atomic conditional claim (`UPDATE slots SET status='BOOKED' ... WHERE status='AVAILABLE'`). Returns 409 `SLOT_TAKEN` on collision. Rejects past slots (400) and supports `Idempotency-Key` deduplication.
+- **What Was Built:**
+  - **Transaction runner** (`withTransaction` in `backend/src/config/db.ts`) providing robust transaction client acquisition, automatic `COMMIT`, and `ROLLBACK` on error.
+  - **Reference code generator** (`backend/src/utils/reference.ts`): Emits human-readable codes formatted as `HA-YYYYMMDD-XXXX`.
+  - **Appointments module** (`backend/src/modules/appointments/`):
+    - `POST /appointments`: Atomic conditional row lock (`UPDATE slots SET status='BOOKED' ... WHERE status='AVAILABLE'`). Throws 409 `SLOT_TAKEN` on collision. Validates slot is not in the past (400) and supports `Idempotency-Key` deduplication.
     - `GET /appointments?scope=upcoming|past`: Scoped to authenticated user (`WHERE patient_id = $userId`).
     - `GET /appointments/:id`: Strict ownership check; returns 404 for other users' records.
-    - `PATCH /appointments/:id/reschedule`: Atomic swap (claims new slot, frees old slot; cleanly rolls back if new slot is taken, preserving original appointment).
+    - `PATCH /appointments/:id/reschedule`: Atomic swap (claims new slot, frees old slot; rolls back cleanly if new slot is taken, preserving original appointment and slot).
     - `POST /appointments/:id/cancel`: Frees slot, sets appointment status to `CANCELLED`, fully idempotent.
-    - `GET /appointments/:id/reports`: Strictly returns metadata (title, report type, upload date, file size).
-  - Preferences module (`backend/src/modules/preferences/`): `GET /me/preferences` and `PUT /me/preferences` (validates reminder lead time between 1 and 72 hours).
-  - Tests: `backend/tests/appointments.test.ts` (12 tests, including `Promise.all` concurrency collision tests), `backend/tests/preferences.test.ts` (4 tests). Total backend tests: 35 passing.
+    - `GET /appointments/:id/reports`: Strictly returns non-diagnostic metadata (title, report type, upload date, file size).
+  - **Preferences module** (`backend/src/modules/preferences/`): `GET /me/preferences` and `PUT /me/preferences` (validates reminder lead time between 1 and 72 hours).
+  - **Verification:** `backend/tests/appointments.test.ts` (12 tests, including `Promise.all` concurrency collision tests), `backend/tests/preferences.test.ts` (4 tests). Total backend tests: 35 passing. Evidence in `docs/test-evidence/backend-final.txt`.
 
-### Phase 3: Mobile Foundation, Hardware Keystore Auth & Main Journey
-- **Objective:** Create React Native + Expo mobile client, Android Keystore session manager, accessible components, and complete discovery-to-booking patient journey.
+### Phase 3: Mobile Foundation, Hardware Keystore Auth & Main Journey (COMPLETED)
+- **Status:** Complete & Committed
 - **Git Commit:** `eabc55e`
-- **Key Deliverables:**
-  - Expo SDK 52 + TypeScript app configured with package `com.algions.hospitalappointment`.
-  - Storage layer:
+- **What Was Built:**
+  - **Expo SDK 52 + TypeScript mobile client** with package `com.algions.hospitalappointment`.
+  - **Secure storage layer:**
     - `mobile/src/auth/secureStorage.ts`: Persists refresh token in Android Keystore using `expo-secure-store` with `WHEN_UNLOCKED_THIS_DEVICE_ONLY`.
-    - `mobile/src/auth/sessionStore.ts`: In-memory volatile store for access token (never written to unencrypted disk).
-  - HTTP client (`mobile/src/api/client.ts`):
+    - `mobile/src/auth/sessionStore.ts`: In-memory volatile store for access tokens (never written to unencrypted disk).
+  - **HTTP client** (`mobile/src/api/client.ts`):
     - Axios instance with 30s timeout.
     - Automatic `/health` warm-up ping on startup.
-    - Axios response interceptor for `TOKEN_EXPIRED`: triggers single shared in-flight refresh promise and replays failed requests seamlessly.
-    - Event emitter for slow responses (>5s) to trigger waking-up banner.
-  - Component library (with minimum 48dp touch targets and accessibility labels):
-    - `Button.tsx`: Enforces loading spinner, disabled state, and min 48dp size.
+    - Response interceptor for `TOKEN_EXPIRED`: triggers single shared in-flight refresh promise and replays failed requests seamlessly.
+    - Slow-response event emitter (>5s) to trigger cold-start banner.
+  - **Accessible component library** (with minimum 48dp touch targets and accessibility labels):
+    - `Button.tsx`: Enforces loading spinner, disabled state, and min 48dp touch size.
     - `Input.tsx`: Accessible text input with label and error state.
     - `ScreenState.tsx`: Unified Loading, Empty, and Error (+ Retry) container.
     - `StatusBadge.tsx`: Triple-indicator badge (label, icon, color).
-    - `WakingUpBanner.tsx`: Top banner alerting users when Render backend is spinning up.
-  - Screens & Navigation:
-    - `LoginScreen.tsx`: Pre-fill demo chips for `patient1` and `patient2`.
+    - `WakingUpBanner.tsx`: Top banner alerting users when backend is waking up.
+  - **Screens & Navigation:**
+    - `LoginScreen.tsx`: Form with synthetic demo credential chips for quick fill.
     - `DepartmentsScreen.tsx`: Medical specialty catalog with doctor counts.
     - `DoctorsListScreen.tsx`: Filtered doctor cards.
     - `DoctorDetailScreen.tsx`: Horizontal date picker, live slots grid, confirm bottom sheet modal. Crucially executes navigation strictly in `onSuccess` (Rule A5).
     - `ConfirmationScreen.tsx`: Displays server-confirmed reference `HA-...`, doctor details, and next steps.
-  - Tests: `errors.test.ts` (5 tests), `authStore.test.ts` (5 tests), `booking.test.tsx` (9 tests). Total mobile tests: 19 passing.
+  - **Verification:** `errors.test.ts` (5 tests), `authStore.test.ts` (5 tests), `booking.test.tsx` (9 tests). Total mobile tests: 19 passing. Evidence in `docs/test-evidence/mobile-phase3.txt`.
 
-### Phase 4: Appointment Management, Offline Caching, Reliability & Accessibility
-- **Objective:** Implement full appointment lifecycle management, non-diagnostic report viewing, persistent offline caching with write lockdown, NetInfo listener, and double-tap prevention.
+### Phase 4: Appointment Management, Offline Caching, Reliability & Accessibility (COMPLETED)
+- **Status:** Complete & Committed
 - **Git Commit:** `cffd5b0`
-- **Key Deliverables:**
-  - State persistence: `@tanstack/query-async-storage-persister` integrated via `PersistQueryClientProvider` in `mobile/App.tsx` (24-hour cache retention).
-  - Network listener (`mobile/src/hooks/useNetwork.ts`): Tracks online/offline status using `@react-native-community/netinfo`.
-  - Offline Banner (`mobile/src/components/OfflineBanner.tsx`): Persistent amber alert displayed when disconnected.
-  - Offline Write Lockdown: All booking, reschedule, cancel, and preference mutations are disabled when offline (guaranteeing no unconfirmed offline writes).
-  - Debouncing ref guards: Synchronous `useRef` locks (`isCancellingRef`, `isReschedulingRef`) prevent double-tap race conditions.
-  - Management Screens:
+- **What Was Built:**
+  - **Persistent caching:** `@tanstack/query-async-storage-persister` integrated via `PersistQueryClientProvider` in `mobile/App.tsx` (24-hour cache retention).
+  - **Network connectivity detection:** `mobile/src/hooks/useNetwork.ts` tracking online/offline state via `@react-native-community/netinfo`.
+  - **Offline Banner** (`mobile/src/components/OfflineBanner.tsx`): Persistent amber alert displayed when disconnected.
+  - **Offline Write Lockdown:** All booking, reschedule, cancel, and preference mutations are disabled when offline (guaranteeing no unconfirmed offline writes).
+  - **Debouncing ref guards:** Synchronous `useRef` locks (`isCancellingRef`, `isReschedulingRef`) prevent double-tap race conditions.
+  - **Management Screens:**
     - `AppointmentsScreen.tsx`: Segmented tabs for "Upcoming" and "Past" appointments.
     - `AppointmentDetailScreen.tsx`: Detailed card, reschedule modal with slot picker, cancellation confirmation alert, and Visit Reports metadata list.
     - `PreferencesScreen.tsx`: Notification toggle and lead hours selector (1–72h).
     - `ProfileScreen.tsx`: User profile details, shortcuts to preferences, and secure logout.
-  - Navigation: Full bottom tab navigator (`AppNavigator.tsx`) with nested stack navigators (`DoctorsStackNavigator`, `AppointmentsStackNavigator`, `ProfileStackNavigator`).
-  - Tests: `appointmentManagement.test.tsx` (2 tests), `offlineAndFailure.test.tsx` (5 tests), `loginValidation.test.tsx` (4 tests). Total mobile tests: 30 passing.
-
-### Phase 5: Packaging, EAS Configuration, Verification & Submission Docs
-- **Objective:** Configure EAS Build for standalone APK generation, conduct Android permissions audit, compile test evidence, finalize submission answers, and sign off documentation.
-- **Git Commit:** `5b6f81f`
-- **Key Deliverables:**
-  - EAS configuration (`mobile/eas.json`): `preview` profile configured with `android.buildType: "apk"` for standalone `.apk` builds.
-  - Permissions audit: Inspected `mobile/app.json`; verified only `android.permission.INTERNET` is declared (least privilege).
-  - Pre-filled submission form (`docs/submission-form-answers.md`): Detailed answers, tech stack breakdown, build runbooks, and links.
-  - Verified submission checklist (`docs/submission-checklist.md`): Verified all product, security, testing, and hygiene criteria.
-  - Timed demonstration script (`docs/demo-script.md`): 3:30–4:15 minute shot list with exact voiceover cues mapped to acceptance criteria A1 through A5.
-  - AI attribution declaration (`docs/ai-usage-and-attribution.md`): Complete log of AI assistance and third-party permissive open-source licenses.
-  - Git history security scan: Verified zero credentials, passwords, or secrets leaked into git history.
+  - **Navigation:** Full bottom tab navigator (`AppNavigator.tsx`) with nested stack navigators (`DoctorsStackNavigator`, `AppointmentsStackNavigator`, `ProfileStackNavigator`).
+  - **Verification:** `appointmentManagement.test.tsx` (2 tests), `offlineAndFailure.test.tsx` (5 tests), `loginValidation.test.tsx` (4 tests). Total mobile tests: 30 passing. Evidence in `docs/test-evidence/mobile-final.txt`.
 
 ---
 
-## 4. Codebase Directory Structure & File Map
+### Phase 5: Packaging, EAS Cloud Build, Verification & Submission Docs (PENDING / NEXT)
+- **Status:** **PENDING / READY TO START NEXT**
+- **Scope to Execute in Phase 5:**
+  1. **Permissions Audit:** Verify `mobile/app.json` declares only `android.permission.INTERNET`.
+  2. **EAS Build Configuration:** Verify `mobile/eas.json` `preview` profile generates standalone `.apk`.
+  3. **Run EAS Build:** Execute `eas build -p android --profile preview` to generate the APK.
+  4. **Clean-Install Verification:** Install generated APK on a clean emulator / test device.
+  5. **Demo Video Recording:** Record 3–5 min video using `docs/demo-script.md`.
+  6. **Submission Form Completion:** Fill candidate details in `docs/submission-form-answers.md`.
+  7. **Submission Checklist Sign-off:** Check off items in `docs/submission-checklist.md`.
+  8. **Tag Release:** `git tag v1.0.0` and push to GitHub.
+
+---
+
+## 4. Current Codebase Directory Structure
 
 ```
 Hospital_Appointment/
 ├── AGENTS.md                          # Mandatory project rules & non-negotiables
-├── DEVELOPMENT_RECORD.md              # Context & phase history (this document)
-├── README.md                          # Main project guide (Sections 1-13)
+├── DEVELOPMENT_RECORD.md              # Authoritative development log (this document)
+├── README.md                          # Main project guide
 ├── .agent/rules/AGENTS.md             # Antigravity agent rule mirror
 ├── .gitignore                         # Strict ignore rules (ignores .env, dist, node_modules)
 │
@@ -275,7 +277,7 @@ Hospital_Appointment/
     ├── architecture.md                # System architecture, ER diagrams, booking sequence
     ├── demo-script.md                 # 3:30-4:15 min video shot list and voiceover guide
     ├── development-record.md          # Mirror of this development record
-    ├── submission-checklist.md        # Verified pre-submission verification gate
+    ├── submission-checklist.md        # Pre-submission verification gate
     ├── submission-form-answers.md     # Pre-filled answers for the assessment form
     ├── technical-note.md              # Security, concurrency, caching, and accessibility notes
     ├── testing.md                     # Test execution commands & failure simulation procedures
@@ -289,156 +291,55 @@ Hospital_Appointment/
 
 ---
 
-## 5. Complete Automated Test Matrix (65 Tests)
+## 5. Automated Test Matrix (65 Tests Passed So Far)
 
 ### Backend Suites (`backend/tests/`): 35 Passed
-1. **`health.test.ts` (2 tests):**
-   - Returns HTTP 200 with `status: "ok"` and database ping confirmation.
-   - Gracefully handles database connection failure returning 500 `INTERNAL`.
-2. **`auth.test.ts` (9 tests):**
-   - Validates user login with correct credentials and returns JWT access and refresh tokens.
-   - Rejects non-existent email with 401 `UNAUTHORIZED`.
-   - Rejects incorrect password with 401 `UNAUTHORIZED`.
-   - Validates email and password format via Zod (400 `VALIDATION_ERROR`).
-   - Exchanges valid refresh token for a new access token.
-   - Rejects revoked or invalid refresh tokens with 401 `UNAUTHORIZED`.
-   - Invalidates refresh token on logout.
-   - Enforces rate limiting on `/auth/login` (10 requests per 15 minutes per IP).
-3. **`catalog.test.ts` (8 tests):**
-   - Returns all active hospital departments.
-   - Returns doctors filtered by department ID.
-   - Returns 400 if `departmentId` is not a valid UUID.
-   - Returns slots for a doctor on a specific date (`YYYY-MM-DD`).
-   - Returns only available slots when `availableOnly=true`.
-   - Returns 400 for malformed date strings.
-   - Rejects unauthenticated requests to catalog endpoints with 401 `UNAUTHORIZED`.
-4. **`appointments.test.ts` (12 tests):**
-   - Atomically books an available slot, returning 201 with reference code.
-   - **Concurrency Collision Test:** Executes parallel bookings on the identical slot (`Promise.all`), asserting exactly one 201 and one 409 `SLOT_TAKEN`.
-   - Rejects attempts to book a past slot with 400 `VALIDATION_ERROR`.
-   - Deduplicates identical requests when `Idempotency-Key` header is provided.
-   - Retrieves upcoming appointments scoped strictly to authenticated patient.
-   - Retrieves past appointments scoped strictly to authenticated patient.
-   - Returns 404 when querying an appointment belonging to another patient.
-   - Atomically reschedules appointment to a new slot.
-   - Rollback verification: Fails reschedule if new slot is taken, leaving original appointment intact.
-   - Idempotently cancels an appointment and frees the associated slot.
-   - Retrieves visit reports metadata; **asserts zero clinical diagnosis fields exist**.
-5. **`preferences.test.ts` (4 tests):**
-   - Returns default reminder preferences (enabled, 24h lead time).
-   - Updates reminder preferences with valid values (48h).
-   - Rejects reminder lead time less than 1 hour (400 `VALIDATION_ERROR`).
-   - Rejects reminder lead time greater than 72 hours (400 `VALIDATION_ERROR`).
+- `health.test.ts` (2 tests): Health check & graceful DB ping failure.
+- `auth.test.ts` (9 tests): Login validation, JWT issuance, SHA-256 refresh hashing, refresh cycle, logout, rate limiter.
+- `catalog.test.ts` (8 tests): Departments listing, doctor filtering, date slot query, status filtering, auth enforcement.
+- `appointments.test.ts` (12 tests): Atomic slot claim, racing concurrency collision (`Promise.all`), past slot rejection, idempotency deduplication, patient ownership isolation (404), rescheduling atomic swap, idempotent cancellation, non-diagnostic report metadata.
+- `preferences.test.ts` (4 tests): Fetching default reminder preferences, updating settings, 1-72 hour range validation.
 
 ### Mobile Suites (`mobile/__tests__/`): 30 Passed
-1. **`errors.test.ts` (5 tests):**
-   - Maps `SLOT_TAKEN` to *"This slot has just been reserved by another patient. Please choose another time."*
-   - Maps `UNAUTHORIZED` to *"Incorrect email or password. Please try again."*
-   - Maps `TOKEN_EXPIRED` to *"Your session has expired. Please sign in again."*
-   - Maps `RATE_LIMITED` to *"Too many login attempts. Please wait 15 minutes before trying again."*
-   - Maps generic network dropouts to actionable connection retry instructions.
-2. **`authStore.test.ts` (5 tests):**
-   - Stores refresh token in `expo-secure-store` with `WHEN_UNLOCKED_THIS_DEVICE_ONLY`.
-   - Stores access token exclusively in memory (`sessionStore.ts`).
-   - Clears both memory and hardware Keystore on logout.
-   - Verifies access token is never written to unencrypted storage.
-   - Restores session on app startup if a valid refresh token exists in Keystore.
-3. **`booking.test.tsx` (9 tests):**
-   - Renders department cards and doctors list.
-   - Allows selecting dates and viewing available slot chips.
-   - Opens confirmation modal upon tapping an available slot.
-   - Shows loading indicator and disables submit button while mutation is pending.
-   - **Rule A5 (No False Success):** Asserts `ConfirmationScreen` is never rendered optimistically, only appearing upon HTTP 201 response.
-   - **Rule A1 (Slot Conflict):** Asserts 409 `SLOT_TAKEN` triggers actionable alert dialog and invalidates slot cache.
-   - Preserves user selections on screen if booking fails due to network loss.
-4. **`appointmentManagement.test.tsx` (2 tests):**
-   - **Double-Tap Debouncing:** Simulates rapid double-tap on "Cancel Appointment", asserting API mutation is invoked exactly once.
-   - **Report Metadata:** Asserts visit report displays title, date, and file size with zero diagnosis or treatment text.
-5. **`offlineAndFailure.test.tsx` (5 tests):**
-   - **Rule A4 (Offline Banner):** Verifies "You are currently offline" banner renders when network is lost.
-   - Verifies "Confirm Booking" button is disabled in offline mode.
-   - Verifies "Cancel Appointment" button is disabled in offline mode.
-   - Verifies cached appointment history remains viewable in offline mode.
-   - Verifies banner disappears and actions re-enable upon network reconnection.
-6. **`loginValidation.test.tsx` (4 tests):**
-   - Validates empty email and password inputs with field-level errors.
-   - Validates invalid email format.
-   - Validates password minimum length (6 characters).
-   - Pre-fills synthetic demo credentials via quick-fill chip.
+- `errors.test.ts` (5 tests): Mapping API error codes (`SLOT_TAKEN`, `UNAUTHORIZED`, `TOKEN_EXPIRED`, `RATE_LIMITED`, network errors) to user-friendly copy.
+- `authStore.test.ts` (5 tests): Refresh token stored in `expo-secure-store` Android Keystore; access token kept strictly in memory; session restoration; clean logout.
+- `booking.test.tsx` (9 tests): Catalog rendering, slot selection, modal display, pending loading indicator, Rule A5 (no false success), Rule A1 (slot conflict alert & cache invalidation).
+- `appointmentManagement.test.tsx` (2 tests): Double-tap debouncing ref guards, report metadata display (strictly no diagnosis text).
+- `offlineAndFailure.test.tsx` (5 tests): Rule A4 (offline banner display, write action lockdown, cached data readability, automatic reconnection).
+- `loginValidation.test.tsx` (4 tests): Email/password format validation, field errors, synthetic demo quick-fill chip.
 
 ---
 
 ## 6. Technical Issues Encountered & Resolved
 
-| # | Issue Encountered | Root Cause | Resolution |
-|---|---|---|---|
-| 1 | `Using hybrid module kind (Node16/18/Next) is only supported in "isolatedModules: true"` warning in `ts-jest` | `backend/tsconfig.json` used `NodeNext` module resolution without explicitly setting `isolatedModules`. | Added `"isolatedModules": true` to `backend/tsconfig.json`. |
-| 2 | Express 5 `req.params.id` typed as `string \| string[]` causing TS2345 in catalog routes | Express 5 widened param types to support array routing. | Wrapped param lookups in `String(req.params.id)`. |
-| 3 | Multiline SQL match failure in Jest test spies | Test spy checked `sql.includes("UPDATE slots SET status = 'BOOKED' ...")` on a single line, but SQL had newlines. | Updated spy predicate to check both `sql.includes('UPDATE slots')` and `sql.includes("'BOOKED'")`. |
-| 4 | Seed slot UUID validation failure (`s1111111-...`) | Zod `.uuid()` requires valid hexadecimal characters `[0-9a-fA-F]`. Non-hex prefixes (`s1...`, `r1...`) caused 400 `VALIDATION_ERROR`. | Replaced non-hex UUIDs with valid hex characters (`e1111111-...` for slots, `f1111111-...` for reports) across seed scripts and test fixtures. |
-| 5 | Peer dependency conflict during mobile `npm install` | `@testing-library/jest-native@5.4.3` requested `react-test-renderer@19`, which clashed with React 18.3.1. | Pinned `"react-test-renderer": "18.3.1"` in `mobile/package.json` and ran `npm install --legacy-peer-deps`. |
-| 6 | React Navigation 7 screen props typing mismatch | Screen props were incompatible with `createNativeStackNavigator()` generic types. | Defined explicit stack parameter lists (`DoctorsStackParamList`, `AppointmentsStackParamList`) and cast component routes properly. |
-| 7 | Jest module resolution failing for `.js` extensions in mobile imports | TypeScript imported relative files as `.js` in compiled outputs, but Jest looked for `.tsx`. | Added `moduleNameMapper: { '^(\\.{1,2}/.*)\\.js$': '$1' }` to `mobile/jest.config.js`. |
-| 8 | `Alert.alert` no-op in Jest test environment | Clicking "Cancel Appointment" showed an `Alert.alert` confirmation prompt, but Jest mock didn't invoke the confirm button handler. | Spied on `Alert.alert` in tests and automatically triggered the confirmation callback. |
-| 9 | `getByRole('alert')` missing match in RNTL | React Native doesn't expose native `role="alert"` in default test tree. | Switched test selector to `getByLabelText(/You are currently offline/i)` and `findByText(...)`. |
-| 10 | Unmocked slot query in appointment test causing undefined query key error | `QueryClient` threw error because slot query endpoint wasn't mocked in `appointmentManagement.test.tsx`. | Added `(endpoints.getDoctorSlotsApi as jest.Mock).mockResolvedValue([])` in test setup. |
-| 11 | Synchronous rapid double-tap calling mutation twice in test | React state update (`mutation.isPending`) is asynchronous and allows synchronous double-presses within the same tick. | Added synchronous ref locks (`isCancellingRef.current = true`) to immediately debounce rapid double-taps. |
+1. **`ts-jest` isolatedModules warning:** Added `"isolatedModules": true` to `backend/tsconfig.json`.
+2. **Express 5 `req.params.id` typing:** Wrapped param references in `String(req.params.id)`.
+3. **Multiline SQL string match in Jest spies:** Adjusted spy predicate to match substrings across line breaks.
+4. **Seed slot non-hex UUID failure (`s1111111-...`):** Replaced non-hex UUIDs with valid hex characters (`e1111111-...` for slots, `f1111111-...` for reports) across seed scripts and test fixtures.
+5. **Peer dependency conflict with `react-test-renderer`:** Pinned `"react-test-renderer": "18.3.1"` in `mobile/package.json` with `--legacy-peer-deps`.
+6. **React Navigation 7 screen props typing:** Defined explicit stack parameter lists (`DoctorsStackParamList`, `AppointmentsStackParamList`).
+7. **Jest module resolution for `.js` imports:** Added `moduleNameMapper` in `mobile/jest.config.js`.
+8. **`Alert.alert` no-op in Jest:** Added spy on `Alert.alert` to trigger confirm action handlers in test assertions.
+9. **`getByRole('alert')` missing match in RNTL:** Switched test selectors to `getByLabelText` and `findByText`.
+10. **Unmocked slot query causing undefined query key:** Added mocked resolver in test setup.
+11. **Synchronous rapid double-tap calling mutation twice:** Added synchronous ref locks (`isCancellingRef.current = true`) to debounce button clicks immediately.
 
 ---
 
-## 7. Synthetic Credentials & Environment Configuration
+## 7. Synthetic Demo Credentials
 
-### Synthetic Demo Patients
-- **Patient 1:**
+- **Patient 1 (Primary Demo):**
   - Email: `patient1@example.test`
   - Password: `Password123!`
   - Seeded Data: Upcoming appointment in Cardiology; completed appointment with 2 visit reports (blood count metadata, ECG waveform report metadata).
-- **Patient 2:**
+- **Patient 2 (Concurrency / Secondary Demo):**
   - Email: `patient2@example.test`
   - Password: `Password123!`
-  - Purpose: Parallel concurrency testing and slot-taken collision demonstrations.
-
-### Backend Environment Variables (`backend/.env`)
-```bash
-PORT=4000
-NODE_ENV=development # or production
-DATABASE_URL=postgresql://postgres:[password]@aws-0-[region].pooler.supabase.com:6543/postgres?pgbouncer=true
-JWT_SECRET=your_jwt_access_secret_min_32_chars
-JWT_EXPIRES_IN=15m
-JWT_REFRESH_SECRET=your_jwt_refresh_secret_min_32_chars
-JWT_REFRESH_EXPIRES_IN=7d
-CORS_ORIGIN=*
-```
-
-### Mobile Environment Variables (`mobile/.env`)
-```bash
-EXPO_PUBLIC_API_URL=https://hospital-appointment-api.onrender.com
-# For Android Studio Emulator local testing: http://10.0.2.2:4000
-```
+  - Purpose: Parallel concurrency testing and slot collision demonstrations.
 
 ---
 
-## 8. Final Candidate Action Items for Submission
+## 8. Summary of Current State & Next Steps
 
-1. **Push all commits to GitHub:**
-   ```bash
-   git push origin main
-   ```
-2. **Compile standalone Android APK via EAS:**
-   ```bash
-   cd mobile
-   npx eas-cli build -p android --profile preview
-   ```
-3. **Record 3–5 Minute Evaluation Video:**
-   - Follow the detailed script in [`docs/demo-script.md`](docs/demo-script.md).
-   - Demonstrate: Clean install (A2), Login, Main booking journey (A3, A5), Concurrency conflict (A1), Airplane mode offline lockdown (A4), Rescheduling, Cancellation, and Non-diagnostic report metadata.
-   - Upload to YouTube (Unlisted) or Google Drive (public view).
-4. **Fill Candidate Details & Submit:**
-   - Open [`docs/submission-form-answers.md`](docs/submission-form-answers.md).
-   - Enter Full Name, Registration Number, University Email, and Video URL.
-   - Copy-paste into the Algions AI Labs assessment submission form.
-5. **Tag Final Release:**
-   ```bash
-   git tag v1.0.0
-   git push origin main --tags
-   ```
+- **Completed So Far:** Phases 0, 1, 2, 3, and 4 are completely built, verified by 65 passing tests, and committed.
+- **Ready for Next Phase:** **Phase 5 (Packaging, EAS Cloud Build, Verification & Submission Docs)** is the next phase to be executed.
