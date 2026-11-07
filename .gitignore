@@ -28,8 +28,10 @@ build/
 # Expo & React Native
 .expo/
 web-build/
-android/app/build/
-ios/build/
+android/
+ios/
+mobile/android/
+mobile/ios/
 
 # Testing & Coverage
 coverage/
