@@ -17,7 +17,7 @@
 ## 2. Assignment Confirmation
 
 - **Internship Role:** `Android & Mobile App Development`
-- **Exact Assigned Project Title:** `Hospital Appointment Android Application`
+- **Exact Assigned Project Title:** `Hospital Appointment Android Application (MediBook)`
 - **Domain:** `Hospital Management`
 
 ---

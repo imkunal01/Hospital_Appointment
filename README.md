@@ -1,15 +1,15 @@
-# Hospital Appointment Android Application
+# MediBook — Hospital Appointment Android Application
 
 > Assessment: Algions AI Labs Private Limited  
 > Role: Android & Mobile App Development  
 > Assigned Domain: Hospital Management  
-> Project Title: Hospital Appointment Android Application
+> Project Title: Hospital Appointment Android Application (MediBook)
 
 ---
 
 ## 1. Overview and Assigned Project Title
 
-The **Hospital Appointment Android Application** is a patient-facing mobile application designed for seamless discovery of medical departments and doctors, viewing live available appointment slots, and performing atomic bookings, reschedules, and cancellations. The system provides real-time appointment status tracking and displays strictly non-diagnostic visit/report metadata.
+**MediBook** (Hospital Appointment Android Application) is a patient-facing mobile application designed for seamless discovery of medical departments and doctors, viewing live available appointment slots, and performing atomic bookings, reschedules, and cancellations. The system provides real-time appointment status tracking and displays strictly non-diagnostic visit/report metadata.
 
 The application is built to handle real-world mobile challenges: server cold starts, network dropouts, offline states, race conditions during slot bookings, and session lifecycle transitions without crashes or false positive states.
 

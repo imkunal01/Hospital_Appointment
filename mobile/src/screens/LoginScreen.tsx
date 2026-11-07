@@ -85,9 +85,9 @@ export const LoginScreen: React.FC = () => {
       >
         <View style={styles.headerContainer}>
           <Text style={styles.appIcon}>🏥</Text>
-          <Text style={styles.appTitle}>Hospital Care Portal</Text>
+          <Text style={styles.appTitle}>MediBook</Text>
           <Text style={styles.subtitle}>
-            Sign in to discover doctors and manage appointments
+            Hospital Appointment & Patient Care Portal
           </Text>
         </View>
 
