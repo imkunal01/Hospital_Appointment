@@ -1,5 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Alert, TouchableOpacity } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Feather, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSession } from '../auth/sessionStore';
 import { getRefreshToken } from '../auth/secureStorage';
 import { logoutApi } from '../api/endpoints';
@@ -39,21 +41,33 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <View>
+        {/* Patient Clinical Profile ID Card */}
         <View style={styles.card}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>
-              {user?.name
-                ? user.name
-                    .split(' ')
-                    .map((n) => n[0])
-                    .join('')
-                    .slice(0, 2)
-                : 'PT'}
-            </Text>
+          <View style={styles.avatarWrapper}>
+            <LinearGradient
+              colors={[colors.gradientStart, colors.primaryDark]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.avatar}
+            >
+              <Text style={styles.avatarText}>
+                {user?.name
+                  ? user.name
+                      .split(' ')
+                      .map((n) => n[0])
+                      .join('')
+                      .slice(0, 2)
+                  : 'PT'}
+              </Text>
+            </LinearGradient>
+            <View style={styles.shieldBadge}>
+              <MaterialCommunityIcons name="shield-check" size={16} color="#10B981" />
+            </View>
           </View>
 
           <Text style={styles.name}>{user?.name || 'Patient'}</Text>
           <Text style={styles.email}>{user?.email || 'patient@example.test'}</Text>
+
           <View style={styles.roleBadge}>
             <Text style={styles.roleText}>{user?.role || 'PATIENT'}</Text>
           </View>
@@ -61,17 +75,26 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
           <View style={styles.divider} />
 
           <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Patient ID</Text>
+            <View style={styles.infoLabelWrap}>
+              <Feather name="hash" size={14} color={colors.primary} style={{ marginRight: 8 }} />
+              <Text style={styles.infoLabel}>Patient ID</Text>
+            </View>
             <Text style={styles.infoValue}>{user?.id?.slice(0, 8)}...</Text>
           </View>
 
           <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Session Security</Text>
+            <View style={styles.infoLabelWrap}>
+              <MaterialCommunityIcons name="lock-outline" size={14} color={colors.primary} style={{ marginRight: 8 }} />
+              <Text style={styles.infoLabel}>Session Security</Text>
+            </View>
             <Text style={styles.infoValue}>Android Keystore Protected</Text>
           </View>
 
           <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Data Policy</Text>
+            <View style={styles.infoLabelWrap}>
+              <Feather name="shield" size={14} color={colors.primary} style={{ marginRight: 8 }} />
+              <Text style={styles.infoLabel}>Data Policy</Text>
+            </View>
             <Text style={styles.infoValue}>Synthetic Assessment Profile</Text>
           </View>
         </View>
@@ -82,15 +105,16 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
           accessibilityLabel="Open reminder notification preferences"
           style={styles.settingsCard}
           onPress={() => navigation.navigate('Preferences')}
+          activeOpacity={0.8}
         >
           <View style={styles.settingsIconCircle}>
-            <Text style={styles.settingsIcon}>🔔</Text>
+            <Ionicons name="notifications-outline" size={20} color={colors.primary} />
           </View>
           <View style={styles.settingsTextContainer}>
             <Text style={styles.settingsTitle}>Reminder Preferences</Text>
             <Text style={styles.settingsSubtitle}>Configure advance appointment notifications</Text>
           </View>
-          <Text style={styles.chevron}>›</Text>
+          <Feather name="chevron-right" size={20} color={colors.textMuted} />
         </TouchableOpacity>
       </View>
 
@@ -110,6 +134,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
     padding: spacing.lg,
+    paddingBottom: 90, // Safe clearance for floating pill nav
     justifyContent: 'space-between'
   },
   card: {
@@ -120,47 +145,68 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.borderLight,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 6,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 3,
     marginBottom: spacing.md
   },
-  avatar: {
-    width: 68,
-    height: 68,
-    borderRadius: 34,
-    backgroundColor: colors.primaryLight,
-    alignItems: 'center',
-    justifyContent: 'center',
+  avatarWrapper: {
+    position: 'relative',
     marginBottom: spacing.sm
   },
+  avatar: {
+    width: 76,
+    height: 76,
+    borderRadius: 38,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2.5,
+    borderColor: '#FFFFFF',
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.22,
+    shadowRadius: 8,
+    elevation: 4
+  },
   avatarText: {
-    fontSize: 22,
+    fontSize: 26,
     fontWeight: '800',
-    color: colors.primaryDark
+    color: '#FFFFFF'
+  },
+  shieldBadge: {
+    position: 'absolute',
+    bottom: -2,
+    right: -2,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,
+    elevation: 3
   },
   name: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '800',
-    color: colors.textPrimary
+    color: colors.textPrimary,
+    letterSpacing: -0.3
   },
   email: {
-    fontSize: 13,
+    fontSize: 13.5,
     color: colors.textSecondary,
     marginTop: 2
   },
   roleBadge: {
     backgroundColor: colors.successLight,
-    paddingHorizontal: spacing.sm + 2,
-    paddingVertical: 2,
-    borderRadius: borderRadius.sm,
-    marginTop: spacing.xs
+    paddingHorizontal: spacing.sm + 4,
+    paddingVertical: 3,
+    borderRadius: borderRadius.full,
+    marginTop: spacing.xs,
+    borderWidth: 1,
+    borderColor: colors.success + '40'
   },
   roleText: {
     fontSize: 11,
-    fontWeight: '700',
-    color: colors.successText
+    fontWeight: '800',
+    color: colors.successText,
+    letterSpacing: 0.6
   },
   divider: {
     height: 1,
@@ -171,8 +217,13 @@ const styles = StyleSheet.create({
   infoRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
     width: '100%',
-    paddingVertical: spacing.xs
+    paddingVertical: spacing.xs + 3
+  },
+  infoLabelWrap: {
+    flexDirection: 'row',
+    alignItems: 'center'
   },
   infoLabel: {
     fontSize: 13,
@@ -180,56 +231,49 @@ const styles = StyleSheet.create({
   },
   infoValue: {
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: '700',
     color: colors.textPrimary
   },
   settingsCard: {
-    minHeight: spacing.minTouchTarget, // 48dp minimum
+    minHeight: spacing.minTouchTarget,
     backgroundColor: colors.surface,
     padding: spacing.md,
-    borderRadius: borderRadius.md,
+    borderRadius: borderRadius.lg,
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
     borderColor: colors.borderLight,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.03,
-    shadowRadius: 4,
-    elevation: 1
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    elevation: 2
   },
   settingsIconCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: colors.primaryLight,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: spacing.md
-  },
-  settingsIcon: {
-    fontSize: 18
+    marginRight: 14
   },
   settingsTextContainer: {
     flex: 1
   },
   settingsTitle: {
-    fontSize: 15,
-    fontWeight: '700',
+    fontSize: 15.5,
+    fontWeight: '800',
     color: colors.textPrimary
   },
   settingsSubtitle: {
     fontSize: 12,
     color: colors.textSecondary,
-    marginTop: 1
-  },
-  chevron: {
-    fontSize: 22,
-    color: colors.textMuted,
-    fontWeight: '300',
-    marginLeft: spacing.sm
+    marginTop: 2
   },
   logoutButton: {
-    marginBottom: spacing.md
+    marginBottom: spacing.md,
+    height: 52,
+    borderRadius: borderRadius.md
   }
 });

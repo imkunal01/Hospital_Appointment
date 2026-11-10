@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Switch, TouchableOpacity, Alert } from 'react-native';
+import { Feather } from '@expo/vector-icons';
 import { usePreferences, useUpdatePreferences } from '../hooks/usePreferences';
 import { useNetwork } from '../hooks/useNetwork';
 import { ScreenState } from '../components/ScreenState';
@@ -63,13 +64,14 @@ export const PreferencesScreen: React.FC = () => {
 
           {isOffline && (
             <View style={styles.offlineWarning}>
+              <Feather name="wifi-off" size={16} color={colors.errorText} style={{ marginRight: 8 }} />
               <Text style={styles.offlineWarningText}>
-                ⚠️ You are offline. Changes cannot be saved until reconnected.
+                You are offline. Changes cannot be saved until reconnected.
               </Text>
             </View>
           )}
 
-          {/* Toggle Switch */}
+          {/* Toggle Switch Card */}
           <View style={styles.settingCard}>
             <View style={styles.settingTextContainer}>
               <Text style={styles.settingTitle}>Enable Visit Reminders</Text>
@@ -109,6 +111,7 @@ export const PreferencesScreen: React.FC = () => {
                         isSelected && styles.chipSelected
                       ]}
                       onPress={() => setHoursBefore(hours)}
+                      activeOpacity={0.7}
                     >
                       <Text
                         style={[
@@ -125,9 +128,13 @@ export const PreferencesScreen: React.FC = () => {
             </View>
           )}
 
+          {/* Clinical Simulation Notice (Zero Emojis) */}
           <View style={styles.noticeBox}>
+            <View style={styles.noticeIconCircle}>
+              <Feather name="info" size={16} color={colors.primary} />
+            </View>
             <Text style={styles.noticeText}>
-              ℹ️ Preferences are saved directly to your patient profile in the PostgreSQL database. Push delivery is simulated in accordance with the assessment brief.
+              Preferences are saved directly to your patient profile in the PostgreSQL database. Push delivery is simulated in accordance with the assessment brief.
             </Text>
           </View>
 
@@ -156,7 +163,8 @@ const styles = StyleSheet.create({
   heading: {
     fontSize: 22,
     fontWeight: '800',
-    color: colors.textPrimary
+    color: colors.textPrimary,
+    letterSpacing: -0.3
   },
   subheading: {
     fontSize: 14,
@@ -165,14 +173,17 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg
   },
   offlineWarning: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: colors.errorLight,
     padding: spacing.md,
     borderRadius: borderRadius.md,
     borderWidth: 1,
-    borderColor: colors.error,
+    borderColor: colors.error + '40',
     marginBottom: spacing.md
   },
   offlineWarningText: {
+    flex: 1,
     fontSize: 13,
     color: colors.errorText,
     fontWeight: '600'
@@ -186,6 +197,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     borderWidth: 1,
     borderColor: colors.borderLight,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 5,
+    elevation: 1,
     marginBottom: spacing.md
   },
   settingTextContainer: {
@@ -194,7 +210,7 @@ const styles = StyleSheet.create({
   },
   settingTitle: {
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: '800',
     color: colors.textPrimary
   },
   settingDescription: {
@@ -209,11 +225,16 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.lg,
     borderWidth: 1,
     borderColor: colors.borderLight,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 5,
+    elevation: 1,
     marginBottom: spacing.md
   },
   hoursTitle: {
     fontSize: 15,
-    fontWeight: '700',
+    fontWeight: '800',
     color: colors.textPrimary
   },
   hoursDescription: {
@@ -228,7 +249,7 @@ const styles = StyleSheet.create({
     gap: spacing.sm
   },
   chip: {
-    minHeight: spacing.minTouchTarget, // 48dp minimum
+    minHeight: spacing.minTouchTarget,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
     backgroundColor: colors.background,
@@ -248,21 +269,38 @@ const styles = StyleSheet.create({
     color: colors.textPrimary
   },
   chipTextSelected: {
-    color: colors.primaryDark
+    color: colors.primaryDark,
+    fontWeight: '800'
   },
   noticeBox: {
-    backgroundColor: colors.borderLight,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: colors.surface,
     padding: spacing.md,
     borderRadius: borderRadius.md,
+    borderWidth: 1,
+    borderColor: colors.borderLight,
     marginBottom: spacing.xl
   },
+  noticeIconCircle: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: colors.primaryLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: spacing.sm,
+    marginTop: 1
+  },
   noticeText: {
-    fontSize: 12,
+    flex: 1,
+    fontSize: 12.5,
     color: colors.textSecondary,
-    lineHeight: 16
+    lineHeight: 18
   },
   saveButton: {
-    width: '100%'
+    width: '100%',
+    height: 52,
+    borderRadius: borderRadius.md
   }
 });
-

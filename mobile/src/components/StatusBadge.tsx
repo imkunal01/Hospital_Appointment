@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, ViewStyle } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 import { spacing, borderRadius } from '../theme/spacing';
 
@@ -13,31 +14,31 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, style }) => {
     switch (status) {
       case 'CONFIRMED':
         return {
-          icon: '✓',
+          iconName: 'checkmark-circle' as const,
           label: 'CONFIRMED',
           bg: colors.successLight,
           textColor: colors.successText,
-          borderColor: colors.success
+          borderColor: colors.success + '40'
         };
       case 'CANCELLED':
         return {
-          icon: '✕',
+          iconName: 'close-circle' as const,
           label: 'CANCELLED',
           bg: colors.errorLight,
           textColor: colors.errorText,
-          borderColor: colors.error
+          borderColor: colors.error + '40'
         };
       case 'COMPLETED':
         return {
-          icon: '●',
+          iconName: 'checkmark-done-circle' as const,
           label: 'COMPLETED',
           bg: colors.primaryLight,
           textColor: colors.primaryDark,
-          borderColor: colors.primary
+          borderColor: colors.primary + '40'
         };
       default:
         return {
-          icon: '•',
+          iconName: 'ellipse' as const,
           label: status,
           bg: colors.borderLight,
           textColor: colors.textSecondary,
@@ -58,7 +59,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, style }) => {
         style
       ]}
     >
-      <Text style={[styles.icon, { color: config.textColor }]}>{config.icon}</Text>
+      <Ionicons name={config.iconName} size={13} color={config.textColor} style={styles.icon} />
       <Text style={[styles.text, { color: config.textColor }]}>{config.label}</Text>
     </View>
   );
@@ -69,20 +70,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: spacing.sm + 2,
-    paddingVertical: spacing.xs,
+    paddingVertical: 3,
     borderRadius: borderRadius.full,
     borderWidth: 1,
     alignSelf: 'flex-start'
   },
   icon: {
-    fontSize: 12,
-    fontWeight: '800',
     marginRight: 4
   },
   text: {
-    fontSize: 12,
-    fontWeight: '700',
-    letterSpacing: 0.5
+    fontSize: 11.5,
+    fontWeight: '800',
+    letterSpacing: 0.6
   }
 });
-

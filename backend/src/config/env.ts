@@ -31,6 +31,9 @@ export const env = {
     | 'debug'
     | 'info'
     | 'warn'
-    | 'error'
+    | 'error',
+  LOG_FORMAT: ((process.env.LOG_FORMAT as 'pretty' | 'json') ?? (parsedData.NODE_ENV === 'test' ? 'json' : 'pretty')) as
+    | 'pretty'
+    | 'json'
 };
 

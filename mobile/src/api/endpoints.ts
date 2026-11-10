@@ -15,6 +15,41 @@ export async function loginApi(email: string, password: string): Promise<AuthSes
   return res.data;
 }
 
+export async function registerApi(email: string, password: string, name?: string): Promise<AuthSession> {
+  const res = await apiClient.post<AuthSession>('/auth/register', { email, password, name });
+  return res.data;
+}
+
+export async function googleAuthApi(email: string, name: string, googleId?: string): Promise<AuthSession> {
+  const res = await apiClient.post<AuthSession>('/auth/google', { email, name, googleId });
+  return res.data;
+}
+
+export async function getMeApi() {
+  const res = await apiClient.get('/auth/me');
+  return res.data;
+}
+
+// Onboarding Endpoints
+export async function sendPhoneOtpApi(phone: string): Promise<{ success: boolean; message: string; mockOtp: string }> {
+  const res = await apiClient.post('/onboarding/phone/send-otp', { phone });
+  return res.data;
+}
+
+export async function verifyPhoneOtpApi(phone: string, otp: string): Promise<{ success: boolean; message: string; phoneVerified: boolean }> {
+  const res = await apiClient.post('/onboarding/phone/verify-otp', { phone, otp });
+  return res.data;
+}
+
+export async function updateProfileApi(
+  name: string,
+  dob: string,
+  location: string
+): Promise<{ user: any; age: number }> {
+  const res = await apiClient.put('/onboarding/profile', { name, dob, location });
+  return res.data;
+}
+
 export async function logoutApi(refreshToken: string): Promise<void> {
   await apiClient.post('/auth/logout', { refreshToken });
 }

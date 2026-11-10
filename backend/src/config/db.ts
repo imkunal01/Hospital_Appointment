@@ -35,6 +35,7 @@ export async function withTransaction<T>(
     try {
       await client.query('ROLLBACK');
     } catch (rollbackErr) {
+      console.error('Error rolling back transaction:', rollbackErr);
       logger.error('Error rolling back transaction', rollbackErr);
     }
     throw err;

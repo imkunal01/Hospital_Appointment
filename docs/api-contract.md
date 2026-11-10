@@ -101,11 +101,101 @@ Authenticates a user via email and password. Protected by in-memory rate limitin
     "id": "a1111111-1111-1111-1111-111111111111",
     "email": "patient1@example.test",
     "name": "John Doe (Synthetic)",
-    "role": "PATIENT"
+    "role": "PATIENT",
+    "phone": "+919876543210",
+    "phoneVerified": true,
+    "dob": "1990-05-15",
+    "location": "Mumbai Central",
+    "onboardingCompleted": true,
+    "authProvider": "LOCAL"
   },
   "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
   "refreshToken": "4a7b9c2d1e0f8a3b7c6d5e4f3a2b1c0d...",
   "expiresIn": 900
+}
+```
+
+#### `POST /auth/register`
+Registers a new user account with email and password. Newly registered accounts have `onboardingCompleted: false`.
+
+**Request Body:**
+```json
+{
+  "email": "newpatient@example.test",
+  "password": "Password123!",
+  "name": "Alex Sharma"
+}
+```
+
+**Response `201 Created`:**
+```json
+{
+  "user": {
+    "id": "u1111111-1111-1111-1111-111111111111",
+    "email": "newpatient@example.test",
+    "name": "Alex Sharma",
+    "role": "PATIENT",
+    "phone": null,
+    "phoneVerified": false,
+    "dob": null,
+    "location": null,
+    "onboardingCompleted": false,
+    "authProvider": "LOCAL"
+  },
+  "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "refreshToken": "4a7b9c2d1e0f8a3b7c6d5e4f3a2b1c0d...",
+  "expiresIn": 900
+}
+```
+
+#### `POST /auth/google`
+Authenticates or provisions a patient via Google OAuth credentials.
+
+**Request Body:**
+```json
+{
+  "email": "alex.demo@gmail.com",
+  "name": "Alex Demo",
+  "googleId": "google-oauth2|9876543210"
+}
+```
+
+**Response `200 OK`:**
+```json
+{
+  "user": {
+    "id": "g1111111-1111-1111-1111-111111111111",
+    "email": "alex.demo@gmail.com",
+    "name": "Alex Demo",
+    "role": "PATIENT",
+    "onboardingCompleted": false,
+    "authProvider": "GOOGLE"
+  },
+  "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "refreshToken": "4a7b9c2d1e0f8a3b7c6d5e4f3a2b1c0d...",
+  "expiresIn": 900
+}
+```
+
+#### `GET /auth/me`
+Retrieves currently authenticated user profile including verification and onboarding status.
+
+**Headers:**
+`Authorization: Bearer <JWT_ACCESS_TOKEN>`
+
+**Response `200 OK`:**
+```json
+{
+  "id": "a1111111-1111-1111-1111-111111111111",
+  "email": "patient1@example.test",
+  "name": "John Doe",
+  "role": "PATIENT",
+  "phone": "+919876543210",
+  "phoneVerified": true,
+  "dob": "1990-05-15",
+  "location": "Mumbai Central",
+  "onboardingCompleted": true,
+  "authProvider": "LOCAL"
 }
 ```
 
@@ -399,3 +489,91 @@ Updates user's reminder notification preferences.
 
 **Error Responses:**
 - `400 VALIDATION_ERROR`: If `hoursBefore` is not between 1 and 72.
+
+---
+
+### 4.6 User Onboarding & Phone Verification Endpoints
+
+#### `POST /onboarding/phone/send-otp`
+Initiates mobile phone verification by issuing a 6-digit mock OTP (`123456`). Enforces phone uniqueness: rejects if the phone is already registered and verified by another user account.
+
+**Headers:** `Authorization: Bearer <accessToken>`
+
+**Request Body:**
+```json
+{
+  "phone": "+919123456789"
+}
+```
+
+**Response `200 OK`:**
+```json
+{
+  "success": true,
+  "message": "Verification code sent (Mock OTP: 123456)",
+  "mockOtp": "123456",
+  "phone": "+919123456789"
+}
+```
+
+**Error Responses:**
+- `400 VALIDATION_ERROR`: "This phone number is already registered to another account" (if phone is verified on another user).
+
+---
+
+#### `POST /onboarding/phone/verify-otp`
+Validates the submitted OTP code against active unexpired verification requests and marks `phone_verified = true`.
+
+**Headers:** `Authorization: Bearer <accessToken>`
+
+**Request Body:**
+```json
+{
+  "phone": "+919123456789",
+  "otp": "123456"
+}
+```
+
+**Response `200 OK`:**
+```json
+{
+  "success": true,
+  "message": "Phone number verified successfully",
+  "phoneVerified": true
+}
+```
+
+---
+
+#### `PUT /onboarding/profile`
+Completes user onboarding. Saves full name, Date of Birth (calculates patient age), and location (stored for proximity-based doctor and hospital matching). Sets `onboarding_completed = true`.
+
+**Headers:** `Authorization: Bearer <accessToken>`
+
+**Request Body:**
+```json
+{
+  "name": "Alex Sharma",
+  "dob": "1998-05-14",
+  "location": "Mumbai Central"
+}
+```
+
+**Response `200 OK`:**
+```json
+{
+  "user": {
+    "id": "u1111111-1111-1111-1111-111111111111",
+    "email": "alex.demo@gmail.com",
+    "name": "Alex Sharma",
+    "role": "PATIENT",
+    "phone": "+919123456789",
+    "phoneVerified": true,
+    "dob": "1998-05-14",
+    "location": "Mumbai Central",
+    "onboardingCompleted": true,
+    "authProvider": "GOOGLE"
+  },
+  "age": 28
+}
+```

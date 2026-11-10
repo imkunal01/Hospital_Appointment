@@ -1,6 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
 import crypto from 'crypto';
-import { logger } from '../utils/logger.js';
+import morgan from 'morgan';
+import chalk from 'chalk';
+import { env } from '../config/env.js';
+import { logger, chalkTokens } from '../utils/logger.js';
 
 /**
  * Middleware that assigns a unique Request ID (UUID v4) or preserves an incoming X-Request-ID.
@@ -15,9 +18,58 @@ export function requestCorrelation(req: Request, res: Response, next: NextFuncti
   next();
 }
 
+// -----------------------------------------------------------------------------
+// Morgan HTTP Access Logger Setup (with Chalk color-coding & Winston alignment)
+// -----------------------------------------------------------------------------
+
+morgan.token('req-id', (req: Request) => req.id || (req.headers['x-request-id'] as string) || '-');
+
+morgan.token('time-stamp', () => {
+  const rawDate = new Date();
+  const timeFormatted = rawDate.toTimeString().split(' ')[0] + '.' + String(rawDate.getMilliseconds()).padStart(3, '0');
+  return chalk.gray(`[${timeFormatted}]`);
+});
+
+morgan.token('colored-method', (req: Request) => {
+  return chalkTokens.method(req.method);
+});
+
+morgan.token('colored-status', (_req: Request, res: Response) => {
+  return chalkTokens.status(res.statusCode);
+});
+
 /**
- * HTTP access logging middleware.
- * Emits structured request completion logs on response finish.
+ * Morgan HTTP logger middleware with custom colored formatting and correlation tracking.
+ * Visually harmonized with Winston application log entries for uniform terminal readability.
+ */
+export const morganLogger = morgan(
+  (tokens, req, res) => {
+    const rawTime = tokens['response-time'](req, res);
+    const ms = parseFloat(rawTime || '0');
+    const str = `${ms.toFixed(1)}ms`;
+    const coloredDuration = ms >= 1000 ? chalk.red.bold(str) : ms >= 250 ? chalk.yellow(str) : chalk.magenta(str);
+
+    return [
+      tokens['time-stamp'](req, res),
+      chalkTokens.http,
+      tokens['colored-method'](req, res),
+      chalk.whiteBright(tokens.url(req, res)),
+      tokens['colored-status'](req, res),
+      coloredDuration,
+      chalk.gray(`(id: ${tokens['req-id'](req, res)})`)
+    ].join(' ');
+  },
+  {
+    skip: (req) => {
+      // In test mode or for /health pings, suppress morgan stdout to keep test output clean
+      return env.NODE_ENV === 'test' || req.url === '/health';
+    }
+  }
+);
+
+/**
+ * Structured HTTP access logging middleware for Winston.
+ * Emits JSON-structured request completion logs with correlation ID and duration on response finish.
  */
 export function requestLogger(req: Request, res: Response, next: NextFunction): void {
   const start = Date.now();

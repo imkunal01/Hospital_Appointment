@@ -10,13 +10,14 @@ import { authRouter } from './modules/auth/auth.routes.js';
 import { departmentsRouter, doctorsRouter } from './modules/catalog/catalog.routes.js';
 import { appointmentsRouter } from './modules/appointments/appointments.routes.js';
 import { preferencesRouter } from './modules/preferences/preferences.routes.js';
+import { onboardingRouter } from './modules/onboarding/onboarding.routes.js';
 
 export const app = express();
 
 // Request Correlation ID (Assigns unique req.id and sets X-Request-ID response header)
 app.use(requestCorrelation);
 
-// HTTP Access Logging
+// Structured HTTP Request Logging (Single unified logger via Winston)
 app.use(requestLogger);
 
 // Security and utility middleware
@@ -53,6 +54,7 @@ app.use('/departments', departmentsRouter);
 app.use('/doctors', doctorsRouter);
 app.use('/appointments', appointmentsRouter);
 app.use('/me/preferences', preferencesRouter);
+app.use('/onboarding', onboardingRouter);
 
 // 404 Catch-All Route
 app.use((req: Request, _res: Response, next) => {

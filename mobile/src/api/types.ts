@@ -3,6 +3,12 @@ export interface UserProfile {
   email: string;
   name: string;
   role: 'PATIENT' | 'ADMIN';
+  phone?: string | null;
+  phoneVerified?: boolean;
+  dob?: string | null;
+  location?: string | null;
+  onboardingCompleted: boolean;
+  authProvider?: 'LOCAL' | 'GOOGLE';
 }
 
 export interface AuthSession {

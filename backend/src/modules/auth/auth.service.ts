@@ -1,4 +1,5 @@
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 import { query } from '../../config/db.js';
 import { AppError } from '../../utils/AppError.js';
 import {
@@ -6,36 +7,44 @@ import {
   generateRefreshToken,
   hashToken
 } from '../../utils/token.js';
-import { LoginInput } from './auth.schema.js';
+import { LoginInput, RegisterInput, GoogleAuthInput } from './auth.schema.js';
+
+export interface UserProfileDTO {
+  id: string;
+  email: string;
+  name: string;
+  role: 'PATIENT' | 'ADMIN';
+  phone?: string | null;
+  phoneVerified?: boolean;
+  dob?: string | null;
+  location?: string | null;
+  onboardingCompleted: boolean;
+  authProvider?: 'LOCAL' | 'GOOGLE';
+}
 
 export interface AuthSessionResponse {
-  user: {
-    id: string;
-    email: string;
-    name: string;
-    role: 'PATIENT' | 'ADMIN';
-  };
+  user: UserProfileDTO;
   accessToken: string;
   refreshToken: string;
   expiresIn: number; // in seconds (900s = 15m)
 }
 
-export async function loginUser(input: LoginInput): Promise<AuthSessionResponse> {
-  const result = await query(
-    'SELECT id, email, password_hash, name, role FROM users WHERE email = $1',
-    [input.email]
-  );
+function mapUserRowToDTO(user: any): UserProfileDTO {
+  return {
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    role: user.role,
+    phone: user.phone ?? null,
+    phoneVerified: Boolean(user.phone_verified),
+    dob: user.dob ? user.dob.toISOString ? user.dob.toISOString().split('T')[0] : String(user.dob) : null,
+    location: user.location ?? null,
+    onboardingCompleted: Boolean(user.onboarding_completed),
+    authProvider: user.auth_provider ?? 'LOCAL'
+  };
+}
 
-  const user = result.rows[0];
-  if (!user) {
-    throw AppError.unauthorized('Invalid email or password');
-  }
-
-  const isPasswordValid = await bcrypt.compare(input.password, user.password_hash);
-  if (!isPasswordValid) {
-    throw AppError.unauthorized('Invalid email or password');
-  }
-
+async function createTokensForUser(user: { id: string; email: string; role: 'PATIENT' | 'ADMIN' }) {
   // Generate 15-minute access JWT
   const accessToken = signAccessToken({
     userId: user.id,
@@ -54,17 +63,109 @@ export async function loginUser(input: LoginInput): Promise<AuthSessionResponse>
     [user.id, tokenHash, expiresAt]
   );
 
+  return { accessToken, rawRefreshToken };
+}
+
+export async function loginUser(input: LoginInput): Promise<AuthSessionResponse> {
+  const result = await query(
+    `SELECT id, email, password_hash, name, role, phone, phone_verified, dob, location, onboarding_completed, auth_provider 
+     FROM users WHERE email = $1`,
+    [input.email]
+  );
+
+  const user = result.rows[0];
+  if (!user) {
+    throw AppError.unauthorized('Invalid email or password');
+  }
+
+  const isPasswordValid = await bcrypt.compare(input.password, user.password_hash);
+  if (!isPasswordValid) {
+    throw AppError.unauthorized('Invalid email or password');
+  }
+
+  const { accessToken, rawRefreshToken } = await createTokensForUser(user);
+
   return {
-    user: {
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      role: user.role
-    },
+    user: mapUserRowToDTO(user),
     accessToken,
     refreshToken: rawRefreshToken,
     expiresIn: 900 // 15 minutes
   };
+}
+
+export async function registerUser(input: RegisterInput): Promise<AuthSessionResponse> {
+  const existing = await query('SELECT id FROM users WHERE email = $1', [input.email]);
+  if (existing.rows.length > 0) {
+    throw AppError.validation('An account with this email address already exists');
+  }
+
+  const passwordHash = await bcrypt.hash(input.password, 10);
+  const fallbackName = input.name || input.email.split('@')[0];
+
+  const insertResult = await query(
+    `INSERT INTO users (email, password_hash, name, role, onboarding_completed, auth_provider)
+     VALUES ($1, $2, $3, 'PATIENT', FALSE, 'LOCAL')
+     RETURNING id, email, name, role, phone, phone_verified, dob, location, onboarding_completed, auth_provider`,
+    [input.email, passwordHash, fallbackName]
+  );
+
+  const newUser = insertResult.rows[0];
+  const { accessToken, rawRefreshToken } = await createTokensForUser(newUser);
+
+  return {
+    user: mapUserRowToDTO(newUser),
+    accessToken,
+    refreshToken: rawRefreshToken,
+    expiresIn: 900
+  };
+}
+
+export async function googleAuthUser(input: GoogleAuthInput): Promise<AuthSessionResponse> {
+  const existing = await query(
+    `SELECT id, email, password_hash, name, role, phone, phone_verified, dob, location, onboarding_completed, auth_provider
+     FROM users WHERE email = $1`,
+    [input.email]
+  );
+
+  let user = existing.rows[0];
+
+  if (!user) {
+    // Generate secure random hash for accounts created via Google OAuth
+    const randomSecret = crypto.randomBytes(32).toString('hex');
+    const dummyPasswordHash = await bcrypt.hash(randomSecret, 10);
+
+    const insertResult = await query(
+      `INSERT INTO users (email, password_hash, name, role, onboarding_completed, auth_provider)
+       VALUES ($1, $2, $3, 'PATIENT', FALSE, 'GOOGLE')
+       RETURNING id, email, name, role, phone, phone_verified, dob, location, onboarding_completed, auth_provider`,
+      [input.email, dummyPasswordHash, input.name]
+    );
+    user = insertResult.rows[0];
+  }
+
+  const { accessToken, rawRefreshToken } = await createTokensForUser(user);
+
+  return {
+    user: mapUserRowToDTO(user),
+    accessToken,
+    refreshToken: rawRefreshToken,
+    expiresIn: 900
+  };
+}
+
+export async function getCurrentUser(userId: string): Promise<UserProfileDTO> {
+  const result = await query(
+    `SELECT id, email, name, role, phone, phone_verified, dob, location, onboarding_completed, auth_provider
+     FROM users WHERE id = $1`,
+    [userId]
+  );
+
+  const user = result.rows[0];
+  if (!user) {
+    throw AppError.notFound('User not found');
+  }
+
+  return mapUserRowToDTO(user);
 }
 
 export async function refreshAccessToken(rawRefreshToken: string): Promise<{ accessToken: string; expiresIn: number }> {
@@ -112,4 +213,3 @@ export async function logoutUser(rawRefreshToken: string): Promise<void> {
     [tokenHash]
   );
 }
-

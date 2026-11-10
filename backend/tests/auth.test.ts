@@ -53,12 +53,14 @@ describe('Auth Module Integration Tests', () => {
       expect(res.body).toHaveProperty('accessToken');
       expect(res.body).toHaveProperty('refreshToken');
       expect(res.body.expiresIn).toBe(900);
-      expect(res.body.user).toEqual({
-        id: 'a1111111-1111-1111-1111-111111111111',
-        email: 'patient1@example.test',
-        name: 'John Doe',
-        role: 'PATIENT'
-      });
+      expect(res.body.user).toEqual(
+        expect.objectContaining({
+          id: 'a1111111-1111-1111-1111-111111111111',
+          email: 'patient1@example.test',
+          name: 'John Doe',
+          role: 'PATIENT'
+        })
+      );
     });
 
     it('returns 401 UNAUTHORIZED when password is wrong', async () => {

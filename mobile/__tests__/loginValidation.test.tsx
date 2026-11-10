@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import { render, fireEvent } from '@testing-library/react-native';
 import { LoginScreen } from '../src/screens/LoginScreen';
 import * as endpoints from '../src/api/endpoints';
 
@@ -24,8 +24,8 @@ describe('Login Screen Validation & Error Handling', () => {
   it('validates invalid email format', async () => {
     const { getByRole, getByPlaceholderText, findByText } = render(<LoginScreen />);
 
-    const emailInput = getByPlaceholderText('patient1@example.test');
-    const passwordInput = getByPlaceholderText('••••••••');
+    const emailInput = getByPlaceholderText('you@example.com');
+    const passwordInput = getByPlaceholderText('Enter your password');
     const signInBtn = getByRole('button', { name: /Sign In/i });
 
     fireEvent.changeText(emailInput, 'invalid-email-format');
@@ -39,8 +39,8 @@ describe('Login Screen Validation & Error Handling', () => {
   it('validates password length minimum (6 characters)', async () => {
     const { getByRole, getByPlaceholderText, findByText } = render(<LoginScreen />);
 
-    const emailInput = getByPlaceholderText('patient1@example.test');
-    const passwordInput = getByPlaceholderText('••••••••');
+    const emailInput = getByPlaceholderText('you@example.com');
+    const passwordInput = getByPlaceholderText('Enter your password');
     const signInBtn = getByRole('button', { name: /Sign In/i });
 
     fireEvent.changeText(emailInput, 'patient1@example.test');
@@ -61,4 +61,3 @@ describe('Login Screen Validation & Error Handling', () => {
     expect(getByDisplayValue('Password123!')).toBeTruthy();
   });
 });
-

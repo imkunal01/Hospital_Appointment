@@ -148,7 +148,34 @@ Rescheduling an appointment requires moving from an old slot to a new slot:
 
 ---
 
-## 5. Release-Readiness & Production Roadmap
+## 5. Structured Observability & Logging Architecture
+
+### 5.1 Unified Logging Engine: Winston & Chalk
+The backend implements a structured logging and request-tracing architecture designed for both local development ergonomics and production cloud ingestion:
+- **Single Unified Request Logger:** Eliminated duplicate HTTP access logs by routing all requests through a single Winston-powered middleware (`requestLogger`). Morgan stream integration is preserved for external stream forwarding.
+- **Single-Line Developer Formatting (`LOG_FORMAT=pretty`):**
+  - Standardized **7-character pixel-aligned level badges** (`[INFO  ]`, `[WARN  ]`, `[ERROR ]`, `[DEBUG ]`).
+  - High-precision timestamps (`[HH:mm:ss.SSS]`).
+  - Single-line HTTP access entries: `[HH:mm:ss.SSS] [INFO  ] METHOD path status duration (user: id) (id: req-id)` with no duplicate entries and no redundant JSON context dump for routine requests.
+  - Compact inline flat key-value pairs (`↳ key=val  key2=val2`) for general application logs.
+  - Formatted error blocks with truncated 3-line stack traces.
+- **JSON Format (`LOG_FORMAT=json`):** Emits newline-delimited JSON objects with uppercase log levels (`"level": "INFO"`), ISO timestamps, and service metadata for Datadog/ELK ingestion and automated testing.
+
+### 5.2 Zero-PII, Header & Payload Visibility Policy
+In adherence with strict healthcare privacy standards (HIPAA/GDPR) and assessment requirements:
+- **Zero Header & Payload Visibility:** HTTP request/response headers (`headers`, `req_headers`) and request/response payloads (`payload`, `payloads`, `body`, `request_body`) are strictly excluded and omitted from all backend log context and error objects. Raw user input, cookies, and transport tokens never appear in terminal or persistent log files.
+- **Deep Recursive Redaction:** The logger intercepts all context metadata and error objects through a recursive filter (`redactSensitive`).
+- Automatically replaces passwords, tokens, API secrets, Bearer authorizations, emails, phone numbers, patient names, dates of birth, and clinical diagnosis/treatment keys with `[REDACTED]`.
+- Regex patterns detect and redact JWT strings (`eyJ...`) even if passed in unmapped fields.
+- Error objects passed into `formatError` strip any attached `headers`, `payload`, `body`, `config`, or raw HTTP request/response circular references before logging.
+
+### 5.3 Request Correlation Tracing
+- Every request is tagged with an `X-Request-ID` UUID v4 header via `requestCorrelation` middleware.
+- The correlation ID is attached to all Morgan access entries, Winston log context, and returned in the HTTP response headers, enabling end-to-end trace auditing from mobile client to backend database logs.
+
+---
+
+## 6. Release-Readiness & Production Roadmap
 
 1. **Certificate Pinning:** Implement SSL/TLS certificate pinning via `react-native-ssl-pinning` to protect against corporate proxy interception and Man-In-The-Middle attacks on public Wi-Fi.
 2. **Refresh Token Single-Use Rotation:** Implement server-side automatic refresh token rotation (issuing a new refresh token on every `/auth/refresh` call and revoking the previous one).

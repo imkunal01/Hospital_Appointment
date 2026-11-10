@@ -7,8 +7,10 @@
 
 ## 1. Automated Test Execution
 
+The codebase contains **65 automated tests** across 11 test suites covering backend services, database transactions, concurrency, security policies, mobile components, and state management.
 The codebase contains **77 automated tests** across 12 test suites covering backend services, database transactions, concurrency, security policies, mobile components, and state management.
 
+### 1.1 Backend Test Suite (35 Tests)
 ### 1.1 Backend Test Suite (47 Tests)
 The backend uses **Jest** with **Supertest** for integration, security, and transaction verification:
 

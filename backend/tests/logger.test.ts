@@ -1,6 +1,6 @@
 import request from 'supertest';
 import { app } from '../src/app.js';
-import { logger, redactSensitive, formatError } from '../src/utils/logger.js';
+import { logger, redactSensitive, formatError, chalkTokens } from '../src/utils/logger.js';
 import * as db from '../src/config/db.js';
 
 describe('Backend Logging System Tests', () => {
@@ -91,6 +91,65 @@ describe('Backend Logging System Tests', () => {
       expect(sanitized.metadata.items[0].token).toBe('[REDACTED]');
       expect(sanitized.metadata.items[1].safeField).toBe(42);
       expect(sanitized.circular).toBe('[Circular]');
+    });
+
+    it('strictly excludes headers and request/response payloads from log output', () => {
+      const dataWithHeadersAndPayload = {
+        requestId: 'req-abc-123',
+        action: 'BOOK_APPOINTMENT',
+        headers: {
+          'authorization': 'Bearer super-secret-token',
+          'user-agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)',
+          'cookie': 'session_id=1234567890',
+          'x-forwarded-for': '192.168.1.1'
+        },
+        header: { 'x-api-key': 'key_123' },
+        payload: {
+          patientName: 'Jane Doe',
+          dob: '1990-01-01',
+          slotId: 'slot_99',
+          notes: 'Routine health checkup'
+        },
+        body: {
+          rawInput: 'some input'
+        },
+        request: {
+          url: '/api/v1/appointments'
+        },
+        response: {
+          status: 201
+        }
+      };
+
+      const sanitized = redactSensitive(dataWithHeadersAndPayload);
+
+      expect(sanitized.requestId).toBe('req-abc-123');
+      expect(sanitized.action).toBe('BOOK_APPOINTMENT');
+      expect(sanitized.headers).toBeUndefined();
+      expect(sanitized.header).toBeUndefined();
+      expect(sanitized.payload).toBeUndefined();
+      expect(sanitized.body).toBeUndefined();
+      expect(sanitized.request).toBeUndefined();
+      expect(sanitized.response).toBeUndefined();
+    });
+
+    it('omits headers and payloads when passed into logger methods', () => {
+      logger.setLevel('info');
+      logger.info('Incoming request completed', {
+        endpoint: '/api/v1/auth/login',
+        headers: { authorization: 'Bearer 123' },
+        payload: { email: 'patient@test.com', password: 'secret' },
+        durationMs: 12
+      });
+
+      expect(consoleLogSpy).toHaveBeenCalled();
+      const lastCall = consoleLogSpy.mock.calls[consoleLogSpy.mock.calls.length - 1][0];
+      const parsed = JSON.parse(lastCall);
+
+      expect(parsed.context.endpoint).toBe('/api/v1/auth/login');
+      expect(parsed.context.durationMs).toBe(12);
+      expect(parsed.context.headers).toBeUndefined();
+      expect(parsed.context.payload).toBeUndefined();
     });
   });
 
@@ -206,6 +265,50 @@ describe('Backend Logging System Tests', () => {
     it('formats primitive error values cleanly', () => {
       const formatted = formatError('String error message');
       expect(formatted.message).toBe('String error message');
+    });
+
+    it('strips headers, body, and payload from error objects in formatError', () => {
+      const customErr: any = new Error('HTTP 400 Bad Request');
+      customErr.headers = { 'content-type': 'application/json' };
+      customErr.body = { error: 'invalid payload' };
+      customErr.payload = { input: 'bad data' };
+      customErr.config = { headers: { auth: 'secret' } };
+
+      const formatted = formatError(customErr);
+
+      expect(formatted.message).toBe('HTTP 400 Bad Request');
+      expect(formatted.headers).toBeUndefined();
+      expect(formatted.body).toBeUndefined();
+      expect(formatted.payload).toBeUndefined();
+      expect(formatted.config).toBeUndefined();
+    });
+  });
+
+  describe('5. Winston, Morgan, and Chalk Integration', () => {
+    it('exposes underlying winston instance and stream', () => {
+      expect(logger.winston).toBeDefined();
+      expect(typeof logger.winston.log).toBe('function');
+      expect(logger.stream).toBeDefined();
+      expect(typeof logger.stream.write).toBe('function');
+    });
+
+    it('formats HTTP methods and status codes with Chalk colors', () => {
+      expect(chalkTokens.method('GET')).toBeDefined();
+      expect(chalkTokens.method('POST')).toBeDefined();
+      expect(chalkTokens.status(200)).toBeDefined();
+      expect(chalkTokens.status(404)).toBeDefined();
+      expect(chalkTokens.status(500)).toBeDefined();
+    });
+
+    it('Morgan stream forwards access log messages into Winston', () => {
+      logger.setLevel('info');
+      logger.stream.write('GET /doctors 200 - 15ms\n');
+
+      expect(consoleLogSpy).toHaveBeenCalled();
+      const lastCall = consoleLogSpy.mock.calls[consoleLogSpy.mock.calls.length - 1][0];
+      const parsed = JSON.parse(lastCall);
+      expect(parsed.message).toBe('GET /doctors 200 - 15ms');
+      expect(parsed.level).toBe('INFO');
     });
   });
 });

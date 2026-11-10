@@ -1,8 +1,9 @@
 import React from 'react';
 import { View, Text, ActivityIndicator, StyleSheet, ViewStyle } from 'react-native';
+import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Button } from './Button';
 import { colors } from '../theme/colors';
-import { spacing } from '../theme/spacing';
+import { spacing, borderRadius } from '../theme/spacing';
 
 interface ScreenStateProps {
   loading?: boolean;
@@ -33,7 +34,9 @@ export const ScreenState: React.FC<ScreenStateProps> = ({
         accessibilityLabel={loadingMessage}
         style={[styles.centerContainer, style]}
       >
-        <ActivityIndicator size="large" color={colors.primary} />
+        <View style={styles.loadingCircle}>
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
         <Text style={styles.loadingText}>{loadingMessage}</Text>
       </View>
     );
@@ -47,7 +50,9 @@ export const ScreenState: React.FC<ScreenStateProps> = ({
         accessibilityLabel={`Error: ${error}`}
         style={[styles.centerContainer, style]}
       >
-        <Text style={styles.errorIcon}>⚠️</Text>
+        <View style={styles.errorIconBadge}>
+          <Feather name="alert-circle" size={32} color={colors.error} />
+        </View>
         <Text style={styles.errorTitle}>Unable to Load Data</Text>
         <Text style={styles.errorMessage}>{error}</Text>
         {onRetry && (
@@ -71,7 +76,9 @@ export const ScreenState: React.FC<ScreenStateProps> = ({
         accessibilityLabel={emptyMessage}
         style={[styles.centerContainer, style]}
       >
-        <Text style={styles.emptyIcon}>📋</Text>
+        <View style={styles.emptyIconBadge}>
+          <MaterialCommunityIcons name="clipboard-text-outline" size={32} color={colors.textSecondary} />
+        </View>
         <Text style={styles.emptyTitle}>Nothing to Display</Text>
         <Text style={styles.emptyMessage}>{emptyMessage}</Text>
         {onRetry && (
@@ -99,19 +106,35 @@ const styles = StyleSheet.create({
     padding: spacing.xl,
     backgroundColor: colors.background
   },
-  loadingText: {
-    marginTop: spacing.md,
-    fontSize: 15,
-    color: colors.textSecondary,
-    fontWeight: '500'
+  loadingCircle: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: colors.primaryLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.md
   },
-  errorIcon: {
-    fontSize: 40,
-    marginBottom: spacing.sm
+  loadingText: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    fontWeight: '600',
+    textAlign: 'center'
+  },
+  errorIconBadge: {
+    width: 68,
+    height: 68,
+    borderRadius: 34,
+    backgroundColor: colors.errorLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.md,
+    borderWidth: 1,
+    borderColor: colors.error + '30'
   },
   errorTitle: {
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: '800',
     color: colors.textPrimary,
     marginBottom: spacing.xs,
     textAlign: 'center'
@@ -123,13 +146,20 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
     lineHeight: 20
   },
-  emptyIcon: {
-    fontSize: 40,
-    marginBottom: spacing.sm
+  emptyIconBadge: {
+    width: 68,
+    height: 68,
+    borderRadius: 34,
+    backgroundColor: colors.surfaceSubtle,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.md,
+    borderWidth: 1,
+    borderColor: colors.border
   },
   emptyTitle: {
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: '800',
     color: colors.textPrimary,
     marginBottom: spacing.xs,
     textAlign: 'center'
@@ -142,7 +172,7 @@ const styles = StyleSheet.create({
     lineHeight: 20
   },
   retryButton: {
-    minWidth: 140
+    minWidth: 140,
+    borderRadius: borderRadius.md
   }
 });
-

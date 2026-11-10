@@ -14,10 +14,10 @@
 -- 1. Synthetic Patients
 -- Pre-computed bcrypt hash (cost 10) for 'Password123!':
 -- $2b$10$igkQKasz2eImnyB8EZYzhuc5FFwAx2/wMK/JVBdLwigP2FQyA0/VO
-INSERT INTO users (id, email, password_hash, name, role)
+INSERT INTO users (id, email, password_hash, name, role, phone, phone_verified, dob, location, onboarding_completed, auth_provider)
 VALUES 
-  ('a1111111-1111-1111-1111-111111111111', 'patient1@example.test', '$2b$10$igkQKasz2eImnyB8EZYzhuc5FFwAx2/wMK/JVBdLwigP2FQyA0/VO', 'John Doe (Synthetic)', 'PATIENT'),
-  ('a2222222-2222-2222-2222-222222222222', 'patient2@example.test', '$2b$10$igkQKasz2eImnyB8EZYzhuc5FFwAx2/wMK/JVBdLwigP2FQyA0/VO', 'Jane Smith (Synthetic)', 'PATIENT')
+  ('a1111111-1111-1111-1111-111111111111', 'patient1@example.test', '$2b$10$igkQKasz2eImnyB8EZYzhuc5FFwAx2/wMK/JVBdLwigP2FQyA0/VO', 'John Doe (Synthetic)', 'PATIENT', '+919876543210', TRUE, '1990-05-15', 'Mumbai Central', TRUE, 'LOCAL'),
+  ('a2222222-2222-2222-2222-222222222222', 'patient2@example.test', '$2b$10$igkQKasz2eImnyB8EZYzhuc5FFwAx2/wMK/JVBdLwigP2FQyA0/VO', 'Jane Smith (Synthetic)', 'PATIENT', '+919876543211', TRUE, '1995-08-20', 'Bengaluru South', TRUE, 'LOCAL')
 ON CONFLICT (email) DO NOTHING;
 
 -- 2. Patient Default Reminder Preferences

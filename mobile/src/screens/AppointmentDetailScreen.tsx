@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   RefreshControl
 } from 'react-native';
+import { Feather, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import {
   useAppointmentDetail,
   useRescheduleAppointment,
@@ -156,6 +157,19 @@ export const AppointmentDetailScreen: React.FC<AppointmentDetailScreenProps> = (
     );
   };
 
+  const getStatusAccentColor = () => {
+    switch (appointment?.status) {
+      case 'CONFIRMED':
+        return colors.success;
+      case 'CANCELLED':
+        return colors.error;
+      case 'COMPLETED':
+        return colors.primary;
+      default:
+        return colors.border;
+    }
+  };
+
   return (
     <View style={styles.container}>
       <ScreenState
@@ -167,6 +181,7 @@ export const AppointmentDetailScreen: React.FC<AppointmentDetailScreenProps> = (
         {appointment && (
           <ScrollView
             contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
             refreshControl={
               <RefreshControl
                 refreshing={isRefetching}
@@ -175,8 +190,10 @@ export const AppointmentDetailScreen: React.FC<AppointmentDetailScreenProps> = (
               />
             }
           >
-            {/* Status & Reference Header */}
+            {/* Status & Reference Header Card */}
             <View style={styles.card}>
+              <View style={[styles.cardTopAccent, { backgroundColor: getStatusAccentColor() }]} />
+
               <View style={styles.cardHeaderRow}>
                 <View>
                   <Text style={styles.referenceLabel}>Booking Reference</Text>
@@ -187,29 +204,43 @@ export const AppointmentDetailScreen: React.FC<AppointmentDetailScreenProps> = (
 
               <View style={styles.divider} />
 
-              <Text style={styles.doctorName}>{appointment.doctorName}</Text>
-              <Text style={styles.specialtyText}>
-                {appointment.specialty} • {appointment.departmentName}
-              </Text>
+              <View style={styles.doctorHeaderRow}>
+                <View style={styles.doctorIconCircle}>
+                  <MaterialCommunityIcons name="doctor" size={26} color={colors.primary} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.doctorName}>{appointment.doctorName}</Text>
+                  <Text style={styles.specialtyText}>
+                    {appointment.specialty} • {appointment.departmentName}
+                  </Text>
+                </View>
+              </View>
 
               <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>Scheduled Date</Text>
+                <View style={styles.detailLabelWrap}>
+                  <Feather name="calendar" size={15} color={colors.primary} style={{ marginRight: 8 }} />
+                  <Text style={styles.detailLabel}>Scheduled Date</Text>
+                </View>
                 <Text style={styles.detailValue}>{formatDate(appointment.startsAt)}</Text>
               </View>
 
               <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>Time Window</Text>
+                <View style={styles.detailLabelWrap}>
+                  <Feather name="clock" size={15} color={colors.primary} style={{ marginRight: 8 }} />
+                  <Text style={styles.detailLabel}>Time Window</Text>
+                </View>
                 <Text style={styles.detailValue}>
                   {formatTimeRange(appointment.startsAt, appointment.endsAt)}
                 </Text>
               </View>
             </View>
 
-            {/* Offline Notification Box */}
+            {/* Offline Notification Box (Zero Emojis) */}
             {isOffline && (
               <View style={styles.offlineWarningBox}>
+                <Feather name="wifi-off" size={16} color={colors.errorText} style={{ marginRight: 8 }} />
                 <Text style={styles.offlineWarningText}>
-                  ⚠️ You are currently offline. Rescheduling and cancellation are disabled.
+                  You are currently offline. Rescheduling and cancellation are disabled.
                 </Text>
               </View>
             )}
@@ -243,7 +274,10 @@ export const AppointmentDetailScreen: React.FC<AppointmentDetailScreenProps> = (
 
             {/* Visit Reports & Metadata Section (Strictly Non-Diagnostic) */}
             <View style={styles.reportsSection}>
-              <Text style={styles.sectionTitle}>Visit Records & File Metadata</Text>
+              <View style={styles.sectionHeaderRow}>
+                <MaterialCommunityIcons name="file-document-multiple-outline" size={20} color={colors.primary} />
+                <Text style={styles.sectionTitle}>Visit Records & File Metadata</Text>
+              </View>
               <Text style={styles.metadataDisclaimer}>
                 Strictly administrative and file metadata. No medical diagnoses, prescriptions, or clinical recommendations are displayed.
               </Text>
@@ -254,7 +288,7 @@ export const AppointmentDetailScreen: React.FC<AppointmentDetailScreenProps> = (
                 reports.map((report) => (
                   <View key={report.id} style={styles.reportCard}>
                     <View style={styles.reportIconCircle}>
-                      <Text style={styles.reportIcon}>📄</Text>
+                      <MaterialCommunityIcons name="file-document-outline" size={20} color={colors.primary} />
                     </View>
                     <View style={styles.reportDetails}>
                       <Text style={styles.reportTitle}>{report.title}</Text>
@@ -267,6 +301,7 @@ export const AppointmentDetailScreen: React.FC<AppointmentDetailScreenProps> = (
                 ))
               ) : (
                 <View style={styles.emptyReportsBox}>
+                  <MaterialCommunityIcons name="folder-text-outline" size={28} color={colors.textMuted} />
                   <Text style={styles.emptyReportsText}>
                     No visit report files or administrative records attached to this visit.
                   </Text>
@@ -293,7 +328,7 @@ export const AppointmentDetailScreen: React.FC<AppointmentDetailScreenProps> = (
               onPress={() => setRescheduleModalVisible(false)}
               style={styles.closeButton}
             >
-              <Text style={styles.closeButtonText}>✕</Text>
+              <Feather name="x" size={22} color={colors.textSecondary} />
             </TouchableOpacity>
           </View>
 
@@ -304,7 +339,8 @@ export const AppointmentDetailScreen: React.FC<AppointmentDetailScreenProps> = (
 
             {rescheduleError && (
               <View style={styles.modalErrorBox}>
-                <Text style={styles.modalErrorText}>⚠️ {rescheduleError}</Text>
+                <Feather name="alert-circle" size={16} color={colors.errorText} style={{ marginRight: 6 }} />
+                <Text style={styles.modalErrorText}>{rescheduleError}</Text>
               </View>
             )}
 
@@ -332,6 +368,7 @@ export const AppointmentDetailScreen: React.FC<AppointmentDetailScreenProps> = (
                       setSelectedNewSlot(null);
                       setRescheduleError(null);
                     }}
+                    activeOpacity={0.8}
                   >
                     <Text
                       style={[
@@ -374,6 +411,7 @@ export const AppointmentDetailScreen: React.FC<AppointmentDetailScreenProps> = (
                         isSelected && styles.slotChipSelected
                       ]}
                       onPress={() => setSelectedNewSlot(slot)}
+                      activeOpacity={0.7}
                     >
                       <Text
                         style={[
@@ -399,6 +437,7 @@ export const AppointmentDetailScreen: React.FC<AppointmentDetailScreenProps> = (
               disabled={!selectedNewSlot || rescheduleMutation.isPending || isOffline}
               loading={rescheduleMutation.isPending}
               accessibilityLabel="Confirm moving appointment to selected slot"
+              style={{ height: 52, borderRadius: borderRadius.md }}
             />
           </View>
         </View>
@@ -413,9 +452,129 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background
   },
   scrollContent: {
-    padding: spacing.md
+    padding: spacing.md,
+    paddingBottom: 40
   },
   card: {
+    backgroundColor: colors.surface,
+    padding: spacing.lg,
+    borderRadius: borderRadius.lg,
+    borderWidth: 1,
+    borderColor: colors.borderLight,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 3,
+    marginBottom: spacing.md,
+    position: 'relative',
+    overflow: 'hidden'
+  },
+  cardTopAccent: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 4
+  },
+  cardHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 4
+  },
+  referenceLabel: {
+    fontSize: 11,
+    color: colors.textSecondary,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5
+  },
+  referenceText: {
+    fontSize: 19,
+    fontWeight: '900',
+    color: colors.primaryDark,
+    marginTop: 2,
+    letterSpacing: 0.3
+  },
+  divider: {
+    height: 1,
+    backgroundColor: colors.borderLight,
+    marginVertical: spacing.md
+  },
+  doctorHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: spacing.md
+  },
+  doctorIconCircle: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: colors.primaryLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12
+  },
+  doctorName: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: colors.textPrimary,
+    letterSpacing: -0.2
+  },
+  specialtyText: {
+    fontSize: 13.5,
+    color: colors.primary,
+    fontWeight: '700',
+    marginTop: 1
+  },
+  detailRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: spacing.xs + 3
+  },
+  detailLabelWrap: {
+    flexDirection: 'row',
+    alignItems: 'center'
+  },
+  detailLabel: {
+    fontSize: 13.5,
+    color: colors.textSecondary,
+    fontWeight: '500'
+  },
+  detailValue: {
+    fontSize: 13.5,
+    fontWeight: '800',
+    color: colors.textPrimary
+  },
+  offlineWarningBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.errorLight,
+    padding: spacing.md,
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+    borderColor: colors.error + '40',
+    marginBottom: spacing.md
+  },
+  offlineWarningText: {
+    flex: 1,
+    fontSize: 13,
+    color: colors.errorText,
+    fontWeight: '600',
+    lineHeight: 18
+  },
+  actionsContainer: {
+    marginBottom: spacing.lg,
+    gap: spacing.sm
+  },
+  actionButton: {
+    width: '100%',
+    height: 52,
+    borderRadius: borderRadius.md
+  },
+  reportsSection: {
     backgroundColor: colors.surface,
     padding: spacing.lg,
     borderRadius: borderRadius.lg,
@@ -425,97 +584,25 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
     shadowRadius: 6,
-    elevation: 2,
-    marginBottom: spacing.md
+    elevation: 2
   },
-  cardHeaderRow: {
+  sectionHeaderRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center'
-  },
-  referenceLabel: {
-    fontSize: 11,
-    color: colors.textSecondary,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5
-  },
-  referenceText: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: colors.primaryDark,
-    marginTop: 2
-  },
-  divider: {
-    height: 1,
-    backgroundColor: colors.borderLight,
-    marginVertical: spacing.md
-  },
-  doctorName: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: colors.textPrimary
-  },
-  specialtyText: {
-    fontSize: 14,
-    color: colors.primary,
-    fontWeight: '600',
-    marginTop: 2,
-    marginBottom: spacing.sm
-  },
-  detailRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: spacing.xs
-  },
-  detailLabel: {
-    fontSize: 13,
-    color: colors.textSecondary
-  },
-  detailValue: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: colors.textPrimary
-  },
-  offlineWarningBox: {
-    backgroundColor: colors.errorLight,
-    padding: spacing.md,
-    borderRadius: borderRadius.md,
-    borderWidth: 1,
-    borderColor: colors.error,
-    marginBottom: spacing.md
-  },
-  offlineWarningText: {
-    fontSize: 13,
-    color: colors.errorText,
-    fontWeight: '600'
-  },
-  actionsContainer: {
-    marginBottom: spacing.lg,
-    gap: spacing.sm
-  },
-  actionButton: {
-    width: '100%'
-  },
-  reportsSection: {
-    backgroundColor: colors.surface,
-    padding: spacing.lg,
-    borderRadius: borderRadius.lg,
-    borderWidth: 1,
-    borderColor: colors.borderLight
+    alignItems: 'center',
+    gap: 8
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: '800',
     color: colors.textPrimary
   },
   metadataDisclaimer: {
     fontSize: 12,
     color: colors.textSecondary,
     fontStyle: 'italic',
-    marginTop: 2,
+    marginTop: 4,
     marginBottom: spacing.md,
-    lineHeight: 16
+    lineHeight: 17
   },
   loadingReportsText: {
     fontSize: 13,
@@ -525,28 +612,25 @@ const styles = StyleSheet.create({
   reportCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: spacing.sm,
+    paddingVertical: spacing.sm + 4,
     borderBottomWidth: 1,
     borderBottomColor: colors.borderLight
   },
   reportIconCircle: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: colors.primaryLight,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: spacing.sm
-  },
-  reportIcon: {
-    fontSize: 16
+    marginRight: 12
   },
   reportDetails: {
     flex: 1
   },
   reportTitle: {
-    fontSize: 14,
-    fontWeight: '700',
+    fontSize: 14.5,
+    fontWeight: '800',
     color: colors.textPrimary
   },
   reportMeta: {
@@ -560,13 +644,15 @@ const styles = StyleSheet.create({
     marginTop: 2
   },
   emptyReportsBox: {
-    paddingVertical: spacing.md,
-    alignItems: 'center'
+    paddingVertical: spacing.lg,
+    alignItems: 'center',
+    justifyContent: 'center'
   },
   emptyReportsText: {
-    fontSize: 13,
+    fontSize: 12.5,
     color: colors.textMuted,
-    textAlign: 'center'
+    textAlign: 'center',
+    marginTop: 6
   },
   modalContainer: {
     flex: 1,
@@ -592,11 +678,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center'
   },
-  closeButtonText: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: colors.textSecondary
-  },
   modalContent: {
     padding: spacing.md
   },
@@ -606,14 +687,17 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md
   },
   modalErrorBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: colors.errorLight,
     padding: spacing.md,
     borderRadius: borderRadius.md,
     marginBottom: spacing.md,
     borderWidth: 1,
-    borderColor: colors.error
+    borderColor: colors.error + '40'
   },
   modalErrorText: {
+    flex: 1,
     color: colors.errorText,
     fontSize: 13,
     fontWeight: '600'
@@ -624,14 +708,14 @@ const styles = StyleSheet.create({
   },
   modalDateCard: {
     minHeight: spacing.minTouchTarget,
-    width: 64,
+    width: 66,
     backgroundColor: colors.surface,
-    paddingVertical: spacing.xs,
+    paddingVertical: spacing.xs + 2,
     borderRadius: borderRadius.md,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: spacing.sm,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: colors.border
   },
   modalDateCardSelected: {
@@ -640,20 +724,20 @@ const styles = StyleSheet.create({
   },
   modalDateWeekday: {
     fontSize: 11,
-    fontWeight: '600',
+    fontWeight: '700',
     color: colors.textSecondary
   },
   modalDateDayNum: {
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: '800',
     color: colors.textPrimary
   },
   modalDateTextSelected: {
-    color: colors.surface
+    color: '#FFFFFF'
   },
   pickerHeading: {
-    fontSize: 15,
-    fontWeight: '700',
+    fontSize: 14.5,
+    fontWeight: '800',
     color: colors.textPrimary,
     marginBottom: spacing.sm
   },
@@ -667,7 +751,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
     backgroundColor: colors.surface,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: colors.border,
     borderRadius: borderRadius.md,
     alignItems: 'center',
@@ -684,7 +768,8 @@ const styles = StyleSheet.create({
     color: colors.textPrimary
   },
   slotChipTextSelected: {
-    color: colors.primaryDark
+    color: colors.primaryDark,
+    fontWeight: '800'
   },
   noSlotsText: {
     fontSize: 13,

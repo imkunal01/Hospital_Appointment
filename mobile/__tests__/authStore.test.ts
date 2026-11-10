@@ -29,7 +29,8 @@ describe('Auth Store & Secure Storage Isolation', () => {
     id: 'a1111111-1111-1111-1111-111111111111',
     email: 'patient1@example.test',
     name: 'John Doe',
-    role: 'PATIENT'
+    role: 'PATIENT',
+    onboardingCompleted: true
   };
 
   beforeEach(async () => {

@@ -1,12 +1,15 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 import { spacing } from '../theme/spacing';
 
 export const AppointmentsTabPlaceholder: React.FC = () => {
   return (
     <View style={styles.container}>
-      <Text style={styles.icon}>📅</Text>
+      <View style={styles.iconCircle}>
+        <Ionicons name="calendar-outline" size={36} color={colors.primary} />
+      </View>
       <Text style={styles.title}>My Appointments</Text>
       <Text style={styles.subtitle}>
         Full appointments management (Upcoming/Past tabs, pull-to-refresh, reschedule, cancel, and report metadata) will be loaded here.
@@ -23,8 +26,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: spacing.xl
   },
-  icon: {
-    fontSize: 48,
+  iconCircle: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: colors.primaryLight,
+    alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: spacing.md
   },
   title: {
@@ -40,4 +48,3 @@ const styles = StyleSheet.create({
     lineHeight: 20
   }
 });
-

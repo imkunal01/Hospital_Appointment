@@ -44,6 +44,16 @@ export async function setSession(
   notify();
 }
 
+export function updateSessionUser(updatedUser: UserProfile): void {
+  if (currentSession.user) {
+    currentSession.user = {
+      ...currentSession.user,
+      ...updatedUser
+    };
+    notify();
+  }
+}
+
 export async function clearSession(): Promise<void> {
   currentSession = {
     user: null,

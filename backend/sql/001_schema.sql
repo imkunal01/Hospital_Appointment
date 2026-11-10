@@ -21,6 +21,23 @@ CREATE TABLE IF NOT EXISTS users (
     password_hash TEXT NOT NULL,
     name TEXT NOT NULL,
     role TEXT NOT NULL CHECK (role IN ('PATIENT', 'ADMIN')),
+    phone TEXT UNIQUE,
+    phone_verified BOOLEAN NOT NULL DEFAULT FALSE,
+    dob DATE,
+    location TEXT,
+    onboarding_completed BOOLEAN NOT NULL DEFAULT FALSE,
+    auth_provider TEXT NOT NULL DEFAULT 'LOCAL' CHECK (auth_provider IN ('LOCAL', 'GOOGLE')),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- 1b. Phone Verifications (Mock OTP service)
+CREATE TABLE IF NOT EXISTS phone_verifications (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    phone TEXT NOT NULL,
+    otp_code TEXT NOT NULL,
+    expires_at TIMESTAMPTZ NOT NULL,
+    verified_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -99,6 +116,7 @@ CREATE INDEX IF NOT EXISTS idx_doctors_department ON doctors(department_id);
 
 -- Security: Enable RLS on all tables with NO policies
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE phone_verifications ENABLE ROW LEVEL SECURITY;
 ALTER TABLE refresh_tokens ENABLE ROW LEVEL SECURITY;
 ALTER TABLE departments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE doctors ENABLE ROW LEVEL SECURITY;

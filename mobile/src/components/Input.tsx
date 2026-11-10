@@ -14,6 +14,7 @@ interface InputProps extends TextInputProps {
   label: string;
   error?: string;
   containerStyle?: ViewStyle;
+  rightElement?: React.ReactNode;
 }
 
 export const Input: React.FC<InputProps> = ({
@@ -21,6 +22,7 @@ export const Input: React.FC<InputProps> = ({
   error,
   containerStyle,
   style,
+  rightElement,
   ...rest
 }) => {
   const hasError = Boolean(error);
@@ -28,16 +30,15 @@ export const Input: React.FC<InputProps> = ({
   return (
     <View style={[styles.container, containerStyle]}>
       <Text style={styles.label}>{label}</Text>
-      <TextInput
-        accessibilityLabel={label}
-        style={[
-          styles.input,
-          hasError && styles.inputError,
-          style
-        ]}
-        placeholderTextColor={colors.textMuted}
-        {...rest}
-      />
+      <View style={[styles.inputBox, hasError && styles.inputError]}>
+        <TextInput
+          accessibilityLabel={label}
+          style={[styles.input, style]}
+          placeholderTextColor={colors.textMuted}
+          {...rest}
+        />
+        {rightElement}
+      </View>
       {hasError && (
         <Text
           accessibilityRole="alert"
@@ -56,20 +57,27 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    fontWeight: '600',
-    color: colors.textPrimary,
-    marginBottom: spacing.xs
+    fontWeight: '700',
+    color: '#1E293B',
+    marginBottom: spacing.xs + 2
+  },
+  inputBox: {
+    minHeight: 52, // Exceeds 48dp minimum touch target
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    borderRadius: 14,
+    paddingHorizontal: spacing.md,
+    backgroundColor: colors.surface,
+    flexDirection: 'row',
+    alignItems: 'center'
   },
   input: {
-    minHeight: spacing.minTouchTarget, // 48dp minimum touch target
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: borderRadius.md,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    fontSize: 16,
+    flex: 1,
+    height: '100%',
+    minHeight: 48,
+    fontSize: 15,
     color: colors.textPrimary,
-    backgroundColor: colors.surface
+    paddingVertical: 0
   },
   inputError: {
     borderColor: colors.error,
@@ -82,4 +90,3 @@ const styles = StyleSheet.create({
     fontWeight: '500'
   }
 });
-

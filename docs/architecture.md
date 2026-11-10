@@ -236,3 +236,18 @@ stateDiagram-v2
 4. **Atomic Concurrency Protection:** Slots are reserved via `UPDATE slots SET status='BOOKED' WHERE id=$1 AND status='AVAILABLE'` inside an explicit database transaction. Concurrency conflicts trigger HTTP 409 `SLOT_TAKEN` with automatic UI refetching.
 5. **Ownership Isolation:** All appointment queries enforce `patient_id = $userId`. Records belonging to other users return HTTP 404 `NOT_FOUND` to prevent resource enumeration.
 6. **Structured Observability & Zero-PII Logging:** Backend logs are emitted as single-line JSON with ISO-8601 timestamps, log level hierarchy (`DEBUG`, `INFO`, `WARN`, `ERROR`), and an end-to-end `X-Request-ID` correlation ID. All passwords, bearer tokens, JWT signatures, and patient PII (emails, phone numbers, names, DOB) are automatically scrubbed via deep recursive redaction before output.
+
+---
+
+## 7. Frontend Design System & Practo-Inspired Healthcare UX
+
+MediBook implements a commercial healthcare design system adhering to strict non-negotiables:
+1. **Zero Emojis Everywhere:** Vector iconography via `@expo/vector-icons` (`Ionicons`, `Feather`, `MaterialCommunityIcons`) across all screens, tabs, badges, modals, and error/empty states.
+2. **Floating Pill Navigation:** Floating translucent glossy bottom navigation bar with active capsule indicators and elevated shadow.
+3. **Departmental Visual Encoding:** Clinical royal blue (`#1967D2`) and medical teal (`#0D9488`) accented by pastel color tokens mapping each medical specialty (Cardiology rose, Neurology lavender, Dermatology amber, Pediatrics sky blue, Orthopedics emerald, General Medicine royal blue).
+4. **Practo Information Architecture:** 
+   - Instant search and dual-column specialty grid on the home screen.
+   - Doctor cards with verified clinician badges, department chips, and explicit "Book Consult" actions.
+   - Slot grouping by time-of-day buckets (Morning vs. Afternoon/Evening) with 14-day date strip and sticky booking dock.
+   - Digital ticket-style appointment passes with calendar date blocks and high-contrast status badges.
+5. **Accessibility & Safe Margins:** Every interactive control enforces minimum 48dp touch targets, complete `accessibilityRole` and `accessibilityLabel` properties, and generous bottom clearance so content is never covered by floating bars.

@@ -1,17 +1,18 @@
 import React, { useEffect } from 'react';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
-import { useSession, setInMemoryAccessToken, setSession, setInitialized } from '../auth/sessionStore';
+import { useSession, setInMemoryAccessToken, setSession, setInitialized, updateSessionUser } from '../auth/sessionStore';
 import { getRefreshToken, removeRefreshToken } from '../auth/secureStorage';
 import { apiClient } from '../api/client';
 import { AuthNavigator } from './AuthNavigator';
+import { OnboardingNavigator } from './OnboardingNavigator';
 import { AppNavigator } from './AppNavigator';
 import { WakingUpBanner } from '../components/WakingUpBanner';
 import { OfflineBanner } from '../components/OfflineBanner';
 import { colors } from '../theme/colors';
 
 export const RootNavigator: React.FC = () => {
-  const { isAuthenticated, isInitialized } = useSession();
+  const { user, isAuthenticated, isInitialized } = useSession();
 
   useEffect(() => {
     async function restoreAuthSession() {
@@ -29,6 +30,14 @@ export const RootNavigator: React.FC = () => {
 
         const newAccessToken = response.data.accessToken;
         setInMemoryAccessToken(newAccessToken);
+
+        // Fetch user profile to verify onboarding status
+        try {
+          const userRes = await apiClient.get('/auth/me');
+          updateSessionUser(userRes.data);
+        } catch {
+          // If offline or profile fetch fails, proceed with stored session
+        }
 
         // Session restored
         setInitialized(true);
@@ -50,12 +59,23 @@ export const RootNavigator: React.FC = () => {
     );
   }
 
+  const renderContent = () => {
+    if (!isAuthenticated) {
+      return <AuthNavigator />;
+    }
+    // One-time only prompt: if user has not completed onboarding, gate into Onboarding flow
+    if (!user?.onboardingCompleted) {
+      return <OnboardingNavigator />;
+    }
+    return <AppNavigator />;
+  };
+
   return (
     <NavigationContainer>
       <View style={styles.container}>
         <WakingUpBanner />
         <OfflineBanner />
-        {isAuthenticated ? <AppNavigator /> : <AuthNavigator />}
+        {renderContent()}
       </View>
     </NavigationContainer>
   );
@@ -73,4 +93,3 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background
   }
 });
-
