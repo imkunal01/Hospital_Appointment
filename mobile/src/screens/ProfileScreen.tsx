@@ -15,6 +15,7 @@ import { useSession } from '../auth/sessionStore';
 import { getRefreshToken } from '../auth/secureStorage';
 import { logoutApi } from '../api/endpoints';
 import { usePreferences, useUpdatePreferences } from '../hooks/usePreferences';
+import { showAlert } from '../utils/alert';
 import { colors } from '../theme/colors';
 import { useSafeInsets } from '../hooks/useSafeInsets';
 
@@ -50,7 +51,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
   };
 
   const handleLogout = async () => {
-    Alert.alert('Sign Out', 'Are you sure you want to sign out of the hospital portal?', [
+    showAlert('Sign Out', 'Are you sure you want to sign out of the hospital portal?', [
       { text: 'Cancel', style: 'cancel' },
       {
         text: 'Sign Out',

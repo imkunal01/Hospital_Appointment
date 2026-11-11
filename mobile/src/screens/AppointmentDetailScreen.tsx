@@ -24,6 +24,7 @@ import { ScreenState } from '../components/ScreenState';
 import { DoctorAvatar } from '../components/DoctorAvatar';
 import { formatDate, formatTimeRange, toISODateString } from '../utils/dates';
 import { extractErrorMessage } from '../utils/errors';
+import { showAlert } from '../utils/alert';
 import { Slot } from '../api/types';
 import { colors } from '../theme/colors';
 import { useSafeInsets } from '../hooks/useSafeInsets';
@@ -93,7 +94,7 @@ export const AppointmentDetailScreen: React.FC<AppointmentDetailScreenProps> = (
   const handleCancelPress = () => {
     if (isActionDisabled || !appointment || isCancellingRef.current) return;
 
-    Alert.alert(
+    showAlert(
       'Cancel Appointment',
       `Are you sure you want to cancel your appointment with ${appointment.doctorName} on ${formatDate(appointment.startsAt)}? This slot will be released for other patients.`,
       [
@@ -106,7 +107,7 @@ export const AppointmentDetailScreen: React.FC<AppointmentDetailScreenProps> = (
             cancelMutation.mutate(appointment.id, {
               onSuccess: () => {
                 isCancellingRef.current = false;
-                Alert.alert(
+                showAlert(
                   'Appointment Cancelled',
                   'Your appointment has been cancelled and the slot released.',
                   [{ text: 'OK' }]
@@ -114,7 +115,7 @@ export const AppointmentDetailScreen: React.FC<AppointmentDetailScreenProps> = (
               },
               onError: (err) => {
                 isCancellingRef.current = false;
-                Alert.alert('Cancellation Error', extractErrorMessage(err));
+                showAlert('Cancellation Error', extractErrorMessage(err));
               }
             });
           }
@@ -139,7 +140,7 @@ export const AppointmentDetailScreen: React.FC<AppointmentDetailScreenProps> = (
           isReschedulingRef.current = false;
           setRescheduleModalVisible(false);
           setSelectedNewSlot(null);
-          Alert.alert(
+          showAlert(
             'Rescheduled Successfully',
             `Your appointment has been moved to ${formatDate(selectedNewSlot.startsAt)} at ${formatTimeRange(selectedNewSlot.startsAt, selectedNewSlot.endsAt)}.`,
             [{ text: 'OK' }]

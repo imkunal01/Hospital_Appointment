@@ -1,11 +1,11 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import {
   View,
   Text,
   ScrollView,
   TouchableOpacity,
   StyleSheet,
-  Alert,
+  ActivityIndicator,
   Platform
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
@@ -17,6 +17,7 @@ import { ScreenState } from '../components/ScreenState';
 import { DoctorAvatar } from '../components/DoctorAvatar';
 import { formatDate, formatTimeRange, toISODateString } from '../utils/dates';
 import { extractErrorMessage } from '../utils/errors';
+import { showAlert } from '../utils/alert';
 import { colors } from '../theme/colors';
 import { spacing } from '../theme/spacing';
 import { useSafeInsets } from '../hooks/useSafeInsets';
@@ -65,6 +66,7 @@ export const DoctorDetailScreen: React.FC<DoctorDetailScreenProps> = ({
   } = useDoctorSlots(doctor.id, selectedDate);
 
   const bookSlotMutation = useBookSlot();
+  const isBookingRef = useRef(false);
 
   const handleSelectSlot = (slot: Slot) => {
     setSelectedSlot(slot);
@@ -72,7 +74,10 @@ export const DoctorDetailScreen: React.FC<DoctorDetailScreenProps> = ({
   };
 
   const handleConfirmBooking = () => {
-    if (!selectedSlot) return;
+    if (!selectedSlot || bookSlotMutation.isPending || isBookingRef.current) return;
+
+    // Double-tap prevention guard
+    isBookingRef.current = true;
 
     // Generate unique idempotency key for this booking attempt
     const idempotencyKey = `mobile-book-${selectedSlot.id}-${Date.now()}`;
@@ -87,12 +92,14 @@ export const DoctorDetailScreen: React.FC<DoctorDetailScreenProps> = ({
       },
       {
         onSuccess: (confirmedAppointment) => {
+          isBookingRef.current = false;
           // Rule A5: Transition to confirmation screen ONLY after server confirms with HTTP 201/200
           navigation.navigate('Confirmation', {
             appointment: confirmedAppointment
           });
         },
         onError: (err: any) => {
+          isBookingRef.current = false;
           const isSlotTaken = err?.response?.data?.error?.code === 'SLOT_TAKEN';
           const message = isSlotTaken
             ? 'This appointment slot was just reserved by another patient. We have updated available times.'
@@ -101,26 +108,13 @@ export const DoctorDetailScreen: React.FC<DoctorDetailScreenProps> = ({
           setBookingError(message);
           setSelectedSlot(null);
 
-          Alert.alert(
+          showAlert(
             isSlotTaken ? 'Slot No Longer Available' : 'Booking Error',
             message,
             [{ text: 'OK' }]
           );
         }
       }
-    );
-  };
-
-  const promptConfirmationDialog = () => {
-    if (!selectedSlot) return;
-
-    Alert.alert(
-      'Confirm Appointment',
-      `Book consultation with ${doctor.name} on ${formatDate(selectedSlot.startsAt)} at ${new Date(selectedSlot.startsAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Confirm', onPress: handleConfirmBooking }
-      ]
     );
   };
 
@@ -314,6 +308,13 @@ export const DoctorDetailScreen: React.FC<DoctorDetailScreenProps> = ({
 
       {/* Sticky Bottom Action Bar */}
       <View style={[styles.bottomBar, { paddingBottom: Math.max(insets.bottom, 16) + 8 }]}>
+        {bookingError && (
+          <View style={[styles.errorBanner, { marginBottom: 10 }]}>
+            <Feather name="alert-circle" size={16} color={colors.error} style={{ marginRight: 6 }} />
+            <Text style={styles.errorBannerText} numberOfLines={2}>{bookingError}</Text>
+          </View>
+        )}
+
         <TouchableOpacity
           accessibilityRole="button"
           accessibilityLabel="Proceed to book selected appointment slot"
@@ -322,9 +323,12 @@ export const DoctorDetailScreen: React.FC<DoctorDetailScreenProps> = ({
             styles.confirmButton,
             (!selectedSlot || bookSlotMutation.isPending) && styles.confirmButtonDisabled
           ]}
-          onPress={promptConfirmationDialog}
+          onPress={handleConfirmBooking}
           activeOpacity={0.88}
         >
+          {bookSlotMutation.isPending ? (
+            <ActivityIndicator size="small" color="#FFFFFF" style={{ marginRight: 8 }} />
+          ) : null}
           <Text style={styles.confirmButtonText}>
             {bookSlotMutation.isPending ? 'Securing Slot...' : 'Confirm appointment'}
           </Text>
