@@ -11,7 +11,13 @@ export const pool = new Pool({
   ssl: requiresSSL ? { rejectUnauthorized: false } : false,
   max: 10,
   idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 10000
+  connectionTimeoutMillis: 10000,
+  statement_timeout: 10000
+});
+
+pool.on('error', (err) => {
+  console.error('[db] Unexpected idle client error:', err.message);
+  logger.error('Unexpected idle PostgreSQL client error', err);
 });
 
 // Helper for parameterized queries

@@ -3,11 +3,15 @@
   "version": "1.0.0",
   "description": "Hospital Appointment Management Backend API",
   "main": "dist/server.js",
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
-    "test": "jest --runInBand --detectOpenHandles"
+    "test": "jest --runInBand --detectOpenHandles",
+    "lint": "tsc --noEmit"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",

@@ -66,3 +66,15 @@ process.on('SIGINT', () => {
     process.exit(0);
   });
 });
+
+// Process-level unhandled rejection & uncaught exception safety
+process.on('unhandledRejection', (reason) => {
+  console.error('[server] Unhandled Rejection:', reason);
+  logger.error('Unhandled Rejection at process level', reason as any);
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('[server] Uncaught Exception:', err);
+  logger.error('Uncaught Exception at process level', err);
+  process.exit(1);
+});
