@@ -14,11 +14,11 @@ export function getDepartmentTheme(deptName: string = ''): DepartmentVisualTheme
 
   if (normalized.includes('cardio') || normalized.includes('heart')) {
     return {
-      iconName: 'heart',
-      iconFamily: 'Ionicons',
-      bg: colors.deptCardiologyBg,
-      textColor: colors.deptCardiologyText,
-      borderColor: '#FECACA',
+      iconName: 'heart-pulse',
+      iconFamily: 'MaterialCommunityIcons',
+      bg: '#FFF0F3',
+      textColor: '#E11D48',
+      borderColor: '#FFE4E8',
       subtext: 'Heart and circulation'
     };
   }
@@ -26,9 +26,9 @@ export function getDepartmentTheme(deptName: string = ''): DepartmentVisualTheme
     return {
       iconName: 'lungs',
       iconFamily: 'MaterialCommunityIcons',
-      bg: '#F0FDFA',
-      textColor: '#0F766E',
-      borderColor: '#99F6E4',
+      bg: '#FAF5FF',
+      textColor: '#7C3AED',
+      borderColor: '#F3E8FF',
       subtext: 'Lungs and breathing'
     };
   }
@@ -36,19 +36,19 @@ export function getDepartmentTheme(deptName: string = ''): DepartmentVisualTheme
     return {
       iconName: 'brain',
       iconFamily: 'MaterialCommunityIcons',
-      bg: colors.deptNeurologyBg,
-      textColor: colors.deptNeurologyText,
-      borderColor: '#C7D2FE',
+      bg: '#EEF2FF',
+      textColor: '#4338CA',
+      borderColor: '#E0E7FF',
       subtext: 'Brain and nervous system'
     };
   }
   if (normalized.includes('derma') || normalized.includes('skin')) {
     return {
-      iconName: 'sparkles-outline',
-      iconFamily: 'Ionicons',
-      bg: colors.deptDermatologyBg,
-      textColor: colors.deptDermatologyText,
-      borderColor: '#FDE68A',
+      iconName: 'sparkles',
+      iconFamily: 'MaterialCommunityIcons',
+      bg: '#F0FDF4',
+      textColor: '#059669',
+      borderColor: '#DCFCE7',
       subtext: 'Skin & aesthetic wellness'
     };
   }
@@ -56,9 +56,9 @@ export function getDepartmentTheme(deptName: string = ''): DepartmentVisualTheme
     return {
       iconName: 'baby-face-outline',
       iconFamily: 'MaterialCommunityIcons',
-      bg: colors.deptPediatricsBg,
-      textColor: colors.deptPediatricsText,
-      borderColor: '#BBF7D0',
+      bg: '#F0FDF4',
+      textColor: '#15803D',
+      borderColor: '#DCFCE7',
       subtext: 'Adolescent and child health'
     };
   }
@@ -66,9 +66,9 @@ export function getDepartmentTheme(deptName: string = ''): DepartmentVisualTheme
     return {
       iconName: 'bone',
       iconFamily: 'MaterialCommunityIcons',
-      bg: colors.deptOrthopedicsBg,
-      textColor: colors.deptOrthopedicsText,
-      borderColor: '#A7F3D0',
+      bg: '#F0FDF4',
+      textColor: '#059669',
+      borderColor: '#DCFCE7',
       subtext: 'Bones and joint mobility'
     };
   }
@@ -76,9 +76,9 @@ export function getDepartmentTheme(deptName: string = ''): DepartmentVisualTheme
     return {
       iconName: 'stethoscope',
       iconFamily: 'MaterialCommunityIcons',
-      bg: colors.brandBlueLight,
-      textColor: colors.brandBlueDark,
-      borderColor: colors.brandBlueBorder,
+      bg: '#EFF6FF',
+      textColor: '#2563EB',
+      borderColor: '#DBEAFE',
       subtext: 'Everyday health concerns'
     };
   }
@@ -87,8 +87,8 @@ export function getDepartmentTheme(deptName: string = ''): DepartmentVisualTheme
     iconName: 'hospital-building',
     iconFamily: 'MaterialCommunityIcons',
     bg: '#F8FAFC',
-    textColor: colors.ink,
-    borderColor: colors.border,
+    textColor: '#2563EB',
+    borderColor: '#E2E8F0',
     subtext: 'Specialized hospital clinic'
   };
 }
