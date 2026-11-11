@@ -43,20 +43,17 @@ export const ConfirmationScreen: React.FC<ConfirmationScreenProps> = ({
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        {/* Top Hero Section (Deep Ink-Green) */}
+        {/* Top Hero Section: Deep Midnight Clinical Navy */}
         <View
           style={[
             styles.heroSection,
             { paddingTop: Math.max(insets.top, Platform.OS === 'ios' ? 20 : 16) + 16 }
           ]}
         >
-          {/* Decorative Art Rings */}
-          <View style={styles.decorRing} />
-
           {/* Success Badge */}
           <View style={styles.badgeWrapper}>
             <View style={styles.successCircle}>
-              <Feather name="check" size={38} color={colors.foundation} />
+              <Feather name="check" size={38} color={colors.success} />
             </View>
           </View>
 
@@ -93,7 +90,7 @@ export const ConfirmationScreen: React.FC<ConfirmationScreenProps> = ({
             {/* Info Items */}
             <View style={styles.infoRow}>
               <View style={styles.infoIconCircle}>
-                <Feather name="calendar" size={18} color={colors.ink} />
+                <Feather name="calendar" size={18} color={colors.brandBlue} />
               </View>
               <View>
                 <Text style={styles.infoEyebrow}>DATE</Text>
@@ -103,7 +100,7 @@ export const ConfirmationScreen: React.FC<ConfirmationScreenProps> = ({
 
             <View style={styles.infoRow}>
               <View style={styles.infoIconCircle}>
-                <Feather name="clock" size={18} color={colors.ink} />
+                <Feather name="clock" size={18} color={colors.brandBlue} />
               </View>
               <View>
                 <Text style={styles.infoEyebrow}>TIME</Text>
@@ -115,7 +112,7 @@ export const ConfirmationScreen: React.FC<ConfirmationScreenProps> = ({
 
             <View style={styles.infoRow}>
               <View style={styles.infoIconCircle}>
-                <Ionicons name="location-outline" size={20} color={colors.ink} />
+                <Ionicons name="location-outline" size={20} color={colors.brandBlue} />
               </View>
               <View>
                 <Text style={styles.infoEyebrow}>LOCATION</Text>
@@ -127,19 +124,19 @@ export const ConfirmationScreen: React.FC<ConfirmationScreenProps> = ({
           {/* Reminder Banner */}
           <View style={styles.reminderBanner}>
             <View style={styles.bellCircle}>
-              <Feather name="bell" size={20} color={colors.ink} />
+              <Feather name="bell" size={20} color={colors.brandBlue} />
             </View>
             <View style={styles.reminderTextWrap}>
               <Text style={styles.reminderTitle}>Reminder is on</Text>
               <Text style={styles.reminderSubtitle}>We’ll remind you 24 hours before.</Text>
             </View>
-            <Feather name="check" size={22} color={colors.ink} />
+            <Feather name="check" size={22} color={colors.brandBlue} />
           </View>
 
           {/* Action Buttons */}
           <TouchableOpacity
             accessibilityRole="button"
-            accessibilityLabel="View my appointments"
+            accessibilityLabel="View my appointments list"
             style={styles.primaryButton}
             onPress={handleGoToAppointments}
             activeOpacity={0.88}
@@ -149,7 +146,7 @@ export const ConfirmationScreen: React.FC<ConfirmationScreenProps> = ({
 
           <TouchableOpacity
             accessibilityRole="button"
-            accessibilityLabel="Back to home"
+            accessibilityLabel="Return back to home"
             style={styles.secondaryLink}
             onPress={handleDone}
             activeOpacity={0.7}
@@ -168,60 +165,49 @@ const styles = StyleSheet.create({
     backgroundColor: colors.canvas
   },
   scrollContent: {
-    paddingBottom: 64
+    paddingBottom: 40
   },
 
   // Hero Section
   heroSection: {
     backgroundColor: colors.foundation,
     paddingHorizontal: 20,
-    paddingBottom: 36,
+    paddingBottom: 42,
     borderBottomLeftRadius: 36,
     borderBottomRightRadius: 36,
     alignItems: 'center',
     position: 'relative',
     overflow: 'hidden'
   },
-  decorRing: {
-    position: 'absolute',
-    top: -20,
-    right: -40,
-    width: 170,
-    height: 170,
-    borderRadius: 85,
-    borderWidth: 28,
-    borderColor: colors.lilac,
-    opacity: 0.85
-  },
   badgeWrapper: {
-    shadowColor: colors.coral,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
+    shadowColor: colors.success,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
     elevation: 4,
     marginBottom: 16
   },
   successCircle: {
-    width: 78,
-    height: 78,
-    borderRadius: 39,
-    backgroundColor: colors.chartreuse,
-    borderWidth: 3,
-    borderColor: colors.ink,
+    width: 76,
+    height: 76,
+    borderRadius: 38,
+    backgroundColor: colors.successLight,
+    borderWidth: 2,
+    borderColor: colors.success,
     alignItems: 'center',
     justifyContent: 'center'
   },
   heroTitle: {
-    fontSize: 32,
+    fontSize: 30,
     fontWeight: '900',
-    color: colors.chartreuse,
+    color: '#FFFFFF',
     letterSpacing: -0.6,
     marginBottom: 4
   },
   heroSubtitle: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#FFFFFF'
+    color: '#DBEAFE'
   },
 
   // Content
@@ -231,14 +217,14 @@ const styles = StyleSheet.create({
   },
   ticketCard: {
     backgroundColor: '#FFFFFF',
-    borderWidth: 2,
-    borderColor: colors.ink,
+    borderWidth: 1.5,
+    borderColor: colors.border,
     borderRadius: 24,
     padding: 20,
-    shadowColor: colors.ink,
-    shadowOffset: { width: 4, height: 4 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
+    shadowColor: colors.tactileShadow,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
     elevation: 4,
     marginBottom: 16
   },
@@ -249,12 +235,12 @@ const styles = StyleSheet.create({
     marginBottom: 16
   },
   statusPill: {
-    backgroundColor: colors.chartreuse,
+    backgroundColor: colors.successLight,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 999,
-    borderWidth: 1.5,
-    borderColor: colors.ink,
+    borderWidth: 1,
+    borderColor: colors.success,
     flexDirection: 'row',
     alignItems: 'center'
   },
@@ -262,18 +248,18 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: colors.ink,
+    backgroundColor: colors.success,
     marginRight: 6
   },
   statusText: {
     fontSize: 11,
     fontWeight: '800',
-    color: colors.ink
+    color: colors.successText
   },
   refText: {
     fontSize: 12,
     fontWeight: '800',
-    color: colors.inkMuted,
+    color: colors.brandBlue,
     letterSpacing: 0.5
   },
   doctorRow: {
@@ -288,8 +274,8 @@ const styles = StyleSheet.create({
     flex: 1
   },
   doctorName: {
-    fontSize: 19,
-    fontWeight: '900',
+    fontSize: 18,
+    fontWeight: '800',
     color: colors.ink,
     letterSpacing: -0.3
   },
@@ -300,8 +286,8 @@ const styles = StyleSheet.create({
     marginTop: 2
   },
   divider: {
-    height: 1.5,
-    backgroundColor: '#E8E3D7',
+    height: 1,
+    backgroundColor: '#E2E8F0',
     marginBottom: 16
   },
   infoRow: {
@@ -313,9 +299,9 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: colors.canvas,
+    backgroundColor: colors.brandBlueLight,
     borderWidth: 1.5,
-    borderColor: colors.ink,
+    borderColor: colors.brandBlueBorder,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 14
@@ -335,18 +321,18 @@ const styles = StyleSheet.create({
 
   // Reminder Banner
   reminderBanner: {
-    backgroundColor: colors.lilac,
-    borderWidth: 2,
-    borderColor: colors.ink,
+    backgroundColor: colors.brandBlueLight,
+    borderWidth: 1.5,
+    borderColor: colors.brandBlueBorder,
     borderRadius: 20,
     padding: 16,
     flexDirection: 'row',
     alignItems: 'center',
-    shadowColor: colors.ink,
-    shadowOffset: { width: 3, height: 3 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 3,
+    shadowColor: colors.brandBlue,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 2,
     marginBottom: 20
   },
   bellCircle: {
@@ -354,8 +340,8 @@ const styles = StyleSheet.create({
     height: 44,
     borderRadius: 22,
     backgroundColor: '#FFFFFF',
-    borderWidth: 1.5,
-    borderColor: colors.ink,
+    borderWidth: 1,
+    borderColor: colors.brandBlueBorder,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 14
@@ -365,8 +351,8 @@ const styles = StyleSheet.create({
   },
   reminderTitle: {
     fontSize: 15,
-    fontWeight: '900',
-    color: colors.ink
+    fontWeight: '800',
+    color: colors.foundation
   },
   reminderSubtitle: {
     fontSize: 12,
@@ -378,23 +364,21 @@ const styles = StyleSheet.create({
   // Buttons
   primaryButton: {
     backgroundColor: colors.foundation,
-    borderRadius: 20,
-    borderWidth: 2,
-    borderColor: colors.ink,
-    height: 56,
+    borderRadius: 18,
+    height: 54,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: colors.coral,
+    shadowColor: colors.foundation,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
+    shadowOpacity: 0.18,
+    shadowRadius: 8,
     elevation: 4,
     marginBottom: 14
   },
   primaryButtonText: {
     fontSize: 16.5,
-    fontWeight: '900',
-    color: colors.chartreuse,
+    fontWeight: '800',
+    color: '#FFFFFF',
     letterSpacing: -0.2
   },
   secondaryLink: {
@@ -404,7 +388,6 @@ const styles = StyleSheet.create({
   secondaryLinkText: {
     fontSize: 14,
     fontWeight: '800',
-    color: colors.ink,
-    textDecorationLine: 'underline'
+    color: colors.brandBlue
   }
 });

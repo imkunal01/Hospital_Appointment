@@ -6,7 +6,8 @@ import {
   TouchableOpacity,
   StyleSheet,
   RefreshControl,
-  Platform
+  Platform,
+  Image
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Feather, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
@@ -62,27 +63,34 @@ export const DepartmentsScreen: React.FC<DepartmentsScreenProps> = ({ navigation
           <RefreshControl
             refreshing={isRefetching}
             onRefresh={refetch}
-            tintColor={colors.chartreuse}
+            tintColor="#FFFFFF"
             colors={[colors.foundation]}
           />
         }
       >
-        {/* Top Editorial Hero Banner (Deep Ink-Green) */}
+        {/* Top Hero Banner: Deep Clinical Midnight Navy with Stethoscope Visual */}
         <View
           style={[
             styles.heroSection,
             { paddingTop: Math.max(insets.top, Platform.OS === 'ios' ? 20 : 16) + 12 }
           ]}
         >
-          {/* Decorative Geometric Artwork */}
-          <View style={styles.decorRing} />
-          <View style={styles.decorCoralArch} />
+          {/* Circular soft blue glow behind stethoscope */}
+          <View style={styles.stethoscopeGlowCircle} />
+
+          {/* Stethoscope Header Illustration */}
+          <Image
+            source={require('../../assets/stethoscope.png')}
+            style={styles.headerStethoscope}
+            resizeMode="contain"
+            accessibilityLabel="Hospital Stethoscope illustration"
+          />
 
           {/* Top Brand Bar */}
           <View style={styles.topBrandRow}>
             <View style={styles.logoRow}>
               <View style={styles.logoPlusCircle}>
-                <Feather name="plus" size={18} color={colors.foundation} />
+                <Feather name="plus" size={18} color="#FFFFFF" />
               </View>
               <Text style={styles.logoText}>medibook</Text>
             </View>
@@ -95,13 +103,13 @@ export const DepartmentsScreen: React.FC<DepartmentsScreenProps> = ({ navigation
                 onPress={() => navigation.navigate('AppointmentsTab')}
                 activeOpacity={0.85}
               >
-                <Feather name="bell" size={20} color={colors.ink} />
+                <Feather name="bell" size={20} color="#FFFFFF" />
                 <View style={styles.bellDot} />
               </TouchableOpacity>
             </View>
           </View>
 
-          {/* Editorial Greeting */}
+          {/* Clinical Greeting */}
           <View style={styles.greetingPill}>
             <Text style={styles.greetingPillText}>Good morning,</Text>
           </View>
@@ -119,17 +127,17 @@ export const DepartmentsScreen: React.FC<DepartmentsScreenProps> = ({ navigation
             activeOpacity={0.88}
           >
             <View style={styles.ctaIconCircle}>
-              <Feather name="calendar" size={22} color={colors.chartreuse} />
+              <Feather name="calendar" size={22} color={colors.brandBlue} />
             </View>
             <View style={styles.ctaTextWrap}>
               <Text style={styles.ctaTitle}>Book an appointment</Text>
               <Text style={styles.ctaSubtitle}>Find a doctor and choose a time</Text>
             </View>
-            <Feather name="chevron-right" size={24} color={colors.ink} />
+            <Feather name="chevron-right" size={24} color={colors.brandBlue} />
           </TouchableOpacity>
         </View>
 
-        {/* Lower Canvas Content (Warm Parchment) */}
+        {/* Clean Hospital Canvas Content */}
         <View style={styles.canvasSection}>
           <ScreenState
             loading={isLoading}
@@ -168,18 +176,24 @@ export const DepartmentsScreen: React.FC<DepartmentsScreenProps> = ({ navigation
                     key={dept.id || index}
                     accessibilityRole="button"
                     accessibilityLabel={`Select ${dept.name}`}
-                    style={[styles.deptCard, { backgroundColor: theme.bg }]}
+                    style={[
+                      styles.deptCard,
+                      {
+                        backgroundColor: theme.bg,
+                        borderColor: theme.borderColor || colors.border
+                      }
+                    ]}
                     onPress={() => handleSelectDepartment(dept)}
                     activeOpacity={0.85}
                   >
                     <View style={styles.deptIconCircle}>
                       {theme.iconFamily === 'Ionicons' ? (
-                        <Ionicons name={theme.iconName as any} size={24} color={colors.ink} />
+                        <Ionicons name={theme.iconName as any} size={24} color={theme.textColor} />
                       ) : (
-                        <MaterialCommunityIcons name={theme.iconName as any} size={24} color={colors.ink} />
+                        <MaterialCommunityIcons name={theme.iconName as any} size={24} color={theme.textColor} />
                       )}
                     </View>
-                    <Text style={styles.deptCardName} numberOfLines={1}>
+                    <Text style={[styles.deptCardName, { color: colors.ink }]} numberOfLines={1}>
                       {dept.name.replace(' Medicine', '')}
                     </Text>
                   </TouchableOpacity>
@@ -190,21 +204,21 @@ export const DepartmentsScreen: React.FC<DepartmentsScreenProps> = ({ navigation
               <TouchableOpacity
                 accessibilityRole="button"
                 accessibilityLabel="View all clinics"
-                style={[styles.deptCard, { backgroundColor: colors.peach }]}
+                style={[styles.deptCard, { backgroundColor: '#F8FAFC', borderColor: colors.border }]}
                 onPress={() => handleSelectDepartment()}
                 activeOpacity={0.85}
               >
                 <View style={styles.deptIconCircle}>
-                  <MaterialCommunityIcons name="hospital-building" size={24} color={colors.ink} />
+                  <MaterialCommunityIcons name="hospital-building" size={24} color={colors.brandBlue} />
                 </View>
-                <Text style={styles.deptCardName} numberOfLines={1}>
+                <Text style={[styles.deptCardName, { color: colors.ink }]} numberOfLines={1}>
                   All clinics
                 </Text>
               </TouchableOpacity>
             </ScrollView>
 
             {/* 2. Up Next / Your appointment */}
-            <View style={[styles.sectionHeaderRow, { marginTop: spacing.lg }]}>
+            <View style={[styles.sectionHeaderRow, { marginTop: spacing.xl }]}>
               <View>
                 <Text style={styles.eyebrow}>UP NEXT</Text>
                 <Text style={styles.sectionTitle}>Your appointment</Text>
@@ -249,27 +263,27 @@ export const DepartmentsScreen: React.FC<DepartmentsScreenProps> = ({ navigation
                   </Text>
                 </View>
 
-                <Feather name="chevron-right" size={22} color={colors.ink} />
+                <Feather name="chevron-right" size={22} color={colors.inkMuted} />
               </TouchableOpacity>
             ) : (
               <TouchableOpacity
                 accessibilityRole="button"
                 accessibilityLabel="Book an appointment now"
-                style={[styles.appointmentCard, { backgroundColor: colors.lilacLight }]}
+                style={[styles.appointmentCard, { backgroundColor: '#FFFFFF' }]}
                 onPress={() => handleSelectDepartment()}
                 activeOpacity={0.85}
               >
                 <View style={styles.dateBlock}>
-                  <Feather name="calendar" size={26} color={colors.ink} />
+                  <Feather name="calendar" size={26} color={colors.brandBlue} />
                 </View>
                 <View style={styles.appointmentInfo}>
-                  <View style={[styles.statusPill, { backgroundColor: colors.lilac }]}>
-                    <Text style={styles.statusText}>Ready to book</Text>
+                  <View style={[styles.statusPill, { backgroundColor: colors.brandBlueLight, borderColor: colors.brandBlueBorder }]}>
+                    <Text style={[styles.statusText, { color: colors.brandBlue }]}>Ready to book</Text>
                   </View>
                   <Text style={styles.doctorName}>No upcoming appointments</Text>
                   <Text style={styles.doctorSpecialty}>Tap to consult verified specialists</Text>
                 </View>
-                <Feather name="chevron-right" size={22} color={colors.ink} />
+                <Feather name="chevron-right" size={22} color={colors.inkMuted} />
               </TouchableOpacity>
             )}
           </ScreenState>
@@ -288,36 +302,33 @@ const styles = StyleSheet.create({
     paddingBottom: 110 // Clearance for floating navigation dock
   },
 
-  // Hero Section
+  // Hero Section: Deep Midnight Clinical Navy
   heroSection: {
     backgroundColor: colors.foundation,
     paddingHorizontal: 20,
     paddingBottom: 28,
-    borderBottomLeftRadius: 36,
-    borderBottomRightRadius: 36,
+    borderBottomLeftRadius: 32,
+    borderBottomRightRadius: 32,
     position: 'relative',
     overflow: 'hidden'
   },
-  decorRing: {
+  stethoscopeGlowCircle: {
     position: 'absolute',
-    top: -20,
-    right: -30,
-    width: 150,
-    height: 150,
-    borderRadius: 75,
-    borderWidth: 26,
-    borderColor: colors.lilac,
-    opacity: 0.85
-  },
-  decorCoralArch: {
-    position: 'absolute',
-    top: 50,
-    right: 40,
-    width: 80,
-    height: 100,
-    borderRadius: 40,
-    backgroundColor: colors.coral,
+    top: 20,
+    right: -20,
+    width: 170,
+    height: 170,
+    borderRadius: 85,
+    backgroundColor: '#0F3057',
     opacity: 0.95
+  },
+  headerStethoscope: {
+    position: 'absolute',
+    top: 10,
+    right: 2,
+    width: 140,
+    height: 140,
+    opacity: 0.85
   },
   topBrandRow: {
     flexDirection: 'row',
@@ -333,7 +344,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: colors.chartreuse,
+    backgroundColor: colors.brandBlue,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 10
@@ -345,74 +356,77 @@ const styles = StyleSheet.create({
     letterSpacing: -0.5
   },
   bellWrapper: {
-    shadowColor: colors.chartreuse,
-    shadowOffset: { width: 3, height: 3 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 3
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 2
   },
   bellButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 2,
-    borderColor: colors.ink,
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.20)',
     alignItems: 'center',
     justifyContent: 'center',
     position: 'relative'
   },
   bellDot: {
     position: 'absolute',
-    top: 9,
-    right: 10,
+    top: 8,
+    right: 9,
     width: 8,
     height: 8,
     borderRadius: 4,
     backgroundColor: colors.coral
   },
   greetingPill: {
-    backgroundColor: colors.chartreuse,
+    backgroundColor: '#1E3A8A',
     alignSelf: 'flex-start',
     paddingHorizontal: 12,
     paddingVertical: 5,
     borderRadius: 999,
-    marginBottom: 10
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: '#3B82F6'
   },
   greetingPillText: {
     fontSize: 12,
     fontWeight: '800',
-    color: colors.ink
+    color: '#DBEAFE'
   },
   heroHeadline: {
-    fontSize: 32,
+    fontSize: 30,
     fontWeight: '900',
     color: '#FFFFFF',
-    letterSpacing: -0.8,
-    lineHeight: 38,
-    marginBottom: 22
+    letterSpacing: -0.6,
+    lineHeight: 36,
+    marginBottom: 20,
+    maxWidth: '75%'
   },
 
-  // CTA Card
+  // Professional CTA Card (Pure White with Royal Blue Accents)
   ctaCard: {
-    backgroundColor: colors.chartreuse,
-    borderWidth: 2,
-    borderColor: colors.ink,
-    borderRadius: 22,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    borderRadius: 20,
     padding: 16,
     flexDirection: 'row',
     alignItems: 'center',
-    shadowColor: colors.ink,
-    shadowOffset: { width: 4, height: 4 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
+    shadowColor: colors.tactileShadow,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 10,
     elevation: 4
   },
   ctaIconCircle: {
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: colors.foundation,
+    backgroundColor: colors.brandBlueLight,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 14
@@ -423,7 +437,7 @@ const styles = StyleSheet.create({
   ctaTitle: {
     fontSize: 17,
     fontWeight: '900',
-    color: colors.ink,
+    color: colors.foundation,
     letterSpacing: -0.3
   },
   ctaSubtitle: {
@@ -459,22 +473,22 @@ const styles = StyleSheet.create({
     marginTop: 2
   },
   pillButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 5,
     borderRadius: 999,
-    borderWidth: 2,
-    borderColor: colors.ink,
+    borderWidth: 1.5,
+    borderColor: colors.border,
     backgroundColor: '#FFFFFF',
-    shadowColor: colors.ink,
-    shadowOffset: { width: 2, height: 2 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 2
+    shadowColor: colors.tactileShadow,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1
   },
   pillButtonText: {
     fontSize: 12,
     fontWeight: '800',
-    color: colors.ink
+    color: colors.brandBlue
   },
 
   // Horizontal Department Cards
@@ -486,55 +500,53 @@ const styles = StyleSheet.create({
     width: 105,
     height: 125,
     borderRadius: 20,
-    borderWidth: 2,
-    borderColor: colors.ink,
+    borderWidth: 1.5,
     padding: 12,
     justifyContent: 'space-between',
-    shadowColor: colors.ink,
-    shadowOffset: { width: 3, height: 3 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 3
+    shadowColor: colors.tactileShadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    elevation: 2
   },
   deptIconCircle: {
     width: 44,
     height: 44,
     borderRadius: 22,
     backgroundColor: '#FFFFFF',
-    borderWidth: 1.5,
-    borderColor: colors.ink,
+    borderWidth: 1,
+    borderColor: 'rgba(0, 0, 0, 0.06)',
     alignItems: 'center',
     justifyContent: 'center'
   },
   deptCardName: {
     fontSize: 13,
-    fontWeight: '900',
-    color: colors.ink,
+    fontWeight: '800',
     letterSpacing: -0.2
   },
 
-  // Appointment Card
+  // Appointment Card: Clean Medical Pass
   appointmentCard: {
-    backgroundColor: colors.sky,
-    borderWidth: 2,
-    borderColor: colors.ink,
-    borderRadius: 22,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    borderRadius: 20,
     padding: 16,
     flexDirection: 'row',
     alignItems: 'center',
-    shadowColor: colors.ink,
-    shadowOffset: { width: 4, height: 4 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 4
+    shadowColor: colors.tactileShadow,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    elevation: 3
   },
   dateBlock: {
-    width: 68,
-    height: 68,
+    width: 64,
+    height: 64,
     borderRadius: 16,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 2,
-    borderColor: colors.ink,
+    backgroundColor: colors.brandBlueLight,
+    borderWidth: 1.5,
+    borderColor: colors.brandBlueBorder,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 14
@@ -542,25 +554,25 @@ const styles = StyleSheet.create({
   dateBlockDay: {
     fontSize: 22,
     fontWeight: '900',
-    color: colors.ink,
+    color: colors.brandBlueDark,
     lineHeight: 24
   },
   dateBlockMonth: {
     fontSize: 11,
-    fontWeight: '900',
-    color: colors.inkMuted,
+    fontWeight: '800',
+    color: colors.brandBlue,
     letterSpacing: 0.5
   },
   appointmentInfo: {
     flex: 1
   },
   statusPill: {
-    backgroundColor: colors.chartreuse,
+    backgroundColor: colors.successLight,
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 999,
-    borderWidth: 1.5,
-    borderColor: colors.ink,
+    borderWidth: 1,
+    borderColor: colors.success,
     flexDirection: 'row',
     alignItems: 'center',
     alignSelf: 'flex-start',
@@ -570,17 +582,17 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: colors.ink,
+    backgroundColor: colors.success,
     marginRight: 5
   },
   statusText: {
     fontSize: 10,
     fontWeight: '800',
-    color: colors.ink
+    color: colors.successText
   },
   doctorName: {
-    fontSize: 16,
-    fontWeight: '900',
+    fontSize: 15.5,
+    fontWeight: '800',
     color: colors.ink,
     letterSpacing: -0.2
   },

@@ -87,7 +87,7 @@ export const PreferencesScreen: React.FC<{ navigation?: any }> = ({ navigation }
           <View style={styles.card}>
             <View style={styles.switchRow}>
               <View style={styles.iconCircle}>
-                <Feather name="bell" size={20} color={colors.ink} />
+                <Feather name="bell" size={20} color={colors.brandBlue} />
               </View>
               <View style={styles.switchTextCol}>
                 <Text style={styles.switchLabel}>Enable Visit Reminders</Text>
@@ -98,9 +98,9 @@ export const PreferencesScreen: React.FC<{ navigation?: any }> = ({ navigation }
               <Switch
                 value={enabled}
                 onValueChange={setEnabled}
-                trackColor={{ false: '#E2DDD2', true: colors.chartreuse }}
+                trackColor={{ false: '#E2E8F0', true: colors.brandBlue }}
                 thumbColor={enabled ? colors.foundation : '#FFFFFF'}
-                ios_backgroundColor="#E2DDD2"
+                ios_backgroundColor="#E2E8F0"
               />
             </View>
 
@@ -206,15 +206,15 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: '#FFFFFF',
-    borderWidth: 2,
-    borderColor: colors.ink,
-    borderRadius: 22,
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    borderRadius: 20,
     padding: 18,
-    shadowColor: colors.ink,
-    shadowOffset: { width: 4, height: 4 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 4,
+    shadowColor: colors.tactileShadow,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
     marginBottom: 20
   },
   switchRow: {
@@ -222,12 +222,12 @@ const styles = StyleSheet.create({
     alignItems: 'center'
   },
   iconCircle: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: colors.lilacLight,
-    borderWidth: 1.5,
-    borderColor: colors.ink,
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: colors.brandBlueLight,
+    borderWidth: 1,
+    borderColor: colors.brandBlueBorder,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 14
@@ -247,8 +247,8 @@ const styles = StyleSheet.create({
     marginTop: 2
   },
   divider: {
-    height: 1.5,
-    backgroundColor: '#EAE6DC',
+    height: 1,
+    backgroundColor: '#F1F5F9',
     marginVertical: 18
   },
   leadLabel: {
@@ -264,37 +264,38 @@ const styles = StyleSheet.create({
   },
   hourPill: {
     flex: 1,
-    height: 44,
-    borderRadius: 14,
-    backgroundColor: colors.canvas,
-    borderWidth: 2,
-    borderColor: colors.ink,
+    height: 42,
+    borderRadius: 12,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: colors.border,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: colors.ink,
-    shadowOffset: { width: 2, height: 2 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 2
+    shadowColor: colors.tactileShadow,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 2,
+    elevation: 1
   },
   hourPillSelected: {
-    backgroundColor: colors.chartreuse
+    backgroundColor: colors.brandBlue,
+    borderColor: colors.brandBlue
   },
   hourText: {
     fontSize: 12,
-    fontWeight: '800',
+    fontWeight: '700',
     color: colors.ink
   },
   hourTextSelected: {
-    color: colors.ink,
-    fontWeight: '900'
+    color: '#FFFFFF',
+    fontWeight: '800'
   },
   offlineBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.peach,
-    borderWidth: 2,
-    borderColor: colors.ink,
+    backgroundColor: colors.warningLight,
+    borderWidth: 1.5,
+    borderColor: '#FDE68A',
     borderRadius: 14,
     padding: 12,
     marginBottom: 16
@@ -303,7 +304,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 12.5,
     fontWeight: '700',
-    color: colors.ink
+    color: colors.warningText
   },
   saveBtn: {
     marginTop: 10

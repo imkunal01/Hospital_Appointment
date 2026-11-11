@@ -179,8 +179,6 @@ export const DoctorsListScreen: React.FC<DoctorsListScreenProps> = ({ route, nav
           renderItem={({ item, index }) => {
             const isSelected = currentSelectedDoctor?.id === item.id;
             const exp = getDoctorExperience(item.name);
-            // Alternate colors for editorial rhythm
-            const unselectedBg = index % 2 === 0 ? colors.lilacLight : '#FFFFFF';
 
             return (
               <TouchableOpacity
@@ -189,7 +187,7 @@ export const DoctorsListScreen: React.FC<DoctorsListScreenProps> = ({ route, nav
                 accessibilityState={{ selected: isSelected }}
                 style={[
                   styles.doctorCard,
-                  { backgroundColor: isSelected ? colors.chartreuse : unselectedBg }
+                  isSelected ? styles.doctorCardActive : styles.doctorCardInactive
                 ]}
                 onPress={() => handleSelectDoctor(item)}
                 activeOpacity={0.88}
@@ -215,7 +213,7 @@ export const DoctorsListScreen: React.FC<DoctorsListScreenProps> = ({ route, nav
           }}
           ListFooterComponent={
             <View style={styles.trustBadgeRow}>
-              <Ionicons name="checkmark-sharp" size={18} color={colors.foundation} style={{ marginRight: 6 }} />
+              <Ionicons name="checkmark-circle" size={18} color={colors.success} style={{ marginRight: 6 }} />
               <Text style={styles.trustBadgeText}>All doctors are verified hospital staff.</Text>
             </View>
           }
@@ -233,7 +231,7 @@ export const DoctorsListScreen: React.FC<DoctorsListScreenProps> = ({ route, nav
             activeOpacity={0.88}
           >
             <Text style={styles.continueButtonText}>Continue</Text>
-            <Feather name="chevron-right" size={22} color={colors.chartreuse} />
+            <Feather name="chevron-right" size={20} color="#FFFFFF" />
           </TouchableOpacity>
         </View>
       )}
@@ -387,18 +385,26 @@ const styles = StyleSheet.create({
     paddingBottom: 120
   },
   doctorCard: {
-    borderWidth: 2,
-    borderColor: colors.ink,
-    borderRadius: 22,
+    borderRadius: 20,
     padding: 16,
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 14,
-    shadowColor: colors.ink,
-    shadowOffset: { width: 4, height: 4 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 4
+    marginBottom: 12,
+    shadowColor: colors.tactileShadow,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3
+  },
+  doctorCardActive: {
+    backgroundColor: colors.brandBlueLight,
+    borderWidth: 2,
+    borderColor: colors.brandBlue
+  },
+  doctorCardInactive: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: colors.border
   },
   doctorAvatar: {
     marginRight: 14
@@ -415,17 +421,17 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: colors.foundation,
+    backgroundColor: colors.success,
     marginRight: 6
   },
   availText: {
     fontSize: 11,
     fontWeight: '800',
-    color: colors.foundation
+    color: colors.successText
   },
   doctorName: {
-    fontSize: 17,
-    fontWeight: '900',
+    fontSize: 16.5,
+    fontWeight: '800',
     color: colors.ink,
     letterSpacing: -0.3
   },
@@ -444,24 +450,25 @@ const styles = StyleSheet.create({
 
   // Radio button
   radioCircle: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: colors.ink,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    borderWidth: 1.5,
+    borderColor: '#CBD5E1',
     backgroundColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
     marginLeft: 10
   },
   radioCircleActive: {
-    borderColor: colors.ink
+    borderColor: colors.brandBlue,
+    borderWidth: 2
   },
   radioDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: colors.ink
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: colors.brandBlue
   },
 
   // Trust badge
@@ -484,33 +491,31 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: colors.canvas,
-    borderTopWidth: 2,
-    borderTopColor: colors.ink,
+    backgroundColor: '#FFFFFF',
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
     paddingHorizontal: 18,
     paddingTop: 12,
     zIndex: 100,
-    elevation: 10
+    elevation: 8
   },
   continueButton: {
     backgroundColor: colors.foundation,
-    borderRadius: 20,
-    borderWidth: 2,
-    borderColor: colors.ink,
-    height: 56,
+    borderRadius: 18,
+    height: 54,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: colors.coral,
+    shadowColor: colors.foundation,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
+    shadowOpacity: 0.18,
+    shadowRadius: 8,
     elevation: 4
   },
   continueButtonText: {
-    fontSize: 17,
-    fontWeight: '900',
-    color: colors.chartreuse,
+    fontSize: 16.5,
+    fontWeight: '800',
+    color: '#FFFFFF',
     letterSpacing: -0.2,
     marginRight: 6
   }

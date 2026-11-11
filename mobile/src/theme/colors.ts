@@ -1,105 +1,111 @@
 export const colors = {
-  // Editorial Foundation Palette
-  foundation: '#11382E',        // Deep ink-green foundation
-  canvas: '#F7F4EB',            // Warm parchment cream
-  ink: '#11362E',               // Primary dark border and text
-  inkMuted: '#4F665E',          // Secondary ink text
-  inkSubtle: '#7E968E',         // Subtle captions & timestamps
+  // Professional Clinical Foundation Palette
+  foundation: '#0A2540',        // Deep clinical midnight navy
+  canvas: '#F8FAFC',            // Crisp, spotless medical off-white / light slate
+  ink: '#0F172A',               // Primary dark slate typography & structural borders
+  inkMuted: '#475569',          // Medium slate for subtitles & secondary body
+  inkSubtle: '#94A3B8',         // Subtle cool slate for captions & timestamps
 
-  // Vibrant Editorial Accents
-  chartreuse: '#D4F754',        // Electric energetic lime
-  chartreuseDark: '#9CB82E',    // Dark chartreuse border/shadow
-  chartreuseLight: '#F3FEE3',   // Soft lime wash
+  // Medical Blue Hierarchy
+  brandBlue: '#2563EB',         // Medical sapphire / royal blue
+  brandBlueDark: '#1D4ED8',     // Deep royal blue
+  brandBlueLight: '#EFF6FF',    // Fresh medical ice-blue wash
+  brandBlueBorder: '#BFDBFE',   // Subtle blue border for active states
+
+  // Mapped Accent Tokens (Professional Replaces Cartoonish)
+  chartreuse: '#2563EB',        // Mapped to Medical Sapphire for professional consistency
+  chartreuseDark: '#1D4ED8',    // Deep royal blue
+  chartreuseLight: '#EFF6FF',   // Soft ice-blue wash
   
-  lilac: '#D8CEF6',             // Editorial pastel purple
-  lilacLight: '#ECE6FB',        // Soft lilac tint
-  lilacDark: '#7C67B8',
+  lilac: '#E0E7FF',             // Soft periwinkle slate
+  lilacLight: '#F1F5F9',        // Clean light slate
+  lilacDark: '#4338CA',
   
-  coral: '#FA7C62',             // Editorial tactile coral accent
-  coralLight: '#FCE5E0',        // Soft peach-coral tint
-  coralDark: '#D4563C',
+  coral: '#EF4444',             // Professional clinical red (alerts & destructive)
+  coralLight: '#FEF2F2',        // Soft emergency red wash
+  coralDark: '#DC2626',
   
-  peach: '#FDE2C3',             // Editorial warm apricot
-  peachLight: '#FEF1DF',
+  peach: '#F1F5F9',             // Clean neutral slate
+  peachLight: '#F8FAFC',
   
-  pink: '#FCE4EC',              // Pastel blush rose
-  pinkDark: '#BE123C',
+  pink: '#FEF2F2',              // Soft clinical blush
+  pinkDark: '#DC2626',
   
-  sky: '#9AD5FD',               // Pastel medical sky blue
-  skyLight: '#E8F5FE',
-  skyDark: '#1D4ED8',
+  sky: '#38BDF8',               // Clean medical sky blue
+  skyLight: '#F0F9FF',
+  skyDark: '#0284C7',
 
   // Semantic UI Mapping
-  primary: '#11382E',           // Deep ink-green
-  primaryDark: '#0A261F',
-  primaryLight: '#E8F5EE',
+  primary: '#0A2540',           // Deep midnight navy
+  primaryDark: '#071A2E',
+  primaryLight: '#EFF6FF',
 
-  secondary: '#D4F754',         // Chartreuse lime
-  secondaryDark: '#9CB82E',
-  secondaryLight: '#F3FEE3',
+  secondary: '#2563EB',         // Medical sapphire blue
+  secondaryDark: '#1D4ED8',
+  secondaryLight: '#DBEAFE',
 
-  background: '#F7F4EB',        // Warm parchment
-  backgroundMuted: '#EDE8DD',
-  surface: '#FFFFFF',           // Pure white
-  surfaceSubtle: '#F2EEE3',
-  surfaceActive: '#F3FEE3',
+  background: '#F8FAFC',        // Clean hospital canvas
+  backgroundMuted: '#F1F5F9',
+  surface: '#FFFFFF',           // Pure white card surfaces
+  surfaceSubtle: '#F8FAFC',
+  surfaceActive: '#EFF6FF',
 
-  // Gradient definitions
-  gradientStart: '#11382E',
-  gradientMiddle: '#144539',
-  gradientEnd: '#0D2D25',
+  // Gradient definitions (Deep Clinical Navy to Sapphire)
+  gradientStart: '#0A2540',
+  gradientMiddle: '#0F3057',
+  gradientEnd: '#061A2D',
 
   // Semantic Status Tokens
-  success: '#10B981',
-  successLight: '#D4F754',
-  successText: '#11362E',
+  success: '#10B981',           // Clinical emerald
+  successLight: '#ECFDF5',      // Mint wash
+  successText: '#065F46',
 
-  warning: '#F59E0B',
-  warningLight: '#FEF3C7',
+  warning: '#F59E0B',           // Amber alert
+  warningLight: '#FFFBEB',
   warningText: '#92400E',
 
-  error: '#E11D48',
-  errorLight: '#FCE5E0',
-  errorText: '#BE123C',
+  error: '#EF4444',             // Clinical alert red
+  errorLight: '#FEF2F2',
+  errorText: '#DC2626',
 
   // Borders & Dividers
-  border: '#11362E',            // Bold 2px dark ink border
-  borderLight: '#DCD6C7',
-  borderDark: '#11362E',
-  borderFocused: '#11362E',
+  border: '#E2E8F0',            // Clean, crisp 1.5px subtle border
+  borderLight: '#F1F5F9',
+  borderDark: '#CBD5E1',
+  borderFocused: '#2563EB',
 
-  // Tactile Hard Shadow Tokens
-  tactileShadow: '#11362E',
-  tactileShadowCoral: '#FA7C62',
-  tactileShadowChartreuse: '#9CB82E',
+  // Tactile Depth & Shadow Tokens
+  tactileShadow: '#0A2540',
+  tactileShadowCoral: 'rgba(239, 68, 68, 0.20)',
+  tactileShadowChartreuse: 'rgba(37, 99, 235, 0.22)',
 
   // Typography Tokens
-  textPrimary: '#11362E',
-  textSecondary: '#4F665E',
-  textMuted: '#7E968E',
+  textPrimary: '#0F172A',
+  textSecondary: '#475569',
+  textMuted: '#94A3B8',
   textInverse: '#FFFFFF',
 
   // Interactive States
-  disabled: '#CBD5CD',
-  disabledText: '#8A9E97',
+  disabled: '#E2E8F0',
+  disabledText: '#94A3B8',
 
-  // Legacy mappings for backward compatibility
-  deptCardiologyBg: '#FCE4EC',
-  deptCardiologyText: '#BE123C',
-  deptNeurologyBg: '#D8CEF6',
-  deptNeurologyText: '#6D28D9',
-  deptDermatologyBg: '#FDE2C3',
-  deptDermatologyText: '#B45309',
-  deptPediatricsBg: '#D8CEF6',
-  deptPediatricsText: '#6D28D9',
-  deptOrthopedicsBg: '#FDE2C3',
-  deptOrthopedicsText: '#047857',
-  deptGeneralBg: '#FFFFFF',
-  deptGeneralText: '#11362E',
-  deptDefaultBg: '#F7F4EB',
-  deptDefaultText: '#11362E',
+  // Professional Medical Department Themes
+  deptCardiologyBg: '#FEF2F2',
+  deptCardiologyText: '#DC2626',
+  deptNeurologyBg: '#EEF2FF',
+  deptNeurologyText: '#4338CA',
+  deptDermatologyBg: '#FFFBEB',
+  deptDermatologyText: '#D97706',
+  deptPediatricsBg: '#F0FDF4',
+  deptPediatricsText: '#15803D',
+  deptOrthopedicsBg: '#ECFDF5',
+  deptOrthopedicsText: '#059669',
+  deptGeneralBg: '#EFF6FF',
+  deptGeneralText: '#1D4ED8',
+  deptDefaultBg: '#F8FAFC',
+  deptDefaultText: '#0F172A',
 
-  pillBackground: '#D4F754',
-  pillBorder: '#11362E',
-  pillShadow: '#11362E'
+  // Shadow Opacities
+  shadowOpacityLow: 0.08,
+  shadowOpacityMedium: 0.16
 };

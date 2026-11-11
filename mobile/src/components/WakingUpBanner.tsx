@@ -21,11 +21,11 @@ export const WakingUpBanner: React.FC = () => {
       style={styles.banner}
     >
       <View style={styles.iconCircle}>
-        <Feather name="cloud" size={14} color={colors.ink} />
+        <Feather name="cloud" size={14} color={colors.brandBlue} />
       </View>
-      <ActivityIndicator size="small" color={colors.ink} style={styles.spinner} />
+      <ActivityIndicator size="small" color={colors.brandBlue} style={styles.spinner} />
       <Text style={styles.text}>
-        Server is waking up (Render cold-start)... Please hold on.
+        Connecting to care servers... Please hold on.
       </Text>
     </View>
   );
@@ -33,22 +33,22 @@ export const WakingUpBanner: React.FC = () => {
 
 const styles = StyleSheet.create({
   banner: {
-    backgroundColor: colors.chartreuse,
+    backgroundColor: colors.brandBlueLight,
     paddingVertical: 8,
     paddingHorizontal: 16,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    borderBottomWidth: 2,
-    borderBottomColor: colors.ink
+    borderBottomWidth: 1.5,
+    borderBottomColor: colors.brandBlueBorder
   },
   iconCircle: {
     width: 26,
     height: 26,
     borderRadius: 13,
     backgroundColor: '#FFFFFF',
-    borderWidth: 1.5,
-    borderColor: colors.ink,
+    borderWidth: 1,
+    borderColor: colors.brandBlueBorder,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 8
@@ -59,6 +59,6 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 12,
     fontWeight: '800',
-    color: colors.ink
+    color: colors.brandBlueDark
   }
 });

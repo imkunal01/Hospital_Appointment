@@ -75,7 +75,7 @@ export const AppointmentsScreen: React.FC<AppointmentsScreenProps> = ({ navigati
             onPress={() => navigation.navigate('BookTab')}
             activeOpacity={0.85}
           >
-            <Feather name="plus" size={22} color={colors.chartreuse} />
+            <Feather name="plus" size={20} color={colors.brandBlue} />
           </TouchableOpacity>
         </View>
 
@@ -267,13 +267,13 @@ export const AppointmentsScreen: React.FC<AppointmentsScreenProps> = ({ navigati
                 activeOpacity={0.88}
               >
                 <View style={styles.actionIconCircle}>
-                  <Feather name="plus" size={22} color={colors.chartreuse} />
+                  <Feather name="plus" size={20} color="#FFFFFF" />
                 </View>
                 <View style={styles.actionTextWrap}>
                   <Text style={styles.actionTitle}>Book another appointment</Text>
                   <Text style={styles.actionSubtitle}>Find a doctor and available time</Text>
                 </View>
-                <Feather name="chevron-right" size={22} color={colors.ink} />
+                <Feather name="chevron-right" size={20} color={colors.brandBlue} />
               </TouchableOpacity>
             ) : null
           }
@@ -296,42 +296,42 @@ const styles = StyleSheet.create({
     paddingBottom: 14
   },
   plusWrapper: {
-    shadowColor: colors.chartreuse,
-    shadowOffset: { width: 3, height: 3 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 3
+    shadowColor: colors.tactileShadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2
   },
   plusButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: colors.foundation,
-    borderWidth: 2,
-    borderColor: colors.ink,
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: colors.brandBlueLight,
+    borderWidth: 1.5,
+    borderColor: colors.brandBlueBorder,
     alignItems: 'center',
     justifyContent: 'center'
   },
   topBarTitle: {
     fontSize: 20,
-    fontWeight: '900',
+    fontWeight: '800',
     color: colors.ink,
     letterSpacing: -0.4
   },
   searchIconButton: {
-    width: 44,
-    height: 44,
+    width: 42,
+    height: 42,
     borderRadius: 14,
     backgroundColor: '#FFFFFF',
-    borderWidth: 2,
-    borderColor: colors.ink,
+    borderWidth: 1.5,
+    borderColor: colors.border,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: colors.ink,
-    shadowOffset: { width: 2, height: 2 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 2
+    shadowColor: colors.tactileShadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 1
   },
 
   searchBarWrapper: {
@@ -342,16 +342,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    borderWidth: 2,
-    borderColor: colors.ink,
+    borderWidth: 1.5,
+    borderColor: colors.border,
     borderRadius: 16,
     paddingHorizontal: 14,
-    height: 48,
-    shadowColor: colors.ink,
-    shadowOffset: { width: 2, height: 2 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 2
+    height: 46,
+    shadowColor: colors.tactileShadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 1
   },
   searchInput: {
     flex: 1,
@@ -366,31 +366,31 @@ const styles = StyleSheet.create({
     marginBottom: 16
   },
   segmentTrack: {
-    height: 52,
-    borderRadius: 26,
-    backgroundColor: colors.foundation,
-    borderWidth: 2,
-    borderColor: '#0B2720',
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: '#0A2540',
+    borderWidth: 1.5,
+    borderColor: '#1E293B',
     flexDirection: 'row',
     padding: 4
   },
   segmentPill: {
     flex: 1,
-    borderRadius: 22,
+    borderRadius: 21,
     alignItems: 'center',
     justifyContent: 'center'
   },
   segmentPillActive: {
-    backgroundColor: colors.chartreuse
+    backgroundColor: colors.brandBlue
   },
   segmentText: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#FFFFFF'
+    color: '#94A3B8'
   },
   segmentTextActive: {
-    color: colors.foundation,
-    fontWeight: '900'
+    color: '#FFFFFF',
+    fontWeight: '800'
   },
 
   // List
@@ -408,43 +408,43 @@ const styles = StyleSheet.create({
     letterSpacing: 1.2
   },
 
-  // Appointment Card (Sky Blue)
+  // Appointment Card: Pure White with Refined Border
   appointmentCard: {
-    backgroundColor: colors.sky,
-    borderWidth: 2,
-    borderColor: colors.ink,
-    borderRadius: 22,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    borderRadius: 20,
     padding: 16,
     flexDirection: 'row',
     alignItems: 'center',
-    shadowColor: colors.ink,
-    shadowOffset: { width: 4, height: 4 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 4,
-    marginBottom: 14
+    shadowColor: colors.tactileShadow,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
+    marginBottom: 12
   },
   dateBlock: {
-    width: 68,
-    height: 74,
+    width: 64,
+    height: 68,
     borderRadius: 16,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 2,
-    borderColor: colors.ink,
+    backgroundColor: colors.brandBlueLight,
+    borderWidth: 1.5,
+    borderColor: colors.brandBlueBorder,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 14
   },
   dateDay: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: '900',
-    color: colors.ink,
-    lineHeight: 26
+    color: colors.brandBlueDark,
+    lineHeight: 24
   },
   dateMonth: {
     fontSize: 11,
-    fontWeight: '900',
-    color: colors.inkMuted,
+    fontWeight: '800',
+    color: colors.brandBlue,
     letterSpacing: 0.5
   },
   detailsCol: {
@@ -509,28 +509,28 @@ const styles = StyleSheet.create({
     color: colors.inkMuted
   },
 
-  // Action Card (Lilac)
+  // Action Card (Soft Medical Blue)
   actionCard: {
-    backgroundColor: colors.lilac,
-    borderWidth: 2,
-    borderColor: colors.ink,
-    borderRadius: 22,
+    backgroundColor: colors.brandBlueLight,
+    borderWidth: 1.5,
+    borderColor: colors.brandBlueBorder,
+    borderRadius: 20,
     padding: 16,
     flexDirection: 'row',
     alignItems: 'center',
-    shadowColor: colors.ink,
-    shadowOffset: { width: 4, height: 4 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 4,
+    shadowColor: colors.brandBlue,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 2,
     marginTop: 6,
     marginBottom: 20
   },
   actionIconCircle: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: colors.foundation,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: colors.brandBlue,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 14
@@ -539,9 +539,9 @@ const styles = StyleSheet.create({
     flex: 1
   },
   actionTitle: {
-    fontSize: 16,
-    fontWeight: '900',
-    color: colors.ink,
+    fontSize: 15.5,
+    fontWeight: '800',
+    color: colors.foundation,
     letterSpacing: -0.2
   },
   actionSubtitle: {

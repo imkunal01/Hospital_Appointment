@@ -2,107 +2,105 @@ import { StyleSheet, Platform } from 'react-native';
 import { colors } from './colors';
 
 export const editorialStyles = StyleSheet.create({
-  // Tactile Outlined Cards with Hard Offset Shadows
+  // Clean Professional Outlined Cards with Refined Depth
   card: {
     backgroundColor: '#FFFFFF',
-    borderWidth: 2,
-    borderColor: colors.ink,
+    borderWidth: 1.5,
+    borderColor: colors.border,
     borderRadius: 20,
-    shadowColor: colors.ink,
-    shadowOffset: { width: 3, height: 3 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 4
+    shadowColor: colors.tactileShadow,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    elevation: 3
   },
   cardChartreuse: {
-    backgroundColor: colors.chartreuse,
+    backgroundColor: colors.brandBlueLight,
     borderWidth: 2,
-    borderColor: colors.ink,
+    borderColor: colors.brandBlue,
     borderRadius: 20,
-    shadowColor: colors.ink,
-    shadowOffset: { width: 3, height: 3 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 4
+    shadowColor: colors.brandBlue,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    elevation: 3
   },
   cardLilac: {
-    backgroundColor: colors.lilac,
-    borderWidth: 2,
-    borderColor: colors.ink,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: colors.border,
     borderRadius: 20,
-    shadowColor: colors.ink,
-    shadowOffset: { width: 3, height: 3 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 4
+    shadowColor: colors.tactileShadow,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    elevation: 3
   },
   cardSky: {
-    backgroundColor: colors.sky,
-    borderWidth: 2,
-    borderColor: colors.ink,
+    backgroundColor: colors.skyLight,
+    borderWidth: 1.5,
+    borderColor: '#BAE6FD',
     borderRadius: 20,
-    shadowColor: colors.ink,
-    shadowOffset: { width: 3, height: 3 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 4
+    shadowColor: colors.tactileShadow,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 2
   },
   cardPeach: {
     backgroundColor: colors.peach,
-    borderWidth: 2,
-    borderColor: colors.ink,
+    borderWidth: 1.5,
+    borderColor: colors.border,
     borderRadius: 20,
-    shadowColor: colors.ink,
-    shadowOffset: { width: 3, height: 3 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 4
+    shadowColor: colors.tactileShadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    elevation: 2
   },
   cardPink: {
     backgroundColor: colors.pink,
-    borderWidth: 2,
-    borderColor: colors.ink,
+    borderWidth: 1.5,
+    borderColor: '#FECACA',
     borderRadius: 20,
-    shadowColor: colors.ink,
-    shadowOffset: { width: 3, height: 3 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 4
+    shadowColor: colors.coral,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 2
   },
 
-  // Primary Editorial Button (Deep ink-green with coral tactile shadow)
+  // Primary Clinical Button (Deep Midnight Navy with Crisp Contrast)
   buttonPrimary: {
     backgroundColor: colors.foundation,
-    borderWidth: 2,
-    borderColor: colors.ink,
     borderRadius: 18,
-    minHeight: 56,
+    minHeight: 54,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 20,
-    shadowColor: colors.coral,
+    paddingHorizontal: 22,
+    shadowColor: colors.foundation,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
+    shadowOpacity: 0.20,
+    shadowRadius: 10,
     elevation: 4
   },
 
-  // Tactile Icon Button (Back Button, Search, Notifications)
+  // Clean Icon Button (Back Button, Search, Notifications)
   iconButton: {
     width: 44,
     height: 44,
     borderRadius: 14,
     backgroundColor: '#FFFFFF',
-    borderWidth: 2,
-    borderColor: colors.ink,
+    borderWidth: 1.5,
+    borderColor: colors.border,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: colors.ink,
-    shadowOffset: { width: 2, height: 2 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 3
+    shadowColor: colors.tactileShadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    elevation: 2
   },
 
   // Pills and Badges
@@ -111,12 +109,12 @@ export const editorialStyles = StyleSheet.create({
     paddingVertical: 5,
     borderRadius: 999,
     borderWidth: 1.5,
-    borderColor: colors.ink
+    borderColor: colors.border
   },
   statusConfirmedPill: {
-    backgroundColor: colors.chartreuse,
+    backgroundColor: colors.successLight,
     borderWidth: 1.5,
-    borderColor: colors.ink,
+    borderColor: colors.success,
     borderRadius: 999,
     paddingHorizontal: 12,
     paddingVertical: 4,
@@ -126,25 +124,23 @@ export const editorialStyles = StyleSheet.create({
 
   // Progress Stepper Bar
   stepperTrack: {
-    height: 8,
-    backgroundColor: '#E4DFD5',
-    borderRadius: 4,
-    borderWidth: 1.5,
-    borderColor: colors.ink,
+    height: 6,
+    backgroundColor: '#E2E8F0',
+    borderRadius: 3,
     overflow: 'hidden'
   },
   stepperFill: {
     height: '100%',
-    backgroundColor: colors.chartreuse,
-    borderRadius: 2
+    backgroundColor: colors.brandBlue,
+    borderRadius: 3
   },
 
   // Editorial Typography
   displayTitle: {
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: '900',
     color: colors.ink,
-    letterSpacing: -0.6
+    letterSpacing: -0.5
   },
   eyebrow: {
     fontSize: 11,
@@ -154,4 +150,3 @@ export const editorialStyles = StyleSheet.create({
     textTransform: 'uppercase'
   }
 });
-

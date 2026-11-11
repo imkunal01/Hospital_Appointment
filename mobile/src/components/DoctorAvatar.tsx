@@ -52,7 +52,7 @@ export const DoctorAvatar: React.FC<DoctorAvatarProps> = ({
             {initials}
           </Text>
           <View style={styles.badgeWrap}>
-            <MaterialCommunityIcons name="doctor" size={14} color={colors.ink} />
+            <MaterialCommunityIcons name="doctor" size={14} color="#FFFFFF" />
           </View>
         </View>
       )}
@@ -63,8 +63,8 @@ export const DoctorAvatar: React.FC<DoctorAvatarProps> = ({
 const styles = StyleSheet.create({
   container: {
     backgroundColor: '#FFFFFF',
-    borderWidth: 2,
-    borderColor: colors.ink,
+    borderWidth: 1.5,
+    borderColor: colors.border,
     overflow: 'hidden',
     position: 'relative',
     alignItems: 'center',
@@ -77,21 +77,20 @@ const styles = StyleSheet.create({
   fallback: {
     width: '100%',
     height: '100%',
-    backgroundColor: colors.lilac,
+    backgroundColor: colors.brandBlueLight,
     alignItems: 'center',
     justifyContent: 'center'
   },
   initials: {
-    fontWeight: '900',
-    color: colors.ink
+    fontWeight: '800',
+    color: colors.brandBlueDark
   },
   badgeWrap: {
     position: 'absolute',
     bottom: 2,
     right: 2,
-    backgroundColor: colors.chartreuse,
+    backgroundColor: colors.brandBlue,
     borderRadius: 8,
-    padding: 1
+    padding: 2
   }
 });
-

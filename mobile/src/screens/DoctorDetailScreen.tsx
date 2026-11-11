@@ -328,7 +328,7 @@ export const DoctorDetailScreen: React.FC<DoctorDetailScreenProps> = ({
           <Text style={styles.confirmButtonText}>
             {bookSlotMutation.isPending ? 'Securing Slot...' : 'Confirm appointment'}
           </Text>
-          <Feather name="chevron-right" size={22} color={colors.chartreuse} />
+          <Feather name="chevron-right" size={20} color="#FFFFFF" />
         </TouchableOpacity>
       </View>
     </View>
@@ -352,19 +352,19 @@ const styles = StyleSheet.create({
     height: 44,
     borderRadius: 14,
     backgroundColor: '#FFFFFF',
-    borderWidth: 2,
-    borderColor: colors.ink,
+    borderWidth: 1.5,
+    borderColor: colors.border,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: colors.ink,
-    shadowOffset: { width: 2, height: 2 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 3
+    shadowColor: colors.tactileShadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 2
   },
   topBarTitle: {
     fontSize: 18,
-    fontWeight: '900',
+    fontWeight: '800',
     color: colors.ink,
     letterSpacing: -0.3
   },
@@ -388,19 +388,17 @@ const styles = StyleSheet.create({
   stepName: {
     fontSize: 11,
     fontWeight: '800',
-    color: colors.ink
+    color: colors.brandBlue
   },
   stepperTrack: {
-    height: 7,
-    backgroundColor: '#E4DFD5',
-    borderRadius: 4,
-    borderWidth: 1.5,
-    borderColor: colors.ink,
+    height: 6,
+    backgroundColor: '#E2E8F0',
+    borderRadius: 3,
     overflow: 'hidden'
   },
   stepperFill: {
     height: '100%',
-    backgroundColor: colors.chartreuse,
+    backgroundColor: colors.brandBlue,
     borderRadius: 3
   },
 
@@ -411,19 +409,19 @@ const styles = StyleSheet.create({
 
   // Selected Doctor Banner
   doctorBanner: {
-    backgroundColor: colors.lilac,
-    borderWidth: 2,
-    borderColor: colors.ink,
-    borderRadius: 22,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    borderRadius: 20,
     padding: 16,
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 20,
-    shadowColor: colors.ink,
-    shadowOffset: { width: 4, height: 4 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 4
+    shadowColor: colors.tactileShadow,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3
   },
   avatarBorder: {
     marginRight: 14
@@ -434,13 +432,13 @@ const styles = StyleSheet.create({
   bannerEyebrow: {
     fontSize: 10,
     fontWeight: '800',
-    color: colors.inkMuted,
+    color: colors.brandBlue,
     letterSpacing: 1,
     marginBottom: 2
   },
   bannerDoctorName: {
-    fontSize: 18,
-    fontWeight: '900',
+    fontSize: 17,
+    fontWeight: '800',
     color: colors.ink,
     letterSpacing: -0.3
   },
@@ -456,10 +454,10 @@ const styles = StyleSheet.create({
     marginBottom: 8
   },
   sectionTitle: {
-    fontSize: 22,
-    fontWeight: '900',
+    fontSize: 20,
+    fontWeight: '800',
     color: colors.ink,
-    letterSpacing: -0.5
+    letterSpacing: -0.4
   },
   monthNavRow: {
     flexDirection: 'row',
@@ -468,23 +466,23 @@ const styles = StyleSheet.create({
     marginBottom: 14
   },
   monthNavBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     backgroundColor: '#FFFFFF',
-    borderWidth: 2,
-    borderColor: colors.ink,
+    borderWidth: 1.5,
+    borderColor: colors.border,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: colors.ink,
-    shadowOffset: { width: 2, height: 2 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 2
+    shadowColor: colors.tactileShadow,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 2,
+    elevation: 1
   },
   monthYearText: {
-    fontSize: 17,
-    fontWeight: '900',
+    fontSize: 16,
+    fontWeight: '800',
     color: colors.ink,
     letterSpacing: -0.2
   },
@@ -497,20 +495,21 @@ const styles = StyleSheet.create({
   dateCard: {
     width: 64,
     height: 84,
-    borderRadius: 18,
+    borderRadius: 16,
     backgroundColor: '#FFFFFF',
-    borderWidth: 2,
-    borderColor: colors.ink,
+    borderWidth: 1.5,
+    borderColor: colors.border,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: colors.ink,
-    shadowOffset: { width: 3, height: 3 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 3
+    shadowColor: colors.tactileShadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    elevation: 2
   },
   dateCardSelected: {
-    backgroundColor: colors.chartreuse
+    backgroundColor: colors.brandBlue,
+    borderColor: colors.brandBlue
   },
   dateWeekday: {
     fontSize: 12,
@@ -524,13 +523,13 @@ const styles = StyleSheet.create({
     color: colors.ink
   },
   dateTextSelected: {
-    color: colors.ink
+    color: '#FFFFFF'
   },
   dateDot: {
     width: 5,
     height: 5,
     borderRadius: 2.5,
-    backgroundColor: colors.ink,
+    backgroundColor: '#FFFFFF',
     marginTop: 3
   },
 
@@ -551,50 +550,53 @@ const styles = StyleSheet.create({
   },
   slotChip: {
     width: '31%',
-    minHeight: 48,
+    minHeight: 46,
     borderRadius: 14,
     backgroundColor: '#FFFFFF',
-    borderWidth: 2,
-    borderColor: colors.ink,
+    borderWidth: 1.5,
+    borderColor: colors.border,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: colors.ink,
-    shadowOffset: { width: 2, height: 2 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
+    shadowColor: colors.tactileShadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
     elevation: 2
   },
   slotChipSelected: {
     backgroundColor: colors.foundation,
-    shadowColor: colors.coral,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 4
+    borderColor: colors.foundation,
+    shadowColor: colors.foundation,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.18,
+    shadowRadius: 6,
+    elevation: 3
   },
   slotChipDisabled: {
-    backgroundColor: '#E8E4DA',
-    borderColor: '#C7C2B6',
+    backgroundColor: '#F1F5F9',
+    borderColor: '#E2E8F0',
     shadowOpacity: 0,
     elevation: 0
   },
   slotTimeText: {
     fontSize: 13.5,
-    fontWeight: '800',
+    fontWeight: '700',
     color: colors.ink
   },
   slotTimeTextSelected: {
-    color: colors.chartreuse,
-    fontWeight: '900'
+    color: '#FFFFFF',
+    fontWeight: '800'
   },
   slotTimeTextDisabled: {
-    color: '#9E988A'
+    color: '#94A3B8'
   },
 
   errorBanner: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.coralLight,
-    borderWidth: 2,
-    borderColor: colors.error,
+    borderWidth: 1.5,
+    borderColor: '#FCA5A5',
     borderRadius: 14,
     padding: 12,
     marginTop: 16
@@ -603,7 +605,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 13,
     fontWeight: '700',
-    color: colors.error
+    color: colors.coralDark
   },
 
   // Bottom Sticky CTA
@@ -612,39 +614,36 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: colors.canvas,
-    borderTopWidth: 2,
-    borderTopColor: colors.ink,
+    backgroundColor: '#FFFFFF',
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
     paddingHorizontal: 18,
     paddingTop: 12,
     zIndex: 100,
-    elevation: 10
+    elevation: 8
   },
   confirmButton: {
     backgroundColor: colors.foundation,
-    borderRadius: 20,
-    borderWidth: 2,
-    borderColor: colors.ink,
-    height: 56,
+    borderRadius: 18,
+    height: 54,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: colors.coral,
+    shadowColor: colors.foundation,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
+    shadowOpacity: 0.18,
+    shadowRadius: 8,
     elevation: 4
   },
   confirmButtonDisabled: {
-    backgroundColor: '#E2DDD2',
-    borderColor: '#B8B2A6',
+    backgroundColor: '#E2E8F0',
     shadowOpacity: 0,
     elevation: 0
   },
   confirmButtonText: {
-    fontSize: 17,
-    fontWeight: '900',
-    color: colors.chartreuse,
+    fontSize: 16.5,
+    fontWeight: '800',
+    color: '#FFFFFF',
     letterSpacing: -0.2,
     marginRight: 6
   }

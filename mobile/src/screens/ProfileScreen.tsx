@@ -95,7 +95,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
             onPress={() => navigation.navigate('BookTab')}
             activeOpacity={0.85}
           >
-            <Feather name="plus" size={22} color={colors.chartreuse} />
+            <Feather name="plus" size={20} color={colors.brandBlue} />
           </TouchableOpacity>
         </View>
 
@@ -146,7 +146,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
             {/* Push Notifications Row */}
             <View style={styles.settingRow}>
               <View style={styles.settingIconCircle}>
-                <Feather name="bell" size={18} color={colors.ink} />
+                <Feather name="bell" size={18} color={colors.brandBlue} />
               </View>
               <View style={styles.settingTextWrap}>
                 <Text style={styles.settingTitle}>Push notifications</Text>
@@ -155,9 +155,9 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
               <Switch
                 value={pushEnabled}
                 onValueChange={togglePush}
-                trackColor={{ false: '#E2DDD2', true: colors.chartreuse }}
+                trackColor={{ false: '#E2E8F0', true: colors.brandBlue }}
                 thumbColor={pushEnabled ? colors.foundation : '#FFFFFF'}
-                ios_backgroundColor="#E2DDD2"
+                ios_backgroundColor="#E2E8F0"
               />
             </View>
 
@@ -166,7 +166,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
             {/* Email Reminders Row */}
             <View style={styles.settingRow}>
               <View style={styles.settingIconCircle}>
-                <Feather name="file-text" size={18} color={colors.ink} />
+                <Feather name="file-text" size={18} color={colors.brandBlue} />
               </View>
               <View style={styles.settingTextWrap}>
                 <Text style={styles.settingTitle}>Email reminders</Text>
@@ -175,9 +175,9 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
               <Switch
                 value={emailEnabled}
                 onValueChange={toggleEmail}
-                trackColor={{ false: '#E2DDD2', true: colors.chartreuse }}
+                trackColor={{ false: '#E2E8F0', true: colors.brandBlue }}
                 thumbColor={emailEnabled ? colors.foundation : '#FFFFFF'}
-                ios_backgroundColor="#E2DDD2"
+                ios_backgroundColor="#E2E8F0"
               />
             </View>
           </View>
@@ -281,24 +281,24 @@ const styles = StyleSheet.create({
   },
   topBarTitle: {
     fontSize: 20,
-    fontWeight: '900',
+    fontWeight: '800',
     color: colors.ink,
     letterSpacing: -0.4
   },
   gearButton: {
-    width: 44,
-    height: 44,
+    width: 42,
+    height: 42,
     borderRadius: 14,
     backgroundColor: '#FFFFFF',
-    borderWidth: 2,
-    borderColor: colors.ink,
+    borderWidth: 1.5,
+    borderColor: colors.border,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: colors.ink,
-    shadowOffset: { width: 2, height: 2 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 2
+    shadowColor: colors.tactileShadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 1
   },
 
   scrollContent: {
@@ -306,69 +306,69 @@ const styles = StyleSheet.create({
     paddingBottom: 130 // Clearance for floating navigation dock
   },
 
-  // Profile Hero Card (Chartreuse)
+  // Profile Hero Card: Clean Medical Sapphire Wash
   profileHeroCard: {
-    backgroundColor: colors.chartreuse,
-    borderWidth: 2,
-    borderColor: colors.ink,
+    backgroundColor: colors.brandBlueLight,
+    borderWidth: 1.5,
+    borderColor: colors.brandBlueBorder,
     borderRadius: 22,
     padding: 16,
     flexDirection: 'row',
     alignItems: 'center',
-    shadowColor: colors.ink,
-    shadowOffset: { width: 4, height: 4 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 4,
+    shadowColor: colors.brandBlue,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
     marginBottom: 20
   },
   avatarCircle: {
-    width: 68,
-    height: 68,
-    borderRadius: 34,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
     backgroundColor: colors.foundation,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 14
   },
   avatarText: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: '900',
-    color: colors.chartreuse,
+    color: '#FFFFFF',
     letterSpacing: -0.5
   },
   heroInfoCol: {
     flex: 1
   },
   userName: {
-    fontSize: 19,
-    fontWeight: '900',
-    color: colors.ink,
+    fontSize: 18,
+    fontWeight: '800',
+    color: colors.foundation,
     letterSpacing: -0.3
   },
   patientIdText: {
     fontSize: 12.5,
     fontWeight: '700',
-    color: colors.inkMuted,
+    color: colors.brandBlue,
     marginTop: 2
   },
   editButton: {
     backgroundColor: '#FFFFFF',
-    borderWidth: 2,
-    borderColor: colors.ink,
+    borderWidth: 1.5,
+    borderColor: colors.brandBlueBorder,
     borderRadius: 999,
     paddingHorizontal: 16,
     paddingVertical: 6,
-    shadowColor: colors.ink,
-    shadowOffset: { width: 2, height: 2 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 2
+    shadowColor: colors.brandBlue,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 2,
+    elevation: 1
   },
   editText: {
     fontSize: 12,
-    fontWeight: '900',
-    color: colors.ink
+    fontWeight: '800',
+    color: colors.brandBlue
   },
 
   // Section Blocks
@@ -384,16 +384,16 @@ const styles = StyleSheet.create({
   },
   editorialCard: {
     backgroundColor: '#FFFFFF',
-    borderWidth: 2,
-    borderColor: colors.ink,
+    borderWidth: 1.5,
+    borderColor: colors.border,
     borderRadius: 20,
-    paddingVertical: 6,
+    paddingVertical: 4,
     paddingHorizontal: 16,
-    shadowColor: colors.ink,
-    shadowOffset: { width: 3, height: 3 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 3
+    shadowColor: colors.tactileShadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    elevation: 2
   },
 
   settingRow: {
@@ -402,12 +402,12 @@ const styles = StyleSheet.create({
     paddingVertical: 12
   },
   settingIconCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: colors.lilacLight,
-    borderWidth: 1.5,
-    borderColor: colors.ink,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: colors.brandBlueLight,
+    borderWidth: 1,
+    borderColor: colors.brandBlueBorder,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12
@@ -418,7 +418,7 @@ const styles = StyleSheet.create({
   },
   settingTitle: {
     fontSize: 14.5,
-    fontWeight: '800',
+    fontWeight: '700',
     color: colors.ink
   },
   settingSubtitle: {
@@ -428,8 +428,8 @@ const styles = StyleSheet.create({
     marginTop: 1
   },
   divider: {
-    height: 1.5,
-    backgroundColor: '#EAE6DC'
+    height: 1,
+    backgroundColor: '#F1F5F9'
   },
 
   navRow: {
@@ -440,36 +440,36 @@ const styles = StyleSheet.create({
   navTitle: {
     flex: 1,
     fontSize: 14.5,
-    fontWeight: '800',
+    fontWeight: '700',
     color: colors.ink
   },
 
   // Sign out button
   signOutButton: {
     backgroundColor: colors.coralLight,
-    borderWidth: 2,
-    borderColor: colors.ink,
-    borderRadius: 20,
-    height: 52,
+    borderWidth: 1.5,
+    borderColor: '#FCA5A5',
+    borderRadius: 18,
+    height: 50,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: colors.ink,
-    shadowOffset: { width: 3, height: 3 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 3,
+    shadowColor: colors.coral,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 2,
     marginTop: 6,
     marginBottom: 16
   },
   signOutText: {
-    fontSize: 15,
-    fontWeight: '900',
-    color: colors.ink
+    fontSize: 14.5,
+    fontWeight: '800',
+    color: colors.coralDark
   },
 
   footerText: {
     fontSize: 11.5,
-    fontWeight: '700',
+    fontWeight: '600',
     color: colors.inkSubtle,
     textAlign: 'center',
     marginBottom: 20

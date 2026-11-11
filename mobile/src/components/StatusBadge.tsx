@@ -15,33 +15,33 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, style }) => {
         return {
           iconName: 'checkmark-circle' as const,
           label: 'CONFIRMED',
-          bg: colors.chartreuse,
-          textColor: colors.ink,
-          borderColor: colors.ink
+          bg: colors.successLight,
+          textColor: colors.successText,
+          borderColor: colors.success
         };
       case 'CANCELLED':
         return {
           iconName: 'close-circle' as const,
           label: 'CANCELLED',
           bg: colors.coralLight,
-          textColor: colors.error,
-          borderColor: colors.error
+          textColor: colors.coralDark,
+          borderColor: '#FCA5A5'
         };
       case 'COMPLETED':
         return {
           iconName: 'checkmark-done-circle' as const,
           label: 'COMPLETED',
-          bg: colors.lilac,
-          textColor: colors.ink,
-          borderColor: colors.ink
+          bg: colors.brandBlueLight,
+          textColor: colors.brandBlueDark,
+          borderColor: colors.brandBlueBorder
         };
       default:
         return {
           iconName: 'ellipse' as const,
           label: status,
-          bg: '#FFFFFF',
+          bg: '#F8FAFC',
           textColor: colors.ink,
-          borderColor: colors.ink
+          borderColor: colors.border
         };
     }
   };
@@ -75,18 +75,18 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 10,
-    paddingVertical: 3.5,
+    paddingHorizontal: 9,
+    paddingVertical: 3,
     borderRadius: 999,
-    borderWidth: 1.5,
+    borderWidth: 1,
     alignSelf: 'flex-start'
   },
   icon: {
-    marginRight: 5
+    marginRight: 4
   },
   text: {
     fontSize: 10.5,
-    fontWeight: '900',
+    fontWeight: '800',
     letterSpacing: 0.4
   }
 });

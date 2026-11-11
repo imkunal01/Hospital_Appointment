@@ -42,7 +42,7 @@ export const Button: React.FC<ButtonProps> = ({
       return (
         <ActivityIndicator
           size="small"
-          color={variant === 'primary' ? colors.chartreuse : colors.ink}
+          color={variant === 'primary' ? '#FFFFFF' : colors.brandBlue}
         />
       );
     }
@@ -71,7 +71,7 @@ export const Button: React.FC<ButtonProps> = ({
           <Feather
             name={iconName as any}
             size={18}
-            color={variant === 'primary' ? colors.chartreuse : colors.ink}
+            color={variant === 'primary' ? '#FFFFFF' : colors.brandBlue}
             style={styles.icon}
           />
         ) : null}
@@ -113,9 +113,9 @@ export const Button: React.FC<ButtonProps> = ({
 const styles = StyleSheet.create({
   baseContainer: {
     minHeight: spacing.minTouchTarget,
-    borderRadius: 18,
-    borderWidth: 2,
-    borderColor: colors.ink,
+    borderRadius: 16,
+    borderWidth: 1.5,
+    borderColor: 'transparent',
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 14,
@@ -135,56 +135,60 @@ const styles = StyleSheet.create({
     marginLeft: 8
   },
 
-  // Primary: Deep ink-green with coral tactile offset shadow
+  // Primary: Deep midnight navy with crisp white text
   primaryContainer: {
     backgroundColor: colors.foundation,
-    shadowColor: colors.coral,
+    borderColor: colors.foundation,
+    shadowColor: colors.foundation,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 4
+    shadowOpacity: 0.18,
+    shadowRadius: 8,
+    elevation: 3
   },
   primaryText: {
-    color: colors.chartreuse,
-    fontWeight: '900'
+    color: '#FFFFFF',
+    fontWeight: '800'
   },
 
-  // Secondary: Chartreuse lime with dark tactile offset shadow
+  // Secondary: Medical ice-blue with royal blue border & text
   secondaryContainer: {
-    backgroundColor: colors.chartreuse,
-    shadowColor: colors.ink,
-    shadowOffset: { width: 2, height: 3 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 3
+    backgroundColor: colors.brandBlueLight,
+    borderColor: colors.brandBlue,
+    shadowColor: colors.brandBlue,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2
   },
   secondaryText: {
-    color: colors.ink,
-    fontWeight: '900'
+    color: colors.brandBlue,
+    fontWeight: '800'
   },
 
-  // Danger: Pastel coral with dark tactile shadow
+  // Danger: Soft emergency red with alert text
   dangerContainer: {
     backgroundColor: colors.coralLight,
-    shadowColor: colors.ink,
-    shadowOffset: { width: 2, height: 3 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 3
+    borderColor: '#FCA5A5',
+    shadowColor: colors.coral,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 2
   },
   dangerText: {
-    color: colors.ink,
-    fontWeight: '900'
+    color: colors.coralDark,
+    fontWeight: '800'
   },
 
-  // Outline: Off-white canvas with dark shadow
+  // Outline: Crisp white with subtle border
   outlineContainer: {
     backgroundColor: '#FFFFFF',
-    shadowColor: colors.ink,
-    shadowOffset: { width: 2, height: 2 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 2
+    borderColor: colors.border,
+    shadowColor: colors.tactileShadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 1
   },
   outlineText: {
     color: colors.ink,
@@ -193,13 +197,13 @@ const styles = StyleSheet.create({
 
   // Disabled
   disabledContainer: {
-    backgroundColor: '#E2DDD2',
-    borderColor: '#B8B2A6',
+    backgroundColor: '#E2E8F0',
+    borderColor: '#CBD5E1',
     shadowOpacity: 0,
     elevation: 0
   },
   disabledText: {
-    color: '#8A9E97',
+    color: '#94A3B8',
     fontWeight: '700'
   }
 });

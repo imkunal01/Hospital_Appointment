@@ -445,7 +445,7 @@ export const AppointmentDetailScreen: React.FC<AppointmentDetailScreenProps> = (
                       <Text
                         style={[
                           styles.modalSlotText,
-                          isSelected && { color: colors.chartreuse, fontWeight: '900' }
+                          isSelected && { color: '#FFFFFF', fontWeight: '800' }
                         ]}
                       >
                         {timeText}
@@ -541,34 +541,35 @@ const styles = StyleSheet.create({
     marginBottom: 16
   },
   statusPill: {
-    backgroundColor: colors.chartreuse,
+    backgroundColor: colors.successLight,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 999,
-    borderWidth: 1.5,
-    borderColor: colors.ink,
+    borderWidth: 1,
+    borderColor: colors.success,
     flexDirection: 'row',
     alignItems: 'center'
   },
   statusCancelledPill: {
-    backgroundColor: colors.coralLight
+    backgroundColor: colors.coralLight,
+    borderColor: '#FCA5A5'
   },
   statusDot: {
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: colors.ink,
+    backgroundColor: colors.success,
     marginRight: 6
   },
   statusText: {
     fontSize: 11,
     fontWeight: '800',
-    color: colors.ink
+    color: colors.successText
   },
   refText: {
     fontSize: 12,
     fontWeight: '800',
-    color: colors.inkMuted,
+    color: colors.brandBlue,
     letterSpacing: 0.5
   },
   doctorRow: {
@@ -578,7 +579,7 @@ const styles = StyleSheet.create({
   },
   doctorName: {
     fontSize: 19,
-    fontWeight: '900',
+    fontWeight: '800',
     color: colors.ink,
     letterSpacing: -0.3
   },
@@ -589,8 +590,8 @@ const styles = StyleSheet.create({
     marginTop: 2
   },
   divider: {
-    height: 1.5,
-    backgroundColor: '#82C1ED',
+    height: 1,
+    backgroundColor: '#E2E8F0',
     marginBottom: 16
   },
   infoRow: {
@@ -599,12 +600,12 @@ const styles = StyleSheet.create({
     marginBottom: 14
   },
   infoIconCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#FFFFFF',
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: colors.brandBlueLight,
     borderWidth: 1.5,
-    borderColor: colors.ink,
+    borderColor: colors.brandBlueBorder,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 14
@@ -625,9 +626,9 @@ const styles = StyleSheet.create({
   offlineBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.peach,
-    borderWidth: 2,
-    borderColor: colors.ink,
+    backgroundColor: colors.warningLight,
+    borderWidth: 1.5,
+    borderColor: '#FDE68A',
     borderRadius: 16,
     padding: 14,
     marginBottom: 16
@@ -636,7 +637,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 12.5,
     fontWeight: '700',
-    color: colors.ink
+    color: colors.warningText
   },
 
   // Action Buttons
@@ -645,48 +646,48 @@ const styles = StyleSheet.create({
     marginBottom: 20
   },
   rescheduleBtn: {
-    backgroundColor: colors.lilac,
-    borderWidth: 2,
-    borderColor: colors.ink,
-    borderRadius: 18,
-    height: 54,
+    backgroundColor: colors.brandBlueLight,
+    borderWidth: 1.5,
+    borderColor: colors.brandBlue,
+    borderRadius: 16,
+    height: 52,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: colors.ink,
-    shadowOffset: { width: 3, height: 3 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 3
+    shadowColor: colors.brandBlue,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2
   },
   rescheduleBtnText: {
     fontSize: 15,
-    fontWeight: '900',
-    color: colors.ink
+    fontWeight: '800',
+    color: colors.brandBlue
   },
   cancelBtn: {
     backgroundColor: colors.coralLight,
-    borderWidth: 2,
-    borderColor: colors.ink,
-    borderRadius: 18,
-    height: 54,
+    borderWidth: 1.5,
+    borderColor: '#FCA5A5',
+    borderRadius: 16,
+    height: 52,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: colors.ink,
-    shadowOffset: { width: 3, height: 3 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 3
+    shadowColor: colors.coral,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 2
   },
   cancelBtnText: {
     fontSize: 15,
-    fontWeight: '900',
-    color: colors.error
+    fontWeight: '800',
+    color: colors.coralDark
   },
   btnDisabled: {
-    backgroundColor: '#E2DDD2',
-    borderColor: '#B8B2A6',
+    backgroundColor: '#E2E8F0',
+    borderColor: '#CBD5E1',
     shadowOpacity: 0,
     elevation: 0
   },
@@ -694,15 +695,15 @@ const styles = StyleSheet.create({
   // Reports
   reportsSection: {
     backgroundColor: '#FFFFFF',
-    borderWidth: 2,
-    borderColor: colors.ink,
-    borderRadius: 22,
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    borderRadius: 20,
     padding: 18,
-    shadowColor: colors.ink,
-    shadowOffset: { width: 3, height: 3 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 3,
+    shadowColor: colors.tactileShadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    elevation: 2,
     marginBottom: 20
   },
   reportsHeader: {
@@ -712,7 +713,7 @@ const styles = StyleSheet.create({
   },
   reportsTitle: {
     fontSize: 16,
-    fontWeight: '900',
+    fontWeight: '800',
     color: colors.ink,
     marginLeft: 8
   },
@@ -730,9 +731,9 @@ const styles = StyleSheet.create({
   reportCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.lilacLight,
-    borderWidth: 1.5,
-    borderColor: colors.ink,
+    backgroundColor: colors.brandBlueLight,
+    borderWidth: 1,
+    borderColor: colors.brandBlueBorder,
     borderRadius: 14,
     padding: 12,
     marginBottom: 10
@@ -742,8 +743,8 @@ const styles = StyleSheet.create({
     height: 36,
     borderRadius: 18,
     backgroundColor: '#FFFFFF',
-    borderWidth: 1.5,
-    borderColor: colors.ink,
+    borderWidth: 1,
+    borderColor: colors.brandBlueBorder,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12
@@ -784,13 +785,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingBottom: 16,
-    borderBottomWidth: 2,
-    borderBottomColor: colors.ink,
+    borderBottomWidth: 1.5,
+    borderBottomColor: colors.border,
     marginBottom: 14
   },
   modalTitle: {
     fontSize: 20,
-    fontWeight: '900',
+    fontWeight: '800',
     color: colors.ink
   },
   modalCloseBtn: {
@@ -798,8 +799,8 @@ const styles = StyleSheet.create({
     height: 36,
     borderRadius: 18,
     backgroundColor: '#FFFFFF',
-    borderWidth: 2,
-    borderColor: colors.ink,
+    borderWidth: 1.5,
+    borderColor: colors.border,
     alignItems: 'center',
     justifyContent: 'center'
   },
@@ -818,18 +819,19 @@ const styles = StyleSheet.create({
     height: 74,
     borderRadius: 16,
     backgroundColor: '#FFFFFF',
-    borderWidth: 2,
-    borderColor: colors.ink,
+    borderWidth: 1.5,
+    borderColor: colors.border,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: colors.ink,
-    shadowOffset: { width: 2, height: 2 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
+    shadowColor: colors.tactileShadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
     elevation: 2
   },
   modalDateCardActive: {
-    backgroundColor: colors.chartreuse
+    backgroundColor: colors.brandBlue,
+    borderColor: colors.brandBlue
   },
   modalDateDay: {
     fontSize: 11,
@@ -838,7 +840,7 @@ const styles = StyleSheet.create({
   },
   modalDateNum: {
     fontSize: 18,
-    fontWeight: '900',
+    fontWeight: '800',
     color: colors.ink
   },
   modalSlotsGrid: {
@@ -852,30 +854,31 @@ const styles = StyleSheet.create({
     height: 46,
     borderRadius: 12,
     backgroundColor: '#FFFFFF',
-    borderWidth: 2,
-    borderColor: colors.ink,
+    borderWidth: 1.5,
+    borderColor: colors.border,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: colors.ink,
-    shadowOffset: { width: 2, height: 2 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 2
+    shadowColor: colors.tactileShadow,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1
   },
   modalSlotChipActive: {
-    backgroundColor: colors.foundation
+    backgroundColor: colors.foundation,
+    borderColor: colors.foundation
   },
   modalSlotText: {
     fontSize: 13,
-    fontWeight: '800',
+    fontWeight: '700',
     color: colors.ink
   },
   modalErrorBanner: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.coralLight,
-    borderWidth: 2,
-    borderColor: colors.error,
+    borderWidth: 1.5,
+    borderColor: '#FCA5A5',
     borderRadius: 12,
     padding: 10,
     marginBottom: 12
@@ -884,30 +887,28 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 12.5,
     fontWeight: '700',
-    color: colors.error
+    color: colors.coralDark
   },
   modalFooter: {
     paddingTop: 14,
-    borderTopWidth: 2,
-    borderTopColor: colors.ink
+    borderTopWidth: 1,
+    borderTopColor: colors.border
   },
   modalConfirmBtn: {
     backgroundColor: colors.foundation,
     borderRadius: 18,
-    borderWidth: 2,
-    borderColor: colors.ink,
-    height: 54,
+    height: 52,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: colors.coral,
+    shadowColor: colors.foundation,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 4
+    shadowOpacity: 0.18,
+    shadowRadius: 6,
+    elevation: 3
   },
   modalConfirmText: {
     fontSize: 16,
-    fontWeight: '900',
-    color: colors.chartreuse
+    fontWeight: '800',
+    color: '#FFFFFF'
   }
 });

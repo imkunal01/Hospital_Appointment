@@ -120,12 +120,9 @@ export const ProfileSetupScreen: React.FC = () => {
             { paddingTop: Math.max(insets.top, Platform.OS === 'ios' ? 20 : 16) + 16 }
           ]}
         >
-          <View style={styles.decorRing} />
-          <View style={styles.decorCoralArch} />
-
           <View style={styles.brandRow}>
             <View style={styles.logoPlusCircle}>
-              <Feather name="plus" size={18} color={colors.foundation} />
+              <Feather name="plus" size={18} color="#FFFFFF" />
             </View>
             <Text style={styles.brandTitle}>medibook</Text>
           </View>
@@ -258,27 +255,6 @@ const styles = StyleSheet.create({
     position: 'relative',
     overflow: 'hidden'
   },
-  decorRing: {
-    position: 'absolute',
-    top: -20,
-    right: -30,
-    width: 150,
-    height: 150,
-    borderRadius: 75,
-    borderWidth: 26,
-    borderColor: colors.lilac,
-    opacity: 0.85
-  },
-  decorCoralArch: {
-    position: 'absolute',
-    top: 50,
-    right: 40,
-    width: 80,
-    height: 100,
-    borderRadius: 40,
-    backgroundColor: colors.coral,
-    opacity: 0.95
-  },
   brandRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -288,7 +264,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: colors.chartreuse,
+    backgroundColor: colors.brandBlue,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 10
@@ -300,24 +276,26 @@ const styles = StyleSheet.create({
     letterSpacing: -0.5
   },
   greetingPill: {
-    backgroundColor: colors.chartreuse,
+    backgroundColor: '#1E3A8A',
     alignSelf: 'flex-start',
     paddingHorizontal: 12,
     paddingVertical: 5,
     borderRadius: 999,
-    marginBottom: 10
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: '#3B82F6'
   },
   greetingPillText: {
     fontSize: 12,
     fontWeight: '800',
-    color: colors.ink
+    color: '#DBEAFE'
   },
   heroTitle: {
-    fontSize: 30,
-    fontWeight: '900',
+    fontSize: 28,
+    fontWeight: '800',
     color: '#FFFFFF',
-    letterSpacing: -0.6,
-    lineHeight: 36
+    letterSpacing: -0.5,
+    lineHeight: 34
   },
 
   stepperContainer: {
@@ -339,19 +317,17 @@ const styles = StyleSheet.create({
   stepName: {
     fontSize: 11,
     fontWeight: '800',
-    color: colors.ink
+    color: colors.brandBlue
   },
   stepperTrack: {
-    height: 7,
-    backgroundColor: '#E4DFD5',
-    borderRadius: 4,
-    borderWidth: 1.5,
-    borderColor: colors.ink,
+    height: 6,
+    backgroundColor: '#E2E8F0',
+    borderRadius: 3,
     overflow: 'hidden'
   },
   stepperFill: {
     height: '100%',
-    backgroundColor: colors.chartreuse,
+    backgroundColor: colors.brandBlue,
     borderRadius: 3
   },
 
@@ -363,8 +339,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.coralLight,
-    borderWidth: 2,
-    borderColor: colors.error,
+    borderWidth: 1.5,
+    borderColor: '#FCA5A5',
     borderRadius: 14,
     padding: 12,
     marginBottom: 14
@@ -373,15 +349,15 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 13,
     fontWeight: '700',
-    color: colors.error
+    color: colors.coralDark
   },
 
   ageBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.chartreuse,
+    backgroundColor: colors.brandBlueLight,
     borderWidth: 1.5,
-    borderColor: colors.ink,
+    borderColor: colors.brandBlueBorder,
     borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 6,
@@ -392,7 +368,7 @@ const styles = StyleSheet.create({
   ageBadgeText: {
     fontSize: 12,
     fontWeight: '800',
-    color: colors.ink
+    color: colors.brandBlueDark
   },
 
   chipsLabel: {
@@ -409,19 +385,20 @@ const styles = StyleSheet.create({
   },
   chip: {
     backgroundColor: '#FFFFFF',
-    borderWidth: 2,
-    borderColor: colors.ink,
+    borderWidth: 1.5,
+    borderColor: colors.border,
     borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 7,
-    shadowColor: colors.ink,
-    shadowOffset: { width: 2, height: 2 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 2
+    shadowColor: colors.tactileShadow,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1
   },
   chipActive: {
-    backgroundColor: colors.chartreuse
+    backgroundColor: colors.brandBlue,
+    borderColor: colors.brandBlue
   },
   chipText: {
     fontSize: 12,
@@ -429,6 +406,7 @@ const styles = StyleSheet.create({
     color: colors.ink
   },
   chipTextActive: {
-    fontWeight: '900'
+    color: '#FFFFFF',
+    fontWeight: '800'
   }
 });
