@@ -27,7 +27,7 @@
 - [x] **Access Isolation:** Every appointment query is scoped to the authenticated patient (`patient_id = $userId`); others' IDs return 404.
 - [x] **Database RLS:** Row Level Security enabled on all 8 PostgreSQL tables with no public policies, blocking unauthorized Supabase REST access.
 - [x] **Minimal Permissions:** Only `android.permission.INTERNET` declared in `mobile/app.json`.
-- [x] **Automated Tests:** 65 passing automated tests (35 backend integration tests + 30 mobile component and failure recovery tests).
+- [x] **Automated Tests:** 96 passing automated tests (61 backend integration tests + 35 mobile component and failure recovery tests).
 
 ---
 
@@ -49,7 +49,7 @@
 - [x] **Git Cleanliness:** Git history clean of `.env`, passwords, tokens, keystores, or personal data.
 - [x] **Environment Templates:** `.env.example` placeholders present in both `backend/` and `mobile/`.
 - [ ] **Candidate Form Details:** Enter Candidate Full Name, Registration Number, and University Email in `docs/submission-form-answers.md`.
-- [ ] **EAS Cloud APK Build:** Run `eas build -p android --profile preview` from `mobile/` to compile the standalone APK and copy the APK URL into the form.
+- [x] **EAS Cloud APK Build:** Triggered standalone Android APK compilation via EAS Cloud (`eas build -p android --profile preview`, Build ID: `8bca9299-eb9c-4b8b-8cc0-851a6a133135`). Track progress or download directly at `https://expo.dev/accounts/kunald01/projects/hospital-appointment/builds/8bca9299-eb9c-4b8b-8cc0-851a6a133135`.
 - [ ] **Record Demo Video:** Record 3–5 minute evaluation video following `docs/demo-script.md`, upload to YouTube (Unlisted) or Google Drive, and paste link into form.
 - [ ] **Tag Final Release:** Tag commit with `git tag v1.0.0 && git push origin main --tags`.
 - [ ] **Verification in Incognito:** Verify repository, documentation links, and video link in an incognito window.

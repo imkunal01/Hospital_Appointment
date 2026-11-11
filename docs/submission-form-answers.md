@@ -34,7 +34,7 @@
 ## 4. Demonstration
 
 - **3–5 Minute Video Link:** `[Candidate: Insert your Google Drive / YouTube Unlisted video link here after recording; follow docs/demo-script.md]`
-- **Live Demo / Backend URL:** `https://hospital-appointment-api.onrender.com` (Render Web Service)
+- **Live Demo / Backend URL:** `https://hospital-appointment-guc1.onrender.com` (Render Web Service)
 - **Local Emulator Backend URL:** `http://10.0.2.2:4000`
 - **Screenshots Directory:** `docs/screenshots/`
 
@@ -61,7 +61,7 @@
   - **Cloud Hosting:** Render (Web Service), EAS Build for reproducible Android APK generation.
 - **Minimum Android Version:** Android 7.0 Nougat (API Level 24); Target SDK: Android 14 (API Level 34).
 - **Permissions Declared:** `android.permission.INTERNET` only (Minimal privilege).
-- **Test Coverage:** 65 passing automated tests (35 backend integration/unit tests + 30 mobile component/failure tests).
+- **Test Coverage:** 96 passing automated tests (61 backend integration/unit tests + 35 mobile component/failure tests).
 - **Known Limitations & Assumptions:**
   - Push notifications are simulated in-app based on persisted reminder lead times (1–72 hours) to avoid third-party FCM credential friction during grading.
   - Read-only offline cache: When offline, users can inspect their cached catalog and appointments with an amber banner; write operations (booking, rescheduling, cancelling) are strictly disabled to prevent false confirmations.
@@ -81,8 +81,8 @@
 
 ## 8. Role-Specific Fields
 
-- **APK Download Link:** `[Candidate: Insert your EAS build download link or GitHub Release asset link here after running 'eas build']`
-- **Backend / API Health URL:** `https://hospital-appointment-api.onrender.com/health`
+- **APK Build & Download Link:** `https://expo.dev/accounts/kunald01/projects/hospital-appointment/builds/8bca9299-eb9c-4b8b-8cc0-851a6a133135`
+- **Backend / API Health URL:** `https://hospital-appointment-guc1.onrender.com/health`
 - **Build Instructions Summary:** `cd mobile && eas build -p android --profile preview` (produces standalone `.apk`).
 
 ---
