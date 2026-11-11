@@ -277,8 +277,12 @@ const jsonOutputFormat = winston.format.combine(
     info.service = 'hospital-appointment-backend';
     info.environment = env?.NODE_ENV ?? 'development';
 
-    if (info.context) {
+    if (info.context && typeof info.context === 'object') {
       info.context = redactSensitive(info.context);
+      const ctxObj = info.context as Record<string, any>;
+      if (ctxObj.statusCode !== undefined) {
+        info.statusCode = ctxObj.statusCode;
+      }
     }
     if (info.error) {
       info.error = redactSensitive(info.error);

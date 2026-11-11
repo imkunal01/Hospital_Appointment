@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { UserProfile } from '../api/types';
+import { UserProfile, AuthSession } from '../api/types';
 import { saveRefreshToken, getRefreshToken, removeRefreshToken } from './secureStorage';
 
 interface SessionState {
@@ -31,16 +31,38 @@ export function setInMemoryAccessToken(token: string | null) {
 }
 
 export async function setSession(
-  user: UserProfile,
-  accessToken: string,
-  refreshToken: string
+  userOrSession: UserProfile | AuthSession,
+  accessToken?: string,
+  refreshToken?: string
 ): Promise<void> {
+  let user: UserProfile;
+  let token: string;
+  let refresh: string;
+
+  if (
+    userOrSession &&
+    typeof userOrSession === 'object' &&
+    'user' in userOrSession &&
+    'accessToken' in userOrSession
+  ) {
+    const sessionObj = userOrSession as AuthSession;
+    user = sessionObj.user;
+    token = sessionObj.accessToken;
+    refresh = sessionObj.refreshToken;
+  } else {
+    user = userOrSession as UserProfile;
+    token = accessToken || '';
+    refresh = refreshToken || '';
+  }
+
   currentSession = {
     user,
-    accessToken,
+    accessToken: token,
     isInitialized: true
   };
-  await saveRefreshToken(refreshToken);
+  if (refresh) {
+    await saveRefreshToken(refresh);
+  }
   notify();
 }
 

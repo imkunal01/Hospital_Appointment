@@ -5,66 +5,81 @@ export interface DepartmentVisualTheme {
   iconFamily: 'Ionicons' | 'MaterialCommunityIcons' | 'Feather';
   bg: string;
   textColor: string;
+  subtext: string;
 }
 
 export function getDepartmentTheme(deptName: string = ''): DepartmentVisualTheme {
   const normalized = deptName.toLowerCase();
 
-  if (normalized.includes('cardio')) {
+  if (normalized.includes('cardio') || normalized.includes('heart')) {
     return {
-      iconName: 'heart-pulse',
-      iconFamily: 'MaterialCommunityIcons',
-      bg: colors.deptCardiologyBg,
-      textColor: colors.deptCardiologyText
+      iconName: 'heart',
+      iconFamily: 'Ionicons',
+      bg: colors.pink,
+      textColor: colors.ink,
+      subtext: 'Heart and circulation'
     };
   }
-  if (normalized.includes('neuro')) {
+  if (normalized.includes('respir') || normalized.includes('pulmon') || normalized.includes('lung')) {
+    return {
+      iconName: 'lungs',
+      iconFamily: 'MaterialCommunityIcons',
+      bg: colors.lilac,
+      textColor: colors.ink,
+      subtext: 'Lungs and breathing'
+    };
+  }
+  if (normalized.includes('neuro') || normalized.includes('brain')) {
     return {
       iconName: 'brain',
       iconFamily: 'MaterialCommunityIcons',
-      bg: colors.deptNeurologyBg,
-      textColor: colors.deptNeurologyText
+      bg: colors.lilac,
+      textColor: colors.ink,
+      subtext: 'Brain and nervous system'
     };
   }
-  if (normalized.includes('derma')) {
+  if (normalized.includes('derma') || normalized.includes('skin')) {
     return {
       iconName: 'sparkles-outline',
       iconFamily: 'Ionicons',
-      bg: colors.deptDermatologyBg,
-      textColor: colors.deptDermatologyText
+      bg: colors.peach,
+      textColor: colors.ink,
+      subtext: 'Skin & aesthetic wellness'
     };
   }
   if (normalized.includes('pediat') || normalized.includes('child')) {
     return {
       iconName: 'baby-face-outline',
       iconFamily: 'MaterialCommunityIcons',
-      bg: colors.deptPediatricsBg,
-      textColor: colors.deptPediatricsText
+      bg: colors.lilac,
+      textColor: colors.ink,
+      subtext: 'Adolescent and child health'
     };
   }
-  if (normalized.includes('ortho') || normalized.includes('bone')) {
+  if (normalized.includes('ortho') || normalized.includes('bone') || normalized.includes('joint')) {
     return {
       iconName: 'bone',
       iconFamily: 'MaterialCommunityIcons',
-      bg: colors.deptOrthopedicsBg,
-      textColor: colors.deptOrthopedicsText
+      bg: colors.peach,
+      textColor: colors.ink,
+      subtext: 'Bones and joint mobility'
     };
   }
-  if (normalized.includes('general') || normalized.includes('physician') || normalized.includes('internal')) {
+  if (normalized.includes('general') || normalized.includes('family') || normalized.includes('physician') || normalized.includes('internal')) {
     return {
       iconName: 'stethoscope',
       iconFamily: 'MaterialCommunityIcons',
-      bg: colors.deptGeneralBg,
-      textColor: colors.deptGeneralText
+      bg: '#FFFFFF',
+      textColor: colors.ink,
+      subtext: 'Everyday health concerns'
     };
   }
 
-  // Default Medical Specialty
   return {
-    iconName: 'medical-bag',
+    iconName: 'hospital-building',
     iconFamily: 'MaterialCommunityIcons',
-    bg: colors.deptDefaultBg,
-    textColor: colors.deptDefaultText
+    bg: colors.peach,
+    textColor: colors.ink,
+    subtext: 'Specialized hospital clinic'
   };
 }
-

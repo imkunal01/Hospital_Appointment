@@ -2,7 +2,6 @@ import React from 'react';
 import { View, Text, StyleSheet, ViewStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
-import { spacing, borderRadius } from '../theme/spacing';
 
 interface StatusBadgeProps {
   status: 'CONFIRMED' | 'CANCELLED' | 'COMPLETED' | string;
@@ -16,33 +15,33 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, style }) => {
         return {
           iconName: 'checkmark-circle' as const,
           label: 'CONFIRMED',
-          bg: colors.successLight,
-          textColor: colors.successText,
-          borderColor: colors.success + '40'
+          bg: colors.chartreuse,
+          textColor: colors.ink,
+          borderColor: colors.ink
         };
       case 'CANCELLED':
         return {
           iconName: 'close-circle' as const,
           label: 'CANCELLED',
-          bg: colors.errorLight,
-          textColor: colors.errorText,
-          borderColor: colors.error + '40'
+          bg: colors.coralLight,
+          textColor: colors.error,
+          borderColor: colors.error
         };
       case 'COMPLETED':
         return {
           iconName: 'checkmark-done-circle' as const,
           label: 'COMPLETED',
-          bg: colors.primaryLight,
-          textColor: colors.primaryDark,
-          borderColor: colors.primary + '40'
+          bg: colors.lilac,
+          textColor: colors.ink,
+          borderColor: colors.ink
         };
       default:
         return {
           iconName: 'ellipse' as const,
           label: status,
-          bg: colors.borderLight,
-          textColor: colors.textSecondary,
-          borderColor: colors.border
+          bg: '#FFFFFF',
+          textColor: colors.ink,
+          borderColor: colors.ink
         };
     }
   };
@@ -59,8 +58,15 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, style }) => {
         style
       ]}
     >
-      <Ionicons name={config.iconName} size={13} color={config.textColor} style={styles.icon} />
-      <Text style={[styles.text, { color: config.textColor }]}>{config.label}</Text>
+      <Ionicons
+        name={config.iconName}
+        size={13}
+        color={config.textColor}
+        style={styles.icon}
+      />
+      <Text style={[styles.text, { color: config.textColor }]}>
+        {config.label}
+      </Text>
     </View>
   );
 };
@@ -69,18 +75,18 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: spacing.sm + 2,
-    paddingVertical: 3,
-    borderRadius: borderRadius.full,
-    borderWidth: 1,
+    paddingHorizontal: 10,
+    paddingVertical: 3.5,
+    borderRadius: 999,
+    borderWidth: 1.5,
     alignSelf: 'flex-start'
   },
   icon: {
-    marginRight: 4
+    marginRight: 5
   },
   text: {
-    fontSize: 11.5,
-    fontWeight: '800',
-    letterSpacing: 0.6
+    fontSize: 10.5,
+    fontWeight: '900',
+    letterSpacing: 0.4
   }
 });

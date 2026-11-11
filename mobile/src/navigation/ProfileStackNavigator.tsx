@@ -2,7 +2,6 @@ import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { ProfileScreen } from '../screens/ProfileScreen';
 import { PreferencesScreen } from '../screens/PreferencesScreen';
-import { colors } from '../theme/colors';
 
 export type ProfileStackParamList = {
   Profile: undefined;
@@ -15,27 +14,18 @@ export const ProfileStackNavigator: React.FC = () => {
   return (
     <Stack.Navigator
       screenOptions={{
-        headerStyle: {
-          backgroundColor: colors.surface
-        },
-        headerTintColor: colors.textPrimary,
-        headerTitleStyle: {
-          fontWeight: '700'
-        },
-        headerShadowVisible: false
+        headerShown: false,
+        headerBackTitleVisible: false
       }}
     >
       <Stack.Screen
         name="Profile"
         component={ProfileScreen}
-        options={{ title: 'My Profile' }}
       />
       <Stack.Screen
         name="Preferences"
         component={PreferencesScreen}
-        options={{ title: 'Notification Preferences' }}
       />
     </Stack.Navigator>
   );
 };
-

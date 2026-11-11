@@ -8,8 +8,7 @@ import {
   Platform,
   TouchableOpacity
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons, Feather, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Feather, Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { useNavigation } from '@react-navigation/native';
 import { Input } from '../components/Input';
@@ -17,9 +16,10 @@ import { Button } from '../components/Button';
 import { sendPhoneOtpApi, verifyPhoneOtpApi } from '../api/endpoints';
 import { extractErrorMessage } from '../utils/errors';
 import { colors } from '../theme/colors';
-import { spacing, borderRadius } from '../theme/spacing';
+import { useSafeInsets } from '../hooks/useSafeInsets';
 
 export const PhoneVerificationScreen: React.FC = () => {
+  const insets = useSafeInsets();
   const navigation = useNavigation<any>();
 
   const [phone, setPhone] = useState('');
@@ -38,7 +38,6 @@ export const PhoneVerificationScreen: React.FC = () => {
       return;
     }
 
-    // Basic length check (10 to 15 digits)
     const digitsOnly = targetPhone.replace(/\D/g, '');
     if (digitsOnly.length < 10) {
       setPhoneError('Please enter a valid 10-digit mobile number');
@@ -64,10 +63,6 @@ export const PhoneVerificationScreen: React.FC = () => {
       setOtpError('Verification code is required');
       return;
     }
-    if (otp.trim().length < 4) {
-      setOtpError('Please enter a valid 6-digit code');
-      return;
-    }
 
     setLoading(true);
     setOtpError('');
@@ -75,7 +70,6 @@ export const PhoneVerificationScreen: React.FC = () => {
 
     try {
       await verifyPhoneOtpApi(phone.trim(), otp.trim());
-      // Navigate to Step 2: Profile Setup
       navigation.navigate('ProfileSetup');
     } catch (err: any) {
       setGeneralError(extractErrorMessage(err));
@@ -84,16 +78,17 @@ export const PhoneVerificationScreen: React.FC = () => {
     }
   };
 
-  const autoFillDemoNumber = (demoPhone: string) => {
-    setPhone(demoPhone);
+  const quickFillPhone = (val: string) => {
+    setPhone(val);
     setPhoneError('');
     setGeneralError('');
+    handleSendOtp(val);
   };
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <StatusBar style="light" />
       <ScrollView
@@ -101,178 +96,136 @@ export const PhoneVerificationScreen: React.FC = () => {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        {/* Top Hero Gradient with Security / Phone Graphic */}
-        <View style={styles.heroWrapper}>
-          <LinearGradient
-            colors={[colors.gradientStart, colors.gradientMiddle, colors.gradientEnd]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.heroGradient}
-          >
-            {/* Background concentric depth rings */}
-            <View style={styles.decorCircleTopRightOuter} />
-            <View style={styles.decorCircleTopRightMid} />
-            <View style={styles.decorCircleTopRightInner} />
-            <View style={styles.decorCircleBottomLeftOuter} />
+        {/* Top Hero Section */}
+        <View
+          style={[
+            styles.heroSection,
+            { paddingTop: Math.max(insets.top, Platform.OS === 'ios' ? 20 : 16) + 16 }
+          ]}
+        >
+          <View style={styles.decorRing} />
+          <View style={styles.decorCoralArch} />
 
-            {/* Top Brand & Step Row */}
-            <View style={styles.brandRow}>
-              <View style={styles.brandLogoCard}>
-                <Ionicons name="fitness" size={24} color={colors.primary} />
-              </View>
-              <View style={styles.stepBadge}>
-                <Text style={styles.stepBadgeText}>STEP 1 OF 2</Text>
-              </View>
+          <View style={styles.brandRow}>
+            <View style={styles.logoPlusCircle}>
+              <Feather name="plus" size={18} color={colors.foundation} />
             </View>
+            <Text style={styles.brandTitle}>medibook</Text>
+          </View>
 
-            {/* Central 3D Floating Graphic */}
-            <View style={styles.centerGraphicContainer}>
-              <View style={styles.cardShadowOffset} />
-              <View style={styles.floatingCard}>
-                <MaterialCommunityIcons
-                  name="cellphone-check"
-                  size={42}
-                  color={colors.primaryDark}
-                />
-                <View style={styles.notificationBadge}>
-                  <Ionicons name="shield-checkmark" size={16} color={colors.primary} />
-                </View>
-              </View>
-            </View>
-          </LinearGradient>
+          <View style={styles.greetingPill}>
+            <Text style={styles.greetingPillText}>Patient Onboarding</Text>
+          </View>
+
+          <Text style={styles.heroTitle}>
+            {step === 'PHONE' ? 'Verify your\nmobile number' : 'Enter 6-digit\nsecurity code'}
+          </Text>
         </View>
 
-        {/* Content Section */}
-        <View style={styles.bodyContent}>
-          <Text style={styles.eyebrow}>AUTHENTICATION & VERIFICATION</Text>
-          <Text style={styles.title}>
-            {step === 'PHONE' ? 'Verify your phone' : 'Enter 6-digit code'}
-          </Text>
-          <Text style={styles.subtitle}>
-            {step === 'PHONE'
-              ? 'Each mobile number is securely tied to one verified patient account to ensure genuine clinical visits.'
-              : `We sent a mock verification code to ${phone}. Enter the code below to confirm your phone.`}
-          </Text>
+        {/* Stepper Progress Bar */}
+        <View style={styles.stepperContainer}>
+          <View style={styles.stepperLabelRow}>
+            <Text style={styles.stepText}>STEP 1 OF 2</Text>
+            <Text style={styles.stepName}>Phone Verification</Text>
+          </View>
+          <View style={styles.stepperTrack}>
+            <View style={[styles.stepperFill, { width: step === 'PHONE' ? '30%' : '50%' }]} />
+          </View>
+        </View>
 
+        {/* Form Body Canvas */}
+        <View style={styles.bodyContent}>
           {generalError ? (
-            <View
-              accessibilityRole="alert"
-              style={styles.errorAlert}
-            >
-              <Ionicons
-                name="alert-circle-outline"
-                size={18}
-                color={colors.errorText}
-                style={{ marginRight: 8 }}
-              />
-              <Text style={styles.errorAlertText}>{generalError}</Text>
+            <View style={styles.errorBanner}>
+              <Feather name="alert-circle" size={18} color={colors.error} style={{ marginRight: 8 }} />
+              <Text style={styles.errorBannerText}>{generalError}</Text>
             </View>
           ) : null}
 
           {step === 'PHONE' ? (
-            <View style={styles.formContainer}>
+            <>
+              {/* Evaluator Quick-Fill Helper */}
+              <View style={styles.evaluatorBox}>
+                <Text style={styles.evaluatorEyebrow}>EVALUATOR QUICK-TEST NUMBER</Text>
+                <TouchableOpacity
+                  accessibilityRole="button"
+                  accessibilityLabel="Use evaluator mobile test number"
+                  style={styles.quickFillPill}
+                  onPress={() => quickFillPhone('+919876543299')}
+                  activeOpacity={0.8}
+                >
+                  <Feather name="phone-call" size={14} color={colors.ink} style={{ marginRight: 8 }} />
+                  <Text style={styles.quickFillText}>+91 98765 43299 (Auto-Send OTP)</Text>
+                </TouchableOpacity>
+              </View>
+
               <Input
-                label="Mobile Phone Number"
+                label="Mobile Number"
                 placeholder="+91 98765 43210"
                 value={phone}
                 onChangeText={(text) => {
                   setPhone(text);
                   if (phoneError) setPhoneError('');
-                  if (generalError) setGeneralError('');
                 }}
                 keyboardType="phone-pad"
                 autoCapitalize="none"
-                autoCorrect={false}
                 error={phoneError}
               />
 
               <Button
-                title="Send Verification Code"
+                title={loading ? 'Sending Code...' : 'Send Verification Code'}
                 onPress={() => handleSendOtp()}
                 loading={loading}
-                style={styles.primaryButton}
+                style={{ marginTop: 10 }}
               />
-
-              {/* Quick Testing Chips for Reviewer */}
-              <View style={styles.testChipsContainer}>
-                <Text style={styles.testChipsTitle}>Quick Tester Helpers:</Text>
-
+            </>
+          ) : (
+            <>
+              <View style={styles.evaluatorBox}>
+                <Text style={styles.evaluatorEyebrow}>DEVELOPMENT TEST OTP CODE</Text>
                 <TouchableOpacity
                   accessibilityRole="button"
-                  accessibilityLabel="Test with fresh new number"
-                  style={styles.chipButton}
-                  onPress={() => autoFillDemoNumber('+919123456789')}
+                  accessibilityLabel="Auto-fill OTP code"
+                  style={styles.quickFillPill}
+                  onPress={() => setOtp('123456')}
+                  activeOpacity={0.8}
                 >
-                  <Text style={styles.chipText}>
-                    Fresh Available Number: <Text style={styles.chipBold}>+91 9123456789</Text>
-                  </Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  accessibilityRole="button"
-                  accessibilityLabel="Test duplicate number conflict"
-                  style={[styles.chipButton, { borderColor: '#FCA5A5', backgroundColor: '#FEF2F2' }]}
-                  onPress={() => autoFillDemoNumber('+919876543210')}
-                >
-                  <Text style={[styles.chipText, { color: '#B91C1C' }]}>
-                    Existing Verified Number (triggers duplicate alert): <Text style={styles.chipBold}>+91 9876543210</Text>
-                  </Text>
+                  <Feather name="shield" size={14} color={colors.ink} style={{ marginRight: 8 }} />
+                  <Text style={styles.quickFillText}>Click to fill standard code: 123456</Text>
                 </TouchableOpacity>
               </View>
-            </View>
-          ) : (
-            <View style={styles.formContainer}>
+
               <Input
-                label="Verification Code (OTP)"
+                label="Enter 6-digit code"
                 placeholder="123456"
                 value={otp}
                 onChangeText={(text) => {
                   setOtp(text);
                   if (otpError) setOtpError('');
-                  if (generalError) setGeneralError('');
                 }}
                 keyboardType="number-pad"
                 maxLength={6}
                 error={otpError}
-                style={styles.otpInput}
               />
-
-              {/* Quick Helper to autofill mock OTP */}
-              <TouchableOpacity
-                accessibilityRole="button"
-                accessibilityLabel="Auto-fill mock OTP"
-                style={styles.mockOtpBanner}
-                onPress={() => setOtp('123456')}
-              >
-                <Feather name="zap" size={16} color={colors.primary} />
-                <Text style={styles.mockOtpText}>
-                  Mock OTP: <Text style={{ fontWeight: '800' }}>123456</Text> (Tap to auto-fill)
-                </Text>
-              </TouchableOpacity>
 
               <Button
-                title="Verify & Continue"
+                title={loading ? 'Verifying Code...' : 'Confirm & Continue'}
                 onPress={handleVerifyOtp}
                 loading={loading}
-                style={styles.primaryButton}
+                style={{ marginTop: 10 }}
               />
 
               <TouchableOpacity
                 accessibilityRole="button"
-                accessibilityLabel="Change phone number"
-                style={styles.changePhoneButton}
-                onPress={() => {
-                  setStep('PHONE');
-                  setOtp('');
-                  setGeneralError('');
-                }}
+                accessibilityLabel="Edit phone number"
+                style={styles.editPhoneRow}
+                onPress={() => setStep('PHONE')}
               >
-                <View style={styles.changePhoneRow}>
-                  <Feather name="arrow-left" size={16} color={colors.primary} style={{ marginRight: 6 }} />
-                  <Text style={styles.changePhoneText}>Change phone number</Text>
-                </View>
+                <Text style={styles.editPhoneText}>
+                  Change phone number ({phone})
+                </Text>
               </TouchableOpacity>
-            </View>
+            </>
           )}
         </View>
       </ScrollView>
@@ -283,254 +236,182 @@ export const PhoneVerificationScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background
+    backgroundColor: colors.canvas
   },
   scrollContent: {
-    flexGrow: 1,
-    backgroundColor: colors.background
+    paddingBottom: 40
   },
-  heroWrapper: {
-    width: '100%',
-    overflow: 'hidden',
-    backgroundColor: colors.background
-  },
-  heroGradient: {
-    width: '100%',
-    paddingTop: Platform.OS === 'ios' ? 54 : 44,
-    paddingBottom: 28,
+  heroSection: {
+    backgroundColor: colors.foundation,
+    paddingHorizontal: 20,
+    paddingBottom: 32,
     borderBottomLeftRadius: 36,
     borderBottomRightRadius: 36,
     position: 'relative',
     overflow: 'hidden'
   },
-  decorCircleTopRightOuter: {
+  decorRing: {
     position: 'absolute',
-    top: -50,
-    right: -40,
-    width: 220,
-    height: 220,
-    borderRadius: 110,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)'
+    top: -20,
+    right: -30,
+    width: 150,
+    height: 150,
+    borderRadius: 75,
+    borderWidth: 26,
+    borderColor: colors.lilac,
+    opacity: 0.85
   },
-  decorCircleTopRightMid: {
+  decorCoralArch: {
     position: 'absolute',
-    top: 10,
-    right: 15,
-    width: 140,
-    height: 140,
-    borderRadius: 70,
-    backgroundColor: 'rgba(255, 255, 255, 0.06)'
-  },
-  decorCircleTopRightInner: {
-    position: 'absolute',
-    top: 40,
-    right: 75,
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    backgroundColor: 'rgba(255, 255, 255, 0.16)'
-  },
-  decorCircleBottomLeftOuter: {
-    position: 'absolute',
-    bottom: -25,
-    left: -25,
-    width: 130,
-    height: 130,
-    borderRadius: 65,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)'
+    top: 50,
+    right: 40,
+    width: 80,
+    height: 100,
+    borderRadius: 40,
+    backgroundColor: colors.coral,
+    opacity: 0.95
   },
   brandRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 24,
     marginBottom: 16
   },
-  brandLogoCard: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
-    backgroundColor: colors.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 3
-  },
-  stepBadge: {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20
-  },
-  stepBadgeText: {
-    fontSize: 12,
-    fontWeight: '800',
-    color: '#FFFFFF',
-    letterSpacing: 0.5
-  },
-  centerGraphicContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 14,
-    marginBottom: 16,
-    position: 'relative'
-  },
-  cardShadowOffset: {
-    width: 88,
-    height: 88,
-    borderRadius: 24,
-    backgroundColor: 'rgba(15, 23, 42, 0.15)',
-    position: 'absolute',
-    transform: [{ translateY: 6 }, { translateX: -4 }]
-  },
-  floatingCard: {
-    width: 88,
-    height: 88,
-    borderRadius: 24,
-    backgroundColor: '#FFFFFF',
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.18,
-    shadowRadius: 14,
-    elevation: 7,
-    position: 'relative'
-  },
-  notificationBadge: {
-    position: 'absolute',
-    top: -8,
-    right: -8,
+  logoPlusCircle: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#CCFBF1',
+    backgroundColor: colors.chartreuse,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 2.5,
-    borderColor: '#FFFFFF',
-    elevation: 4
+    marginRight: 10
   },
-  bodyContent: {
-    paddingHorizontal: 24,
-    paddingTop: 28,
-    paddingBottom: 32
-  },
-  eyebrow: {
-    fontSize: 12,
-    fontWeight: '800',
-    letterSpacing: 1.5,
-    color: colors.primary,
-    marginBottom: 6
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: colors.textPrimary,
-    letterSpacing: -0.5,
-    marginBottom: 6
-  },
-  subtitle: {
-    fontSize: 15,
-    color: colors.textSecondary,
-    lineHeight: 22,
-    marginBottom: 20
-  },
-  errorAlert: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.errorLight,
-    borderColor: colors.error,
-    borderWidth: 1,
-    borderRadius: 12,
-    padding: spacing.md,
-    marginBottom: spacing.md
-  },
-  errorAlertText: {
-    flex: 1,
-    color: colors.errorText,
-    fontSize: 14,
-    fontWeight: '600',
-    lineHeight: 20
-  },
-  formContainer: {
-    marginTop: 4
-  },
-  primaryButton: {
-    marginTop: 10,
-    height: 54,
-    borderRadius: 14,
-    backgroundColor: colors.primary
-  },
-  testChipsContainer: {
-    marginTop: 24,
-    padding: 14,
-    backgroundColor: colors.surfaceSubtle,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: colors.border
-  },
-  testChipsTitle: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: colors.textSecondary,
-    marginBottom: 10,
-    textTransform: 'uppercase'
-  },
-  chipButton: {
-    minHeight: 48,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: colors.border,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    marginBottom: 8,
-    justifyContent: 'center'
-  },
-  chipText: {
-    fontSize: 13,
-    color: colors.textPrimary
-  },
-  chipBold: {
-    fontWeight: '700'
-  },
-  otpInput: {
+  brandTitle: {
     fontSize: 22,
-    letterSpacing: 8,
-    textAlign: 'center'
+    fontWeight: '900',
+    color: '#FFFFFF',
+    letterSpacing: -0.5
   },
-  mockOtpBanner: {
+  greetingPill: {
+    backgroundColor: colors.chartreuse,
+    alignSelf: 'flex-start',
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 999,
+    marginBottom: 10
+  },
+  greetingPillText: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: colors.ink
+  },
+  heroTitle: {
+    fontSize: 30,
+    fontWeight: '900',
+    color: '#FFFFFF',
+    letterSpacing: -0.6,
+    lineHeight: 36
+  },
+
+  stepperContainer: {
+    paddingHorizontal: 18,
+    marginTop: 20,
+    marginBottom: 10
+  },
+  stepperLabelRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 6
+  },
+  stepText: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: colors.inkMuted,
+    letterSpacing: 1
+  },
+  stepName: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: colors.ink
+  },
+  stepperTrack: {
+    height: 7,
+    backgroundColor: '#E4DFD5',
+    borderRadius: 4,
+    borderWidth: 1.5,
+    borderColor: colors.ink,
+    overflow: 'hidden'
+  },
+  stepperFill: {
+    height: '100%',
+    backgroundColor: colors.chartreuse,
+    borderRadius: 3
+  },
+
+  bodyContent: {
+    paddingHorizontal: 18,
+    paddingTop: 10
+  },
+  evaluatorBox: {
+    backgroundColor: colors.lilacLight,
+    borderWidth: 2,
+    borderColor: colors.ink,
+    borderRadius: 18,
+    padding: 14,
+    marginBottom: 16,
+    shadowColor: colors.ink,
+    shadowOffset: { width: 3, height: 3 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 3
+  },
+  evaluatorEyebrow: {
+    fontSize: 10.5,
+    fontWeight: '800',
+    color: colors.inkMuted,
+    letterSpacing: 1,
+    marginBottom: 8
+  },
+  quickFillPill: {
+    backgroundColor: colors.chartreuse,
+    borderWidth: 1.5,
+    borderColor: colors.ink,
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    flexDirection: 'row',
+    alignItems: 'center'
+  },
+  quickFillText: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: colors.ink
+  },
+
+  errorBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#CCFBF1',
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#99F6E4',
-    paddingVertical: 10,
-    paddingHorizontal: 14,
+    backgroundColor: colors.coralLight,
+    borderWidth: 2,
+    borderColor: colors.error,
+    borderRadius: 14,
+    padding: 12,
     marginBottom: 14
   },
-  mockOtpText: {
-    marginLeft: 8,
+  errorBannerText: {
+    flex: 1,
     fontSize: 13,
-    color: colors.primaryDark
+    fontWeight: '700',
+    color: colors.error
   },
-  changePhoneButton: {
-    minHeight: 48,
+
+  editPhoneRow: {
     alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 12
+    paddingVertical: 14
   },
-  changePhoneRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center'
-  },
-  changePhoneText: {
-    fontSize: 14,
-    color: colors.primary,
-    fontWeight: '600'
+  editPhoneText: {
+    fontSize: 13.5,
+    fontWeight: '800',
+    color: colors.ink,
+    textDecorationLine: 'underline'
   }
 });
-

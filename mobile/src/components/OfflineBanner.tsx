@@ -3,7 +3,6 @@ import { View, Text, StyleSheet } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useNetwork } from '../hooks/useNetwork';
 import { colors } from '../theme/colors';
-import { spacing } from '../theme/spacing';
 
 export const OfflineBanner: React.FC = () => {
   const { isOffline } = useNetwork();
@@ -17,12 +16,12 @@ export const OfflineBanner: React.FC = () => {
       style={styles.banner}
     >
       <View style={styles.iconCircle}>
-        <Feather name="wifi-off" size={16} color={colors.errorText} />
+        <Feather name="wifi-off" size={16} color={colors.ink} />
       </View>
       <View style={styles.textContainer}>
         <Text style={styles.title}>You are currently Offline</Text>
         <Text style={styles.subtitle}>
-          Read-only cache mode. Booking, rescheduling, and cancellations are disabled until reconnected.
+          Read-only cache mode. Booking and modifications are disabled.
         </Text>
       </View>
     </View>
@@ -31,37 +30,37 @@ export const OfflineBanner: React.FC = () => {
 
 const styles = StyleSheet.create({
   banner: {
-    backgroundColor: colors.errorLight,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.error + '40',
-    paddingVertical: spacing.sm + 2,
-    paddingHorizontal: spacing.md,
+    backgroundColor: colors.peach,
+    borderBottomWidth: 2,
+    borderBottomColor: colors.ink,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
     flexDirection: 'row',
     alignItems: 'center'
   },
   iconCircle: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: colors.ink,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: spacing.sm,
-    borderWidth: 1,
-    borderColor: colors.error + '30'
+    marginRight: 12
   },
   textContainer: {
     flex: 1
   },
   title: {
     fontSize: 13,
-    fontWeight: '800',
-    color: colors.errorText
+    fontWeight: '900',
+    color: colors.ink
   },
   subtitle: {
     fontSize: 11.5,
-    color: colors.errorText,
-    marginTop: 1,
-    lineHeight: 15
+    fontWeight: '600',
+    color: colors.inkMuted,
+    marginTop: 1
   }
 });

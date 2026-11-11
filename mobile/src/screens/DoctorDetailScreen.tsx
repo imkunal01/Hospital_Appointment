@@ -5,20 +5,21 @@ import {
   ScrollView,
   TouchableOpacity,
   StyleSheet,
-  Alert
+  Alert,
+  Platform
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Feather, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { StatusBar } from 'expo-status-bar';
+import { Feather, Ionicons } from '@expo/vector-icons';
 import { Doctor, Slot } from '../api/types';
 import { useDoctorSlots } from '../hooks/useCatalog';
 import { useBookSlot } from '../hooks/useBooking';
 import { ScreenState } from '../components/ScreenState';
-import { Button } from '../components/Button';
+import { DoctorAvatar } from '../components/DoctorAvatar';
 import { formatDate, formatTimeRange, toISODateString } from '../utils/dates';
 import { extractErrorMessage } from '../utils/errors';
 import { colors } from '../theme/colors';
-import { spacing, borderRadius } from '../theme/spacing';
-import { getDepartmentTheme } from '../theme/departmentThemes';
+import { spacing } from '../theme/spacing';
+import { useSafeInsets } from '../hooks/useSafeInsets';
 
 interface DoctorDetailScreenProps {
   route: {
@@ -33,8 +34,8 @@ export const DoctorDetailScreen: React.FC<DoctorDetailScreenProps> = ({
   route,
   navigation
 }) => {
+  const insets = useSafeInsets();
   const { doctor } = route.params;
-  const deptTheme = getDepartmentTheme(doctor.departmentName);
 
   // Generate next 14 calendar days starting from today
   const availableDates = useMemo(() => {
@@ -64,24 +65,6 @@ export const DoctorDetailScreen: React.FC<DoctorDetailScreenProps> = ({
   } = useDoctorSlots(doctor.id, selectedDate);
 
   const bookSlotMutation = useBookSlot();
-
-  // Group slots into Morning and Afternoon/Evening (Practo slot organization)
-  const { morningSlots, afternoonSlots } = useMemo(() => {
-    if (!slots) return { morningSlots: [], afternoonSlots: [] };
-    const morning: Slot[] = [];
-    const afternoon: Slot[] = [];
-
-    slots.forEach((s) => {
-      const hour = new Date(s.startsAt).getHours();
-      if (hour < 12) {
-        morning.push(s);
-      } else {
-        afternoon.push(s);
-      }
-    });
-
-    return { morningSlots: morning, afternoonSlots: afternoon };
-  }, [slots]);
 
   const handleSelectSlot = (slot: Slot) => {
     setSelectedSlot(slot);
@@ -133,7 +116,7 @@ export const DoctorDetailScreen: React.FC<DoctorDetailScreenProps> = ({
 
     Alert.alert(
       'Confirm Appointment',
-      `Book consultation with ${doctor.name} on ${formatDate(selectedSlot.startsAt)} from ${formatTimeRange(selectedSlot.startsAt, selectedSlot.endsAt)}?`,
+      `Book consultation with ${doctor.name} on ${formatDate(selectedSlot.startsAt)} at ${new Date(selectedSlot.startsAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}?`,
       [
         { text: 'Cancel', style: 'cancel' },
         { text: 'Confirm', onPress: handleConfirmBooking }
@@ -141,264 +124,212 @@ export const DoctorDetailScreen: React.FC<DoctorDetailScreenProps> = ({
     );
   };
 
+  const selectedDateObj = new Date(selectedDate + 'T00:00:00');
+  const monthYearLabel = selectedDateObj.toLocaleDateString(undefined, {
+    month: 'long',
+    year: 'numeric'
+  });
+
   return (
     <View style={styles.container}>
+      <StatusBar style="dark" />
+
+      {/* Top Editorial Bar */}
+      <View style={[styles.topBar, { paddingTop: Math.max(insets.top, Platform.OS === 'ios' ? 20 : 16) + 6 }]}>
+        <TouchableOpacity
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+          activeOpacity={0.8}
+        >
+          <Feather name="arrow-left" size={22} color={colors.ink} />
+        </TouchableOpacity>
+
+        <Text style={styles.topBarTitle}>Date & time</Text>
+
+        <View style={{ width: 44 }} />
+      </View>
+
+      {/* Stepper Progress Bar (Step 3 of 3) */}
+      <View style={styles.stepperContainer}>
+        <View style={styles.stepperLabelRow}>
+          <Text style={styles.stepText}>STEP 3 OF 3</Text>
+          <Text style={styles.stepName}>Schedule</Text>
+        </View>
+        <View style={styles.stepperTrack}>
+          <View style={[styles.stepperFill, { width: '100%' }]} />
+        </View>
+      </View>
+
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
       >
-        {/* Doctor Profile Header Card */}
-        <View style={styles.profileHeader}>
-          {/* Subtle Top Accent */}
-          <View style={[styles.profileAccentBar, { backgroundColor: deptTheme.textColor }]} />
-
-          <View style={styles.avatarWrapper}>
-            <LinearGradient
-              colors={[colors.gradientStart, colors.primaryDark]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.avatarCircle}
-            >
-              <Text style={styles.avatarText}>
-                {doctor.name
-                  .replace('Dr. ', '')
-                  .split(' ')
-                  .map((n) => n[0])
-                  .join('')
-                  .slice(0, 2)}
-              </Text>
-            </LinearGradient>
-            <View style={styles.verifiedIconWrap}>
-              <Ionicons name="checkmark-circle" size={18} color="#10B981" />
-            </View>
+        {/* Selected Doctor Summary Card */}
+        <View style={styles.doctorBanner}>
+          <DoctorAvatar name={doctor.name} size={64} style={styles.avatarBorder} />
+          <View style={styles.doctorBannerInfo}>
+            <Text style={styles.bannerEyebrow}>APPOINTMENT WITH</Text>
+            <Text style={styles.bannerDoctorName}>{doctor.name}</Text>
+            <Text style={styles.bannerSpecialty}>
+              {doctor.specialty} · {doctor.departmentName}
+            </Text>
           </View>
-
-          <Text style={styles.doctorName}>{doctor.name}</Text>
-          <Text style={styles.doctorSpecialty}>{doctor.specialty}</Text>
-
-          <View style={styles.badgeRow}>
-            <View style={[styles.deptBadge, { backgroundColor: deptTheme.bg }]}>
-              <Text style={[styles.deptBadgeText, { color: deptTheme.textColor }]}>
-                {doctor.departmentName}
-              </Text>
-            </View>
-            <View style={styles.verifiedTag}>
-              <Ionicons name="shield-checkmark" size={13} color={colors.secondary} />
-              <Text style={styles.verifiedTagText}>Hospital Verified</Text>
-            </View>
-          </View>
-
-          {doctor.bio ? (
-            <View style={styles.bioContainer}>
-              <Text style={styles.bioText}>{doctor.bio}</Text>
-            </View>
-          ) : null}
         </View>
 
         {/* 1. Date Selector Section */}
-        <View style={styles.sectionHeader}>
-          <View style={styles.sectionNumberCircle}>
-            <Text style={styles.sectionNumberText}>1</Text>
-          </View>
-          <View style={styles.sectionTitleWrap}>
-            <Text style={styles.sectionTitle}>Select Consultation Date</Text>
-            <Text style={styles.sectionSubtitle}>Choose an upcoming day</Text>
-          </View>
+        <View style={styles.sectionTitleRow}>
+          <Text style={styles.sectionTitle}>Choose a date</Text>
         </View>
 
+        {/* Month Navigation Row */}
+        <View style={styles.monthNavRow}>
+          <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel="Previous month"
+            style={styles.monthNavBtn}
+            onPress={() => {}}
+            activeOpacity={0.8}
+          >
+            <Feather name="chevron-left" size={20} color={colors.ink} />
+          </TouchableOpacity>
+
+          <Text style={styles.monthYearText}>{monthYearLabel}</Text>
+
+          <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel="Next month"
+            style={styles.monthNavBtn}
+            onPress={() => {}}
+            activeOpacity={0.8}
+          >
+            <Feather name="chevron-right" size={20} color={colors.ink} />
+          </TouchableOpacity>
+        </View>
+
+        {/* Horizontal Calendar Date Strips */}
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.dateScroll}
+          contentContainerStyle={styles.datesList}
         >
-          {availableDates.map((dateObj) => {
-            const dateStr = toISODateString(dateObj);
-            const isSelected = selectedDate === dateStr;
-            const weekday = dateObj.toLocaleDateString(undefined, { weekday: 'short' });
-            const dayNum = dateObj.getDate();
-            const monthStr = dateObj.toLocaleDateString(undefined, { month: 'short' });
+          {availableDates.map((dateItem) => {
+            const iso = toISODateString(dateItem);
+            const isSelected = iso === selectedDate;
+            const weekday = dateItem.toLocaleDateString(undefined, { weekday: 'short' });
+            const dayNum = dateItem.getDate();
 
             return (
               <TouchableOpacity
-                key={dateStr}
+                key={iso}
                 accessibilityRole="button"
-                accessibilityLabel={`Date ${weekday} ${monthStr} ${dayNum}`}
+                accessibilityLabel={`${weekday}, ${dayNum}`}
+                style={[
+                  styles.dateCard,
+                  isSelected && styles.dateCardSelected
+                ]}
                 onPress={() => {
-                  setSelectedDate(dateStr);
+                  setSelectedDate(iso);
                   setSelectedSlot(null);
                   setBookingError(null);
                 }}
-                activeOpacity={0.8}
+                activeOpacity={0.85}
               >
-                {isSelected ? (
-                  <LinearGradient
-                    colors={[colors.gradientStart, colors.gradientMiddle]}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                    style={[styles.dateCard, styles.dateCardSelected]}
-                  >
-                    <Text style={styles.dateWeekdaySelected}>{weekday}</Text>
-                    <Text style={styles.dateDayNumSelected}>{dayNum}</Text>
-                    <Text style={styles.dateMonthSelected}>{monthStr}</Text>
-                    <View style={styles.dateActiveIndicator} />
-                  </LinearGradient>
-                ) : (
-                  <View style={styles.dateCard}>
-                    <Text style={styles.dateWeekday}>{weekday}</Text>
-                    <Text style={styles.dateDayNum}>{dayNum}</Text>
-                    <Text style={styles.dateMonth}>{monthStr}</Text>
-                  </View>
-                )}
+                <Text style={[styles.dateWeekday, isSelected && styles.dateTextSelected]}>
+                  {weekday}
+                </Text>
+                <Text style={[styles.dateDayNum, isSelected && styles.dateTextSelected]}>
+                  {dayNum}
+                </Text>
+                {isSelected && <View style={styles.dateDot} />}
               </TouchableOpacity>
             );
           })}
         </ScrollView>
 
-        {/* 2. Slot Picker Section */}
-        <View style={styles.sectionHeader}>
-          <View style={styles.sectionNumberCircle}>
-            <Text style={styles.sectionNumberText}>2</Text>
-          </View>
-          <View style={styles.sectionTitleWrap}>
-            <Text style={styles.sectionTitle}>Select Available Slot</Text>
-            <Text style={styles.sectionSubtitle}>
-              Slots for {formatDate(selectedDate)}
-            </Text>
+        {/* 2. Available Times Section */}
+        <View style={styles.timesHeaderRow}>
+          <View>
+            <Text style={styles.sectionTitle}>Available times</Text>
+            <Text style={styles.sectionSubtitle}>Times shown in your local timezone</Text>
           </View>
         </View>
-
-        {bookingError ? (
-          <View accessibilityRole="alert" style={styles.errorAlert}>
-            <Feather name="alert-circle" size={18} color={colors.errorText} style={{ marginRight: 8 }} />
-            <Text style={styles.errorAlertText}>{bookingError}</Text>
-          </View>
-        ) : null}
 
         <ScreenState
           loading={isSlotsLoading}
-          loadingMessage="Checking real-time slot availability..."
+          loadingMessage="Loading open consultation hours..."
           error={isSlotsError ? extractErrorMessage(slotsError) : null}
           onRetry={refetchSlots}
           empty={!isSlotsLoading && (!slots || slots.length === 0)}
-          emptyMessage="No available slots on this date. Please select another day."
+          emptyMessage="No available consultation slots for this date. Please pick another day."
         >
-          {/* Practo-Style Grouped Slots: Morning */}
-          {morningSlots.length > 0 && (
-            <View style={styles.slotGroupContainer}>
-              <View style={styles.slotGroupHeader}>
-                <Feather name="sun" size={15} color={colors.warning} />
-                <Text style={styles.slotGroupTitle}>Morning Slots ({morningSlots.length})</Text>
-              </View>
-              <View style={styles.slotsGrid}>
-                {morningSlots.map((slot) => {
-                  const isSelected = selectedSlot?.id === slot.id;
+          {/* 3-Column Slot Grid */}
+          <View style={styles.slotsGrid}>
+            {slots?.map((slot) => {
+              const isSelected = selectedSlot?.id === slot.id;
+              const isAvailable = slot.status === 'AVAILABLE';
+              const timeString = new Date(slot.startsAt).toLocaleTimeString([], {
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true
+              });
 
-                  return (
-                    <TouchableOpacity
-                      key={slot.id}
-                      accessibilityRole="button"
-                      accessibilityLabel={`Slot from ${formatTimeRange(slot.startsAt, slot.endsAt)}`}
-                      accessibilityState={{ selected: isSelected }}
-                      style={[
-                        styles.slotChip,
-                        isSelected && styles.slotChipSelected
-                      ]}
-                      onPress={() => handleSelectSlot(slot)}
-                      activeOpacity={0.7}
-                    >
-                      <View style={styles.slotChipInner}>
-                        {isSelected && (
-                          <Ionicons name="checkmark-circle" size={15} color={colors.primary} style={{ marginRight: 4 }} />
-                        )}
-                        <Text
-                          style={[
-                            styles.slotChipText,
-                            isSelected && styles.slotChipTextSelected
-                          ]}
-                        >
-                          {formatTimeRange(slot.startsAt, slot.endsAt)}
-                        </Text>
-                      </View>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-            </View>
-          )}
-
-          {/* Practo-Style Grouped Slots: Afternoon & Evening */}
-          {afternoonSlots.length > 0 && (
-            <View style={styles.slotGroupContainer}>
-              <View style={styles.slotGroupHeader}>
-                <Feather name="sunset" size={15} color={colors.secondary} />
-                <Text style={styles.slotGroupTitle}>Afternoon & Evening Slots ({afternoonSlots.length})</Text>
-              </View>
-              <View style={styles.slotsGrid}>
-                {afternoonSlots.map((slot) => {
-                  const isSelected = selectedSlot?.id === slot.id;
-
-                  return (
-                    <TouchableOpacity
-                      key={slot.id}
-                      accessibilityRole="button"
-                      accessibilityLabel={`Slot from ${formatTimeRange(slot.startsAt, slot.endsAt)}`}
-                      accessibilityState={{ selected: isSelected }}
-                      style={[
-                        styles.slotChip,
-                        isSelected && styles.slotChipSelected
-                      ]}
-                      onPress={() => handleSelectSlot(slot)}
-                      activeOpacity={0.7}
-                    >
-                      <View style={styles.slotChipInner}>
-                        {isSelected && (
-                          <Ionicons name="checkmark-circle" size={15} color={colors.primary} style={{ marginRight: 4 }} />
-                        )}
-                        <Text
-                          style={[
-                            styles.slotChipText,
-                            isSelected && styles.slotChipTextSelected
-                          ]}
-                        >
-                          {formatTimeRange(slot.startsAt, slot.endsAt)}
-                        </Text>
-                      </View>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-            </View>
-          )}
+              return (
+                <TouchableOpacity
+                  key={slot.id}
+                  disabled={!isAvailable || bookSlotMutation.isPending}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Slot from ${formatTimeRange(slot.startsAt, slot.endsAt)}`}
+                  style={[
+                    styles.slotChip,
+                    isSelected && styles.slotChipSelected,
+                    !isAvailable && styles.slotChipDisabled
+                  ]}
+                  onPress={() => handleSelectSlot(slot)}
+                  activeOpacity={0.85}
+                >
+                  <Text
+                    style={[
+                      styles.slotTimeText,
+                      isSelected && styles.slotTimeTextSelected,
+                      !isAvailable && styles.slotTimeTextDisabled
+                    ]}
+                  >
+                    {timeString}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
         </ScreenState>
+
+        {bookingError && (
+          <View style={styles.errorBanner}>
+            <Feather name="alert-circle" size={18} color={colors.error} style={{ marginRight: 8 }} />
+            <Text style={styles.errorBannerText}>{bookingError}</Text>
+          </View>
+        )}
       </ScrollView>
 
-      {/* Persistent Frosted Bottom Action Bar */}
-      <View style={styles.bottomBar}>
-        <View style={styles.summaryContainer}>
-          <View style={styles.summaryRow}>
-            <Feather
-              name="calendar"
-              size={14}
-              color={selectedSlot ? colors.primary : colors.textSecondary}
-              style={{ marginRight: 6 }}
-            />
-            <Text style={styles.summaryLabel}>Selected Slot</Text>
-          </View>
-          <Text style={styles.summaryValue} numberOfLines={1}>
-            {selectedSlot
-              ? `${formatDate(selectedSlot.startsAt)}, ${formatTimeRange(selectedSlot.startsAt, selectedSlot.endsAt)}`
-              : 'Please choose an available slot above'}
-          </Text>
-        </View>
-
-        <Button
-          title={bookSlotMutation.isPending ? 'Confirming...' : 'Book Appointment'}
-          onPress={promptConfirmationDialog}
-          disabled={!selectedSlot || bookSlotMutation.isPending}
-          loading={bookSlotMutation.isPending}
+      {/* Sticky Bottom Action Bar */}
+      <View style={[styles.bottomBar, { paddingBottom: Math.max(insets.bottom, 16) + 8 }]}>
+        <TouchableOpacity
+          accessibilityRole="button"
           accessibilityLabel="Proceed to book selected appointment slot"
-          style={styles.bookButton}
-        />
+          disabled={!selectedSlot || bookSlotMutation.isPending}
+          style={[
+            styles.confirmButton,
+            (!selectedSlot || bookSlotMutation.isPending) && styles.confirmButtonDisabled
+          ]}
+          onPress={promptConfirmationDialog}
+          activeOpacity={0.88}
+        >
+          <Text style={styles.confirmButtonText}>
+            {bookSlotMutation.isPending ? 'Securing Slot...' : 'Confirm appointment'}
+          </Text>
+          <Feather name="chevron-right" size={22} color={colors.chartreuse} />
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -407,336 +338,314 @@ export const DoctorDetailScreen: React.FC<DoctorDetailScreenProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background
+    backgroundColor: colors.canvas
   },
-  scrollContent: {
-    padding: spacing.md,
-    paddingBottom: 130 // Space for sticky bottom bar & clean clearance
-  },
-  profileHeader: {
-    backgroundColor: colors.surface,
-    padding: spacing.lg,
-    borderRadius: borderRadius.lg,
+  topBar: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 3,
-    position: 'relative',
-    overflow: 'hidden'
+    justifyContent: 'space-between',
+    paddingHorizontal: 18,
+    paddingBottom: 12
   },
-  profileAccentBar: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 4
-  },
-  avatarWrapper: {
-    position: 'relative',
-    marginBottom: spacing.sm,
-    marginTop: 4
-  },
-  avatarCircle: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
+  backButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2,
+    borderColor: colors.ink,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 2.5,
-    borderColor: '#FFFFFF',
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 4
-  },
-  avatarText: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: '#FFFFFF'
-  },
-  verifiedIconWrap: {
-    position: 'absolute',
-    bottom: -2,
-    right: -2,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 10,
+    shadowColor: colors.ink,
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
     elevation: 3
   },
-  doctorName: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: colors.textPrimary,
+  topBarTitle: {
+    fontSize: 18,
+    fontWeight: '900',
+    color: colors.ink,
     letterSpacing: -0.3
   },
-  doctorSpecialty: {
-    fontSize: 14.5,
-    color: colors.primary,
-    fontWeight: '700',
-    marginTop: 2
+
+  // Stepper
+  stepperContainer: {
+    paddingHorizontal: 18,
+    marginBottom: 16
   },
-  badgeRow: {
+  stepperLabelRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-    marginTop: spacing.xs + 2
+    justifyContent: 'space-between',
+    marginBottom: 6
   },
-  deptBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: borderRadius.sm
-  },
-  deptBadgeText: {
-    fontSize: 12,
-    fontWeight: '700'
-  },
-  verifiedTag: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.secondaryLight,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: borderRadius.sm
-  },
-  verifiedTagText: {
+  stepText: {
     fontSize: 11,
-    color: colors.secondaryDark,
-    fontWeight: '700',
-    marginLeft: 4
+    fontWeight: '800',
+    color: colors.inkMuted,
+    letterSpacing: 1
   },
-  bioContainer: {
-    marginTop: spacing.md,
-    paddingTop: spacing.sm,
-    borderTopWidth: 1,
-    borderTopColor: colors.borderLight,
-    width: '100%'
+  stepName: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: colors.ink
   },
-  bioText: {
-    fontSize: 13,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: 19
+  stepperTrack: {
+    height: 7,
+    backgroundColor: '#E4DFD5',
+    borderRadius: 4,
+    borderWidth: 1.5,
+    borderColor: colors.ink,
+    overflow: 'hidden'
   },
-  sectionHeader: {
+  stepperFill: {
+    height: '100%',
+    backgroundColor: colors.chartreuse,
+    borderRadius: 3
+  },
+
+  scrollContent: {
+    paddingHorizontal: 18,
+    paddingBottom: 130
+  },
+
+  // Selected Doctor Banner
+  doctorBanner: {
+    backgroundColor: colors.lilac,
+    borderWidth: 2,
+    borderColor: colors.ink,
+    borderRadius: 22,
+    padding: 16,
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: spacing.sm,
-    marginTop: spacing.xs
+    marginBottom: 20,
+    shadowColor: colors.ink,
+    shadowOffset: { width: 4, height: 4 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 4
   },
-  sectionNumberCircle: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: spacing.sm
+  avatarBorder: {
+    marginRight: 14
   },
-  sectionNumberText: {
-    fontSize: 12,
-    fontWeight: '800',
-    color: '#FFFFFF'
-  },
-  sectionTitleWrap: {
+  doctorBannerInfo: {
     flex: 1
   },
-  sectionTitle: {
-    fontSize: 16,
+  bannerEyebrow: {
+    fontSize: 10,
     fontWeight: '800',
-    color: colors.textPrimary
+    color: colors.inkMuted,
+    letterSpacing: 1,
+    marginBottom: 2
+  },
+  bannerDoctorName: {
+    fontSize: 18,
+    fontWeight: '900',
+    color: colors.ink,
+    letterSpacing: -0.3
+  },
+  bannerSpecialty: {
+    fontSize: 12.5,
+    fontWeight: '600',
+    color: colors.inkMuted,
+    marginTop: 1
+  },
+
+  // Date Section
+  sectionTitleRow: {
+    marginBottom: 8
+  },
+  sectionTitle: {
+    fontSize: 22,
+    fontWeight: '900',
+    color: colors.ink,
+    letterSpacing: -0.5
+  },
+  monthNavRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 14
+  },
+  monthNavBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2,
+    borderColor: colors.ink,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: colors.ink,
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 2
+  },
+  monthYearText: {
+    fontSize: 17,
+    fontWeight: '900',
+    color: colors.ink,
+    letterSpacing: -0.2
+  },
+
+  datesList: {
+    gap: 10,
+    paddingRight: 20,
+    marginBottom: 24
+  },
+  dateCard: {
+    width: 64,
+    height: 84,
+    borderRadius: 18,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2,
+    borderColor: colors.ink,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: colors.ink,
+    shadowOffset: { width: 3, height: 3 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 3
+  },
+  dateCardSelected: {
+    backgroundColor: colors.chartreuse
+  },
+  dateWeekday: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: colors.inkMuted,
+    marginBottom: 2
+  },
+  dateDayNum: {
+    fontSize: 20,
+    fontWeight: '900',
+    color: colors.ink
+  },
+  dateTextSelected: {
+    color: colors.ink
+  },
+  dateDot: {
+    width: 5,
+    height: 5,
+    borderRadius: 2.5,
+    backgroundColor: colors.ink,
+    marginTop: 3
+  },
+
+  // Times Section
+  timesHeaderRow: {
+    marginBottom: 14
   },
   sectionSubtitle: {
     fontSize: 12.5,
-    color: colors.textSecondary,
-    marginTop: 1
-  },
-  dateScroll: {
-    paddingVertical: spacing.xs,
-    marginBottom: spacing.md
-  },
-  dateCard: {
-    minHeight: spacing.minTouchTarget,
-    width: 74,
-    backgroundColor: colors.surface,
-    paddingVertical: 10,
-    paddingHorizontal: spacing.xs,
-    borderRadius: borderRadius.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: spacing.sm,
-    borderWidth: 1.5,
-    borderColor: colors.border,
-    position: 'relative'
-  },
-  dateCardSelected: {
-    borderColor: 'transparent',
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.28,
-    shadowRadius: 8,
-    elevation: 4
-  },
-  dateWeekday: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: colors.textSecondary,
-    textTransform: 'uppercase'
-  },
-  dateWeekdaySelected: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: 'rgba(255, 255, 255, 0.9)',
-    textTransform: 'uppercase'
-  },
-  dateDayNum: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: colors.textPrimary,
-    marginVertical: 2
-  },
-  dateDayNumSelected: {
-    fontSize: 19,
-    fontWeight: '900',
-    color: '#FFFFFF',
-    marginVertical: 2
-  },
-  dateMonth: {
-    fontSize: 11,
-    color: colors.textSecondary,
-    fontWeight: '600'
-  },
-  dateMonthSelected: {
-    fontSize: 11,
-    color: 'rgba(255, 255, 255, 0.9)',
-    fontWeight: '700'
-  },
-  dateActiveIndicator: {
-    position: 'absolute',
-    bottom: -1,
-    width: 16,
-    height: 3,
-    borderRadius: 2,
-    backgroundColor: '#FFFFFF'
-  },
-  errorAlert: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.errorLight,
-    borderColor: colors.error + '40',
-    borderWidth: 1,
-    borderRadius: borderRadius.md,
-    padding: spacing.md,
-    marginBottom: spacing.md
-  },
-  errorAlertText: {
-    flex: 1,
-    color: colors.errorText,
-    fontSize: 13,
-    fontWeight: '700',
-    lineHeight: 18
-  },
-  slotGroupContainer: {
-    marginBottom: spacing.md
-  },
-  slotGroupHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: spacing.xs
-  },
-  slotGroupTitle: {
-    fontSize: 13,
-    fontWeight: '800',
-    color: colors.textSecondary,
-    marginLeft: 6
+    fontWeight: '600',
+    color: colors.inkMuted,
+    marginTop: 2
   },
   slotsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: spacing.sm,
-    marginTop: spacing.xs
+    gap: 10
   },
   slotChip: {
-    minHeight: spacing.minTouchTarget,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    backgroundColor: colors.surface,
-    borderWidth: 1.5,
-    borderColor: colors.border,
-    borderRadius: borderRadius.md,
+    width: '31%',
+    minHeight: 48,
+    borderRadius: 14,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2,
+    borderColor: colors.ink,
     alignItems: 'center',
     justifyContent: 'center',
-    minWidth: '47%',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.03,
-    shadowRadius: 3,
-    elevation: 1
-  },
-  slotChipSelected: {
-    backgroundColor: '#EEF5FF',
-    borderColor: colors.primary,
-    shadowColor: colors.primary,
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
+    shadowColor: colors.ink,
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
     elevation: 2
   },
-  slotChipInner: {
-    flexDirection: 'row',
-    alignItems: 'center'
+  slotChipSelected: {
+    backgroundColor: colors.foundation,
+    shadowColor: colors.coral,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 4
   },
-  slotChipText: {
+  slotChipDisabled: {
+    backgroundColor: '#E8E4DA',
+    borderColor: '#C7C2B6',
+    shadowOpacity: 0,
+    elevation: 0
+  },
+  slotTimeText: {
+    fontSize: 13.5,
+    fontWeight: '800',
+    color: colors.ink
+  },
+  slotTimeTextSelected: {
+    color: colors.chartreuse,
+    fontWeight: '900'
+  },
+  slotTimeTextDisabled: {
+    color: '#9E988A'
+  },
+
+  errorBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.coralLight,
+    borderWidth: 2,
+    borderColor: colors.error,
+    borderRadius: 14,
+    padding: 12,
+    marginTop: 16
+  },
+  errorBannerText: {
+    flex: 1,
     fontSize: 13,
     fontWeight: '700',
-    color: colors.textPrimary
+    color: colors.error
   },
-  slotChipTextSelected: {
-    color: colors.primaryDark,
-    fontWeight: '800'
-  },
+
+  // Bottom Sticky CTA
   bottomBar: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: 'rgba(255, 255, 255, 0.96)',
-    borderTopWidth: 1,
-    borderTopColor: colors.borderLight,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.md,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
+    backgroundColor: colors.canvas,
+    borderTopWidth: 2,
+    borderTopColor: colors.ink,
+    paddingHorizontal: 18,
+    paddingTop: 12,
+    zIndex: 100,
     elevation: 10
   },
-  summaryContainer: {
-    marginBottom: spacing.xs
-  },
-  summaryRow: {
+  confirmButton: {
+    backgroundColor: colors.foundation,
+    borderRadius: 20,
+    borderWidth: 2,
+    borderColor: colors.ink,
+    height: 56,
     flexDirection: 'row',
-    alignItems: 'center'
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: colors.coral,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 4
   },
-  summaryLabel: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: colors.textSecondary,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5
+  confirmButtonDisabled: {
+    backgroundColor: '#E2DDD2',
+    borderColor: '#B8B2A6',
+    shadowOpacity: 0,
+    elevation: 0
   },
-  summaryValue: {
-    fontSize: 13.5,
-    fontWeight: '700',
-    color: colors.textPrimary,
-    marginTop: 2
-  },
-  bookButton: {
-    marginTop: spacing.xs,
-    height: 52,
-    borderRadius: borderRadius.md
+  confirmButtonText: {
+    fontSize: 17,
+    fontWeight: '900',
+    color: colors.chartreuse,
+    letterSpacing: -0.2,
+    marginRight: 6
   }
 });

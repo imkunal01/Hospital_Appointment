@@ -84,6 +84,7 @@ export function requestLogger(req: Request, res: Response, next: NextFunction): 
       method: req.method,
       path: req.originalUrl || req.url,
       statusCode,
+      status: statusCode,
       durationMs
     };
 
@@ -93,8 +94,8 @@ export function requestLogger(req: Request, res: Response, next: NextFunction): 
 
     const message = `HTTP ${req.method} ${req.originalUrl || req.url} ${statusCode} (${durationMs}ms)`;
 
-    // Keep health checks at debug level to avoid polluting high-throughput log streams
-    if (isHealthCheck) {
+    // Keep health checks at debug level in test/production to avoid polluting high-throughput log streams
+    if (isHealthCheck && env.NODE_ENV !== 'development') {
       logger.debug(message, logData);
       return;
     }

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Switch, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, Switch, TouchableOpacity, Alert, Platform, ScrollView } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
 import { Feather } from '@expo/vector-icons';
 import { usePreferences, useUpdatePreferences } from '../hooks/usePreferences';
 import { useNetwork } from '../hooks/useNetwork';
@@ -7,18 +8,18 @@ import { ScreenState } from '../components/ScreenState';
 import { Button } from '../components/Button';
 import { extractErrorMessage } from '../utils/errors';
 import { colors } from '../theme/colors';
-import { spacing, borderRadius } from '../theme/spacing';
+import { useSafeInsets } from '../hooks/useSafeInsets';
 
 const HOUR_OPTIONS = [6, 12, 24, 48];
 
-export const PreferencesScreen: React.FC = () => {
+export const PreferencesScreen: React.FC<{ navigation?: any }> = ({ navigation }) => {
+  const insets = useSafeInsets();
   const { data: preferences, isLoading, isError, error, refetch } = usePreferences();
   const updateMutation = useUpdatePreferences();
   const { isOffline } = useNetwork();
 
   const [enabled, setEnabled] = useState<boolean>(true);
   const [hoursBefore, setHoursBefore] = useState<number>(24);
-  const [saveSuccess, setSaveSuccess] = useState<boolean>(false);
 
   useEffect(() => {
     if (preferences) {
@@ -33,12 +34,10 @@ export const PreferencesScreen: React.FC = () => {
       return;
     }
 
-    setSaveSuccess(false);
     updateMutation.mutate(
       { enabled, hoursBefore },
       {
         onSuccess: () => {
-          setSaveSuccess(true);
           Alert.alert('Saved', 'Your reminder preferences have been updated on the server.');
         },
         onError: (err) => {
@@ -50,103 +49,105 @@ export const PreferencesScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
+      <StatusBar style="dark" />
+
+      {/* Top Editorial Bar */}
+      <View style={[styles.topBar, { paddingTop: Math.max(insets.top, Platform.OS === 'ios' ? 20 : 16) + 6 }]}>
+        <TouchableOpacity
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
+          style={styles.backButton}
+          onPress={() => (navigation ? navigation.goBack() : null)}
+          activeOpacity={0.8}
+        >
+          <Feather name="arrow-left" size={22} color={colors.ink} />
+        </TouchableOpacity>
+
+        <Text style={styles.topBarTitle}>Notification Settings</Text>
+
+        <View style={{ width: 44 }} />
+      </View>
+
       <ScreenState
         loading={isLoading}
         loadingMessage="Loading your notification settings..."
         error={isError ? extractErrorMessage(error) : null}
         onRetry={refetch}
       >
-        <View style={styles.content}>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContent}
+        >
           <Text style={styles.heading}>Appointment Reminders</Text>
           <Text style={styles.subheading}>
-            Configure automated reminder alerts prior to your hospital visits.
+            Configure how and when the hospital automated dispatch delivers visit alerts.
           </Text>
 
-          {isOffline && (
-            <View style={styles.offlineWarning}>
-              <Feather name="wifi-off" size={16} color={colors.errorText} style={{ marginRight: 8 }} />
-              <Text style={styles.offlineWarningText}>
-                You are offline. Changes cannot be saved until reconnected.
-              </Text>
-            </View>
-          )}
-
-          {/* Toggle Switch Card */}
-          <View style={styles.settingCard}>
-            <View style={styles.settingTextContainer}>
-              <Text style={styles.settingTitle}>Enable Visit Reminders</Text>
-              <Text style={styles.settingDescription}>
-                Receive simulated advance notification alerts before upcoming appointments.
-              </Text>
-            </View>
-            <Switch
-              accessibilityRole="switch"
-              accessibilityLabel="Enable visit reminders"
-              value={enabled}
-              onValueChange={setEnabled}
-              trackColor={{ false: colors.border, true: colors.primary }}
-              thumbColor={colors.surface}
-            />
-          </View>
-
-          {/* Hours Selector */}
-          {enabled && (
-            <View style={styles.hoursCard}>
-              <Text style={styles.hoursTitle}>Remind Me Prior To Consultation</Text>
-              <Text style={styles.hoursDescription}>
-                Select how many hours in advance you would like to be alerted:
-              </Text>
-
-              <View style={styles.chipRow}>
-                {HOUR_OPTIONS.map((hours) => {
-                  const isSelected = hoursBefore === hours;
-
-                  return (
-                    <TouchableOpacity
-                      key={hours}
-                      accessibilityRole="button"
-                      accessibilityLabel={`${hours} hours before`}
-                      style={[
-                        styles.chip,
-                        isSelected && styles.chipSelected
-                      ]}
-                      onPress={() => setHoursBefore(hours)}
-                      activeOpacity={0.7}
-                    >
-                      <Text
-                        style={[
-                          styles.chipText,
-                          isSelected && styles.chipTextSelected
-                        ]}
-                      >
-                        {hours}h Before
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })}
+          {/* Setting Card */}
+          <View style={styles.card}>
+            <View style={styles.switchRow}>
+              <View style={styles.iconCircle}>
+                <Feather name="bell" size={20} color={colors.ink} />
               </View>
+              <View style={styles.switchTextCol}>
+                <Text style={styles.switchLabel}>Enable Visit Reminders</Text>
+                <Text style={styles.switchHelp}>
+                  Deliver automatic notification before consultation
+                </Text>
+              </View>
+              <Switch
+                value={enabled}
+                onValueChange={setEnabled}
+                trackColor={{ false: '#E2DDD2', true: colors.chartreuse }}
+                thumbColor={enabled ? colors.foundation : '#FFFFFF'}
+                ios_backgroundColor="#E2DDD2"
+              />
+            </View>
+
+            {enabled && (
+              <>
+                <View style={styles.divider} />
+                <Text style={styles.leadLabel}>REMIND ME IN ADVANCE</Text>
+                <View style={styles.hoursRow}>
+                  {HOUR_OPTIONS.map((h) => {
+                    const isSelected = hoursBefore === h;
+                    return (
+                      <TouchableOpacity
+                        key={h}
+                        accessibilityRole="button"
+                        accessibilityLabel={`${h} hours before appointment`}
+                        style={[styles.hourPill, isSelected && styles.hourPillSelected]}
+                        onPress={() => setHoursBefore(h)}
+                        activeOpacity={0.8}
+                      >
+                        <Text style={[styles.hourText, isSelected && styles.hourTextSelected]}>
+                          {h >= 24 ? `${h / 24}d before` : `${h}h before`}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              </>
+            )}
+          </View>
+
+          {isOffline && (
+            <View style={styles.offlineBox}>
+              <Feather name="wifi-off" size={16} color={colors.ink} style={{ marginRight: 8 }} />
+              <Text style={styles.offlineText}>
+                You are currently offline. Changes cannot be saved until you reconnect.
+              </Text>
             </View>
           )}
-
-          {/* Clinical Simulation Notice (Zero Emojis) */}
-          <View style={styles.noticeBox}>
-            <View style={styles.noticeIconCircle}>
-              <Feather name="info" size={16} color={colors.primary} />
-            </View>
-            <Text style={styles.noticeText}>
-              Preferences are saved directly to your patient profile in the PostgreSQL database. Push delivery is simulated in accordance with the assessment brief.
-            </Text>
-          </View>
 
           <Button
             title={updateMutation.isPending ? 'Saving...' : 'Save Preferences'}
             onPress={handleSave}
             disabled={isOffline || updateMutation.isPending}
             loading={updateMutation.isPending}
-            accessibilityLabel="Save reminder preferences to server"
-            style={styles.saveButton}
+            style={styles.saveBtn}
           />
-        </View>
+        </ScrollView>
       </ScreenState>
     </View>
   );
@@ -155,152 +156,156 @@ export const PreferencesScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background
+    backgroundColor: colors.canvas
   },
-  content: {
-    padding: spacing.lg
-  },
-  heading: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: colors.textPrimary,
-    letterSpacing: -0.3
-  },
-  subheading: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    marginTop: spacing.xs,
-    marginBottom: spacing.lg
-  },
-  offlineWarning: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.errorLight,
-    padding: spacing.md,
-    borderRadius: borderRadius.md,
-    borderWidth: 1,
-    borderColor: colors.error + '40',
-    marginBottom: spacing.md
-  },
-  offlineWarningText: {
-    flex: 1,
-    fontSize: 13,
-    color: colors.errorText,
-    fontWeight: '600'
-  },
-  settingCard: {
-    backgroundColor: colors.surface,
-    padding: spacing.lg,
-    borderRadius: borderRadius.lg,
+  topBar: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    borderWidth: 1,
-    borderColor: colors.borderLight,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.03,
-    shadowRadius: 5,
-    elevation: 1,
-    marginBottom: spacing.md
+    paddingHorizontal: 18,
+    paddingBottom: 12
   },
-  settingTextContainer: {
-    flex: 1,
-    paddingRight: spacing.md
-  },
-  settingTitle: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: colors.textPrimary
-  },
-  settingDescription: {
-    fontSize: 13,
-    color: colors.textSecondary,
-    marginTop: 4,
-    lineHeight: 18
-  },
-  hoursCard: {
-    backgroundColor: colors.surface,
-    padding: spacing.lg,
-    borderRadius: borderRadius.lg,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.03,
-    shadowRadius: 5,
-    elevation: 1,
-    marginBottom: spacing.md
-  },
-  hoursTitle: {
-    fontSize: 15,
-    fontWeight: '800',
-    color: colors.textPrimary
-  },
-  hoursDescription: {
-    fontSize: 13,
-    color: colors.textSecondary,
-    marginTop: 2,
-    marginBottom: spacing.md
-  },
-  chipRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm
-  },
-  chip: {
-    minHeight: spacing.minTouchTarget,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    backgroundColor: colors.background,
-    borderWidth: 1.5,
-    borderColor: colors.border,
-    borderRadius: borderRadius.md,
-    alignItems: 'center',
-    justifyContent: 'center'
-  },
-  chipSelected: {
-    backgroundColor: colors.primaryLight,
-    borderColor: colors.primary
-  },
-  chipText: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: colors.textPrimary
-  },
-  chipTextSelected: {
-    color: colors.primaryDark,
-    fontWeight: '800'
-  },
-  noticeBox: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    backgroundColor: colors.surface,
-    padding: spacing.md,
-    borderRadius: borderRadius.md,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
-    marginBottom: spacing.xl
-  },
-  noticeIconCircle: {
-    width: 28,
-    height: 28,
+  backButton: {
+    width: 44,
+    height: 44,
     borderRadius: 14,
-    backgroundColor: colors.primaryLight,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2,
+    borderColor: colors.ink,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: spacing.sm,
-    marginTop: 1
+    shadowColor: colors.ink,
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 3
   },
-  noticeText: {
-    flex: 1,
-    fontSize: 12.5,
-    color: colors.textSecondary,
+  topBarTitle: {
+    fontSize: 18,
+    fontWeight: '900',
+    color: colors.ink,
+    letterSpacing: -0.3
+  },
+  scrollContent: {
+    paddingHorizontal: 18,
+    paddingTop: 10,
+    paddingBottom: 64
+  },
+  heading: {
+    fontSize: 24,
+    fontWeight: '900',
+    color: colors.ink,
+    letterSpacing: -0.5
+  },
+  subheading: {
+    fontSize: 13,
+    color: colors.inkMuted,
+    marginTop: 4,
+    marginBottom: 20,
     lineHeight: 18
   },
-  saveButton: {
-    width: '100%',
-    height: 52,
-    borderRadius: borderRadius.md
+  card: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2,
+    borderColor: colors.ink,
+    borderRadius: 22,
+    padding: 18,
+    shadowColor: colors.ink,
+    shadowOffset: { width: 4, height: 4 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 4,
+    marginBottom: 20
+  },
+  switchRow: {
+    flexDirection: 'row',
+    alignItems: 'center'
+  },
+  iconCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: colors.lilacLight,
+    borderWidth: 1.5,
+    borderColor: colors.ink,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 14
+  },
+  switchTextCol: {
+    flex: 1,
+    marginRight: 10
+  },
+  switchLabel: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: colors.ink
+  },
+  switchHelp: {
+    fontSize: 12,
+    color: colors.inkMuted,
+    marginTop: 2
+  },
+  divider: {
+    height: 1.5,
+    backgroundColor: '#EAE6DC',
+    marginVertical: 18
+  },
+  leadLabel: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: colors.inkMuted,
+    letterSpacing: 1.2,
+    marginBottom: 10
+  },
+  hoursRow: {
+    flexDirection: 'row',
+    gap: 8
+  },
+  hourPill: {
+    flex: 1,
+    height: 44,
+    borderRadius: 14,
+    backgroundColor: colors.canvas,
+    borderWidth: 2,
+    borderColor: colors.ink,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: colors.ink,
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 2
+  },
+  hourPillSelected: {
+    backgroundColor: colors.chartreuse
+  },
+  hourText: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: colors.ink
+  },
+  hourTextSelected: {
+    color: colors.ink,
+    fontWeight: '900'
+  },
+  offlineBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.peach,
+    borderWidth: 2,
+    borderColor: colors.ink,
+    borderRadius: 14,
+    padding: 12,
+    marginBottom: 16
+  },
+  offlineText: {
+    flex: 1,
+    fontSize: 12.5,
+    fontWeight: '700',
+    color: colors.ink
+  },
+  saveBtn: {
+    marginTop: 10
   }
 });

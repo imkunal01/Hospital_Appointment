@@ -7,8 +7,10 @@ import {
   Alert,
   Modal,
   TouchableOpacity,
-  RefreshControl
+  RefreshControl,
+  Platform
 } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
 import { Feather, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import {
   useAppointmentDetail,
@@ -19,13 +21,12 @@ import {
 import { useDoctorSlots } from '../hooks/useCatalog';
 import { useNetwork } from '../hooks/useNetwork';
 import { ScreenState } from '../components/ScreenState';
-import { StatusBadge } from '../components/StatusBadge';
-import { Button } from '../components/Button';
+import { DoctorAvatar } from '../components/DoctorAvatar';
 import { formatDate, formatTimeRange, toISODateString } from '../utils/dates';
 import { extractErrorMessage } from '../utils/errors';
 import { Slot } from '../api/types';
 import { colors } from '../theme/colors';
-import { spacing, borderRadius } from '../theme/spacing';
+import { useSafeInsets } from '../hooks/useSafeInsets';
 
 interface AppointmentDetailScreenProps {
   route: {
@@ -40,6 +41,7 @@ export const AppointmentDetailScreen: React.FC<AppointmentDetailScreenProps> = (
   route,
   navigation
 }) => {
+  const insets = useSafeInsets();
   const { appointmentId } = route.params;
   const { isOffline } = useNetwork();
 
@@ -100,22 +102,21 @@ export const AppointmentDetailScreen: React.FC<AppointmentDetailScreenProps> = (
           text: 'Cancel Appointment',
           style: 'destructive',
           onPress: () => {
-            if (isCancellingRef.current) return;
             isCancellingRef.current = true;
-
-            cancelMutation.mutate(
-              { appointmentId: appointment.id },
-              {
-                onSuccess: () => {
-                  isCancellingRef.current = false;
-                  Alert.alert('Appointment Cancelled', 'Your appointment has been cancelled and the slot released.');
-                },
-                onError: (err) => {
-                  isCancellingRef.current = false;
-                  Alert.alert('Cancellation Error', extractErrorMessage(err));
-                }
+            cancelMutation.mutate(appointment.id, {
+              onSuccess: () => {
+                isCancellingRef.current = false;
+                Alert.alert(
+                  'Appointment Cancelled',
+                  'Your appointment has been cancelled and the slot released.',
+                  [{ text: 'OK' }]
+                );
+              },
+              onError: (err) => {
+                isCancellingRef.current = false;
+                Alert.alert('Cancellation Error', extractErrorMessage(err));
               }
-            );
+            });
           }
         }
       ]
@@ -123,7 +124,7 @@ export const AppointmentDetailScreen: React.FC<AppointmentDetailScreenProps> = (
   };
 
   const handleConfirmReschedule = () => {
-    if (!selectedNewSlot || !appointment || isActionDisabled || isReschedulingRef.current) return;
+    if (!selectedNewSlot || !appointment || isReschedulingRef.current) return;
 
     isReschedulingRef.current = true;
     setRescheduleError(null);
@@ -131,52 +132,60 @@ export const AppointmentDetailScreen: React.FC<AppointmentDetailScreenProps> = (
     rescheduleMutation.mutate(
       {
         appointmentId: appointment.id,
-        newSlotId: selectedNewSlot.id,
-        doctorId: appointment.doctorId,
-        date: rescheduleDate
+        newSlotId: selectedNewSlot.id
       },
       {
         onSuccess: () => {
           isReschedulingRef.current = false;
           setRescheduleModalVisible(false);
           setSelectedNewSlot(null);
-          Alert.alert('Success', 'Your appointment has been rescheduled.');
+          Alert.alert(
+            'Rescheduled Successfully',
+            `Your appointment has been moved to ${formatDate(selectedNewSlot.startsAt)} at ${formatTimeRange(selectedNewSlot.startsAt, selectedNewSlot.endsAt)}.`,
+            [{ text: 'OK' }]
+          );
         },
         onError: (err: any) => {
           isReschedulingRef.current = false;
-          const isTaken = err?.response?.data?.error?.code === 'SLOT_TAKEN';
-          const msg = isTaken
-            ? 'That slot was just reserved by someone else. Please choose another time.'
+          const isSlotTaken = err?.response?.data?.error?.code === 'SLOT_TAKEN';
+          const msg = isSlotTaken
+            ? 'That slot was just reserved by another patient. Please pick another available time.'
             : extractErrorMessage(err);
-
           setRescheduleError(msg);
-          setSelectedNewSlot(null);
           refetchNewSlots();
         }
       }
     );
   };
 
-  const getStatusAccentColor = () => {
-    switch (appointment?.status) {
-      case 'CONFIRMED':
-        return colors.success;
-      case 'CANCELLED':
-        return colors.error;
-      case 'COMPLETED':
-        return colors.primary;
-      default:
-        return colors.border;
-    }
-  };
-
   return (
     <View style={styles.container}>
+      <StatusBar style="dark" />
+
+      {/* Top Editorial Bar */}
+      <View style={[styles.topBar, { paddingTop: Math.max(insets.top, Platform.OS === 'ios' ? 20 : 16) + 6 }]}>
+        <TouchableOpacity
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+          activeOpacity={0.8}
+        >
+          <Feather name="arrow-left" size={22} color={colors.ink} />
+        </TouchableOpacity>
+
+        <Text style={styles.topBarTitle}>Appointment Details</Text>
+
+        <View style={{ width: 44 }} />
+      </View>
+
       <ScreenState
         loading={isLoading}
-        loadingMessage="Loading appointment details..."
+        loadingMessage="Retrieving appointment records..."
         error={isError ? extractErrorMessage(error) : null}
         onRetry={refetch}
+        empty={!isLoading && !appointment}
+        emptyMessage="Appointment record not found."
       >
         {appointment && (
           <ScrollView
@@ -186,60 +195,90 @@ export const AppointmentDetailScreen: React.FC<AppointmentDetailScreenProps> = (
               <RefreshControl
                 refreshing={isRefetching}
                 onRefresh={refetch}
-                colors={[colors.primary]}
+                tintColor={colors.foundation}
+                colors={[colors.foundation]}
               />
             }
           >
-            {/* Status & Reference Header Card */}
-            <View style={styles.card}>
-              <View style={[styles.cardTopAccent, { backgroundColor: getStatusAccentColor() }]} />
-
-              <View style={styles.cardHeaderRow}>
-                <View>
-                  <Text style={styles.referenceLabel}>Booking Reference</Text>
-                  <Text style={styles.referenceText}>{appointment.reference}</Text>
+            {/* Appointment Ticket Card */}
+            <View style={styles.ticketCard}>
+              <View style={styles.ticketHeader}>
+                <View
+                  style={[
+                    styles.statusPill,
+                    appointment.status === 'CANCELLED' && styles.statusCancelledPill
+                  ]}
+                >
+                  <View
+                    style={[
+                      styles.statusDot,
+                      appointment.status === 'CANCELLED' && { backgroundColor: colors.error }
+                    ]}
+                  />
+                  <Text
+                    style={[
+                      styles.statusText,
+                      appointment.status === 'CANCELLED' && { color: colors.error }
+                    ]}
+                  >
+                    {appointment.status}
+                  </Text>
                 </View>
-                <StatusBadge status={appointment.status} />
+                <Text style={styles.refText}>REF # <Text>{appointment.reference}</Text></Text>
               </View>
 
-              <View style={styles.divider} />
-
-              <View style={styles.doctorHeaderRow}>
-                <View style={styles.doctorIconCircle}>
-                  <MaterialCommunityIcons name="doctor" size={26} color={colors.primary} />
-                </View>
+              {/* Doctor Row */}
+              <View style={styles.doctorRow}>
+                <DoctorAvatar name={appointment.doctorName} size={64} style={{ marginRight: 14 }} />
                 <View style={{ flex: 1 }}>
                   <Text style={styles.doctorName}>{appointment.doctorName}</Text>
-                  <Text style={styles.specialtyText}>
-                    {appointment.specialty} • {appointment.departmentName}
+                  <Text style={styles.doctorSpecialty}>
+                    {appointment.specialty} · {appointment.departmentName}
                   </Text>
                 </View>
               </View>
 
-              <View style={styles.detailRow}>
-                <View style={styles.detailLabelWrap}>
-                  <Feather name="calendar" size={15} color={colors.primary} style={{ marginRight: 8 }} />
-                  <Text style={styles.detailLabel}>Scheduled Date</Text>
+              <View style={styles.divider} />
+
+              {/* Date & Time Rows */}
+              <View style={styles.infoRow}>
+                <View style={styles.infoIconCircle}>
+                  <Feather name="calendar" size={18} color={colors.ink} />
                 </View>
-                <Text style={styles.detailValue}>{formatDate(appointment.startsAt)}</Text>
+                <View>
+                  <Text style={styles.infoEyebrow}>DATE</Text>
+                  <Text style={styles.infoValue}>{formatDate(appointment.startsAt)}</Text>
+                </View>
               </View>
 
-              <View style={styles.detailRow}>
-                <View style={styles.detailLabelWrap}>
-                  <Feather name="clock" size={15} color={colors.primary} style={{ marginRight: 8 }} />
-                  <Text style={styles.detailLabel}>Time Window</Text>
+              <View style={styles.infoRow}>
+                <View style={styles.infoIconCircle}>
+                  <Feather name="clock" size={18} color={colors.ink} />
                 </View>
-                <Text style={styles.detailValue}>
-                  {formatTimeRange(appointment.startsAt, appointment.endsAt)}
-                </Text>
+                <View>
+                  <Text style={styles.infoEyebrow}>TIME</Text>
+                  <Text style={styles.infoValue}>
+                    {formatTimeRange(appointment.startsAt, appointment.endsAt)}
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.infoRow}>
+                <View style={styles.infoIconCircle}>
+                  <Ionicons name="location-outline" size={20} color={colors.ink} />
+                </View>
+                <View>
+                  <Text style={styles.infoEyebrow}>LOCATION</Text>
+                  <Text style={styles.infoValue}>North Wing, Floor 2</Text>
+                </View>
               </View>
             </View>
 
-            {/* Offline Notification Box (Zero Emojis) */}
+            {/* Offline Notification */}
             {isOffline && (
-              <View style={styles.offlineWarningBox}>
-                <Feather name="wifi-off" size={16} color={colors.errorText} style={{ marginRight: 8 }} />
-                <Text style={styles.offlineWarningText}>
+              <View style={styles.offlineBox}>
+                <Feather name="wifi-off" size={18} color={colors.ink} style={{ marginRight: 10 }} />
+                <Text style={styles.offlineText}>
                   You are currently offline. Rescheduling and cancellation are disabled.
                 </Text>
               </View>
@@ -247,63 +286,70 @@ export const AppointmentDetailScreen: React.FC<AppointmentDetailScreenProps> = (
 
             {/* Action Buttons for Confirmed Appointments */}
             {isConfirmed && (
-              <View style={styles.actionsContainer}>
-                <Button
-                  title="Reschedule Appointment"
+              <View style={styles.actionsWrap}>
+                <TouchableOpacity
+                  accessibilityRole="button"
+                  accessibilityLabel="Reschedule this appointment to another date or time"
+                  disabled={isActionDisabled}
+                  style={[styles.rescheduleBtn, isActionDisabled && styles.btnDisabled]}
                   onPress={() => {
                     setRescheduleModalVisible(true);
                     setSelectedNewSlot(null);
                     setRescheduleError(null);
                   }}
-                  variant="outline"
-                  disabled={isActionDisabled}
-                  accessibilityLabel="Reschedule this appointment to another date or time"
-                  style={styles.actionButton}
-                />
-                <Button
-                  title={cancelMutation.isPending ? 'Cancelling...' : 'Cancel Appointment'}
-                  onPress={handleCancelPress}
-                  variant="danger"
-                  disabled={isActionDisabled}
-                  loading={cancelMutation.isPending}
+                  activeOpacity={0.88}
+                >
+                  <Feather name="calendar" size={18} color={colors.ink} style={{ marginRight: 8 }} />
+                  <Text style={styles.rescheduleBtnText}>Reschedule Appointment</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  accessibilityRole="button"
                   accessibilityLabel="Cancel this appointment and free the slot"
-                  style={styles.actionButton}
-                />
+                  disabled={isActionDisabled}
+                  style={[styles.cancelBtn, isActionDisabled && styles.btnDisabled]}
+                  onPress={handleCancelPress}
+                  activeOpacity={0.88}
+                >
+                  <Feather name="x-circle" size={18} color={colors.error} style={{ marginRight: 8 }} />
+                  <Text style={styles.cancelBtnText}>
+                    {cancelMutation.isPending ? 'Cancelling...' : 'Cancel Appointment'}
+                  </Text>
+                </TouchableOpacity>
               </View>
             )}
 
-            {/* Visit Reports & Metadata Section (Strictly Non-Diagnostic) */}
+            {/* Visit Reports & File Metadata Section */}
             <View style={styles.reportsSection}>
-              <View style={styles.sectionHeaderRow}>
-                <MaterialCommunityIcons name="file-document-multiple-outline" size={20} color={colors.primary} />
-                <Text style={styles.sectionTitle}>Visit Records & File Metadata</Text>
+              <View style={styles.reportsHeader}>
+                <MaterialCommunityIcons name="file-document-outline" size={22} color={colors.ink} />
+                <Text style={styles.reportsTitle}>Visit Records & File Metadata</Text>
               </View>
-              <Text style={styles.metadataDisclaimer}>
-                Strictly administrative and file metadata. No medical diagnoses, prescriptions, or clinical recommendations are displayed.
+              <Text style={styles.reportsDisclaimer}>
+                Strictly administrative and file metadata. No diagnoses or prescriptions are stored.
               </Text>
 
               {isReportsLoading ? (
-                <Text style={styles.loadingReportsText}>Loading report records...</Text>
+                <Text style={styles.reportsLoadingText}>Loading report records...</Text>
               ) : reports && reports.length > 0 ? (
                 reports.map((report) => (
                   <View key={report.id} style={styles.reportCard}>
                     <View style={styles.reportIconCircle}>
-                      <MaterialCommunityIcons name="file-document-outline" size={20} color={colors.primary} />
+                      <Feather name="file-text" size={18} color={colors.ink} />
                     </View>
-                    <View style={styles.reportDetails}>
+                    <View style={{ flex: 1 }}>
                       <Text style={styles.reportTitle}>{report.title}</Text>
                       <Text style={styles.reportMeta}>
-                        Type: {report.reportType} • Size: {report.fileSizeKb} KB
+                        Type: {report.reportType} · Size: {report.fileSizeKb} KB
                       </Text>
                       <Text style={styles.reportDate}>Recorded on {report.reportDate}</Text>
                     </View>
                   </View>
                 ))
               ) : (
-                <View style={styles.emptyReportsBox}>
-                  <MaterialCommunityIcons name="folder-text-outline" size={28} color={colors.textMuted} />
-                  <Text style={styles.emptyReportsText}>
-                    No visit report files or administrative records attached to this visit.
+                <View style={styles.reportEmptyBox}>
+                  <Text style={styles.reportEmptyText}>
+                    No document metadata generated for this appointment.
                   </Text>
                 </View>
               )}
@@ -316,39 +362,34 @@ export const AppointmentDetailScreen: React.FC<AppointmentDetailScreenProps> = (
       <Modal
         visible={isRescheduleModalVisible}
         animationType="slide"
-        transparent={false}
+        presentationStyle="pageSheet"
         onRequestClose={() => setRescheduleModalVisible(false)}
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalHeader}>
             <Text style={styles.modalTitle}>Reschedule Appointment</Text>
             <TouchableOpacity
-              accessibilityRole="button"
-              accessibilityLabel="Close reschedule dialog"
               onPress={() => setRescheduleModalVisible(false)}
-              style={styles.closeButton}
+              style={styles.modalCloseBtn}
             >
-              <Feather name="x" size={22} color={colors.textSecondary} />
+              <Feather name="x" size={20} color={colors.ink} />
             </TouchableOpacity>
           </View>
 
-          <ScrollView contentContainerStyle={styles.modalContent}>
-            <Text style={styles.modalSubtitle}>
-              Select a new date and available time slot with {appointment?.doctorName}:
-            </Text>
-
+          <ScrollView style={styles.modalScroll}>
             {rescheduleError && (
-              <View style={styles.modalErrorBox}>
-                <Feather name="alert-circle" size={16} color={colors.errorText} style={{ marginRight: 6 }} />
+              <View style={styles.modalErrorBanner}>
+                <Feather name="alert-circle" size={18} color={colors.error} style={{ marginRight: 8 }} />
                 <Text style={styles.modalErrorText}>{rescheduleError}</Text>
               </View>
             )}
 
-            {/* Date Picker */}
+            <Text style={styles.modalSectionLabel}>1. SELECT NEW DATE</Text>
+
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.dateScroll}
+              contentContainerStyle={{ gap: 10, paddingVertical: 10 }}
             >
               {availableDates.map((dateObj) => {
                 const dateStr = toISODateString(dateObj);
@@ -357,33 +398,17 @@ export const AppointmentDetailScreen: React.FC<AppointmentDetailScreenProps> = (
                 return (
                   <TouchableOpacity
                     key={dateStr}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Date ${dateObj.toLocaleDateString()}`}
-                    style={[
-                      styles.modalDateCard,
-                      isSelected && styles.modalDateCardSelected
-                    ]}
+                    style={[styles.modalDateCard, isSelected && styles.modalDateCardActive]}
                     onPress={() => {
                       setRescheduleDate(dateStr);
                       setSelectedNewSlot(null);
-                      setRescheduleError(null);
                     }}
                     activeOpacity={0.8}
                   >
-                    <Text
-                      style={[
-                        styles.modalDateWeekday,
-                        isSelected && styles.modalDateTextSelected
-                      ]}
-                    >
+                    <Text style={[styles.modalDateDay, isSelected && { color: colors.ink }]}>
                       {dateObj.toLocaleDateString(undefined, { weekday: 'short' })}
                     </Text>
-                    <Text
-                      style={[
-                        styles.modalDateDayNum,
-                        isSelected && styles.modalDateTextSelected
-                      ]}
-                    >
+                    <Text style={[styles.modalDateNum, isSelected && { color: colors.ink }]}>
                       {dateObj.getDate()}
                     </Text>
                   </TouchableOpacity>
@@ -391,54 +416,65 @@ export const AppointmentDetailScreen: React.FC<AppointmentDetailScreenProps> = (
               })}
             </ScrollView>
 
-            {/* Slot Picker */}
-            <Text style={styles.pickerHeading}>Available Slots for {formatDate(rescheduleDate)}</Text>
+            <Text style={[styles.modalSectionLabel, { marginTop: 16 }]}>
+              2. SELECT NEW TIME ({formatDate(rescheduleDate)})
+            </Text>
 
             {isNewSlotsLoading ? (
-              <Text style={styles.loadingReportsText}>Loading available slots...</Text>
+              <Text style={{ color: colors.inkMuted, marginVertical: 14 }}>Loading slots...</Text>
             ) : newSlots && newSlots.length > 0 ? (
-              <View style={styles.slotsGrid}>
+              <View style={styles.modalSlotsGrid}>
                 {newSlots.map((slot) => {
                   const isSelected = selectedNewSlot?.id === slot.id;
+                  const timeText = new Date(slot.startsAt).toLocaleTimeString([], {
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    hour12: true
+                  });
 
                   return (
                     <TouchableOpacity
                       key={slot.id}
-                      accessibilityRole="button"
-                      accessibilityLabel={`Slot ${formatTimeRange(slot.startsAt, slot.endsAt)}`}
                       style={[
-                        styles.slotChip,
-                        isSelected && styles.slotChipSelected
+                        styles.modalSlotChip,
+                        isSelected && styles.modalSlotChipActive
                       ]}
                       onPress={() => setSelectedNewSlot(slot)}
-                      activeOpacity={0.7}
+                      activeOpacity={0.8}
                     >
                       <Text
                         style={[
-                          styles.slotChipText,
-                          isSelected && styles.slotChipTextSelected
+                          styles.modalSlotText,
+                          isSelected && { color: colors.chartreuse, fontWeight: '900' }
                         ]}
                       >
-                        {formatTimeRange(slot.startsAt, slot.endsAt)}
+                        {timeText}
                       </Text>
                     </TouchableOpacity>
                   );
                 })}
               </View>
             ) : (
-              <Text style={styles.noSlotsText}>No open slots on this date. Please pick another day.</Text>
+              <Text style={{ color: colors.inkMuted, marginVertical: 14 }}>
+                No open slots on this date. Please pick another day.
+              </Text>
             )}
           </ScrollView>
 
           <View style={styles.modalFooter}>
-            <Button
-              title={rescheduleMutation.isPending ? 'Rescheduling...' : 'Confirm Reschedule'}
+            <TouchableOpacity
+              disabled={!selectedNewSlot || rescheduleMutation.isPending}
+              style={[
+                styles.modalConfirmBtn,
+                (!selectedNewSlot || rescheduleMutation.isPending) && styles.btnDisabled
+              ]}
               onPress={handleConfirmReschedule}
-              disabled={!selectedNewSlot || rescheduleMutation.isPending || isOffline}
-              loading={rescheduleMutation.isPending}
-              accessibilityLabel="Confirm moving appointment to selected slot"
-              style={{ height: 52, borderRadius: borderRadius.md }}
-            />
+              activeOpacity={0.88}
+            >
+              <Text style={styles.modalConfirmText}>
+                {rescheduleMutation.isPending ? 'Rescheduling...' : 'Confirm Reschedule'}
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>
@@ -449,338 +485,429 @@ export const AppointmentDetailScreen: React.FC<AppointmentDetailScreenProps> = (
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background
+    backgroundColor: colors.canvas
   },
-  scrollContent: {
-    padding: spacing.md,
-    paddingBottom: 40
-  },
-  card: {
-    backgroundColor: colors.surface,
-    padding: spacing.lg,
-    borderRadius: borderRadius.lg,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 3,
-    marginBottom: spacing.md,
-    position: 'relative',
-    overflow: 'hidden'
-  },
-  cardTopAccent: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 4
-  },
-  cardHeaderRow: {
+  topBar: {
     flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 4
+    paddingHorizontal: 18,
+    paddingBottom: 12
   },
-  referenceLabel: {
-    fontSize: 11,
-    color: colors.textSecondary,
-    fontWeight: '800',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5
-  },
-  referenceText: {
-    fontSize: 19,
-    fontWeight: '900',
-    color: colors.primaryDark,
-    marginTop: 2,
-    letterSpacing: 0.3
-  },
-  divider: {
-    height: 1,
-    backgroundColor: colors.borderLight,
-    marginVertical: spacing.md
-  },
-  doctorHeaderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: spacing.md
-  },
-  doctorIconCircle: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: colors.primaryLight,
+  backButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2,
+    borderColor: colors.ink,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 12
+    shadowColor: colors.ink,
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 3
   },
-  doctorName: {
+  topBarTitle: {
     fontSize: 18,
-    fontWeight: '800',
-    color: colors.textPrimary,
-    letterSpacing: -0.2
+    fontWeight: '900',
+    color: colors.ink,
+    letterSpacing: -0.3
   },
-  specialtyText: {
-    fontSize: 13.5,
-    color: colors.primary,
-    fontWeight: '700',
-    marginTop: 1
+  scrollContent: {
+    paddingHorizontal: 18,
+    paddingBottom: 64
   },
-  detailRow: {
+
+  // Ticket Card
+  ticketCard: {
+    backgroundColor: colors.sky,
+    borderWidth: 2,
+    borderColor: colors.ink,
+    borderRadius: 24,
+    padding: 20,
+    shadowColor: colors.ink,
+    shadowOffset: { width: 4, height: 4 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 4,
+    marginBottom: 16
+  },
+  ticketHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: spacing.xs + 3
+    justifyContent: 'space-between',
+    marginBottom: 16
   },
-  detailLabelWrap: {
+  statusPill: {
+    backgroundColor: colors.chartreuse,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 999,
+    borderWidth: 1.5,
+    borderColor: colors.ink,
     flexDirection: 'row',
     alignItems: 'center'
   },
-  detailLabel: {
-    fontSize: 13.5,
-    color: colors.textSecondary,
-    fontWeight: '500'
+  statusCancelledPill: {
+    backgroundColor: colors.coralLight
   },
-  detailValue: {
-    fontSize: 13.5,
+  statusDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: colors.ink,
+    marginRight: 6
+  },
+  statusText: {
+    fontSize: 11,
     fontWeight: '800',
-    color: colors.textPrimary
+    color: colors.ink
   },
-  offlineWarningBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.errorLight,
-    padding: spacing.md,
-    borderRadius: borderRadius.md,
-    borderWidth: 1,
-    borderColor: colors.error + '40',
-    marginBottom: spacing.md
-  },
-  offlineWarningText: {
-    flex: 1,
-    fontSize: 13,
-    color: colors.errorText,
-    fontWeight: '600',
-    lineHeight: 18
-  },
-  actionsContainer: {
-    marginBottom: spacing.lg,
-    gap: spacing.sm
-  },
-  actionButton: {
-    width: '100%',
-    height: 52,
-    borderRadius: borderRadius.md
-  },
-  reportsSection: {
-    backgroundColor: colors.surface,
-    padding: spacing.lg,
-    borderRadius: borderRadius.lg,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 6,
-    elevation: 2
-  },
-  sectionHeaderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: colors.textPrimary
-  },
-  metadataDisclaimer: {
+  refText: {
     fontSize: 12,
-    color: colors.textSecondary,
-    fontStyle: 'italic',
-    marginTop: 4,
-    marginBottom: spacing.md,
-    lineHeight: 17
+    fontWeight: '800',
+    color: colors.inkMuted,
+    letterSpacing: 0.5
   },
-  loadingReportsText: {
+  doctorRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16
+  },
+  doctorName: {
+    fontSize: 19,
+    fontWeight: '900',
+    color: colors.ink,
+    letterSpacing: -0.3
+  },
+  doctorSpecialty: {
     fontSize: 13,
-    color: colors.textSecondary,
-    marginVertical: spacing.sm
+    fontWeight: '600',
+    color: colors.inkMuted,
+    marginTop: 2
+  },
+  divider: {
+    height: 1.5,
+    backgroundColor: '#82C1ED',
+    marginBottom: 16
+  },
+  infoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 14
+  },
+  infoIconCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: colors.ink,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 14
+  },
+  infoEyebrow: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: colors.inkMuted,
+    letterSpacing: 0.8
+  },
+  infoValue: {
+    fontSize: 14.5,
+    fontWeight: '800',
+    color: colors.ink,
+    marginTop: 1
+  },
+
+  offlineBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.peach,
+    borderWidth: 2,
+    borderColor: colors.ink,
+    borderRadius: 16,
+    padding: 14,
+    marginBottom: 16
+  },
+  offlineText: {
+    flex: 1,
+    fontSize: 12.5,
+    fontWeight: '700',
+    color: colors.ink
+  },
+
+  // Action Buttons
+  actionsWrap: {
+    gap: 12,
+    marginBottom: 20
+  },
+  rescheduleBtn: {
+    backgroundColor: colors.lilac,
+    borderWidth: 2,
+    borderColor: colors.ink,
+    borderRadius: 18,
+    height: 54,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: colors.ink,
+    shadowOffset: { width: 3, height: 3 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 3
+  },
+  rescheduleBtnText: {
+    fontSize: 15,
+    fontWeight: '900',
+    color: colors.ink
+  },
+  cancelBtn: {
+    backgroundColor: colors.coralLight,
+    borderWidth: 2,
+    borderColor: colors.ink,
+    borderRadius: 18,
+    height: 54,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: colors.ink,
+    shadowOffset: { width: 3, height: 3 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 3
+  },
+  cancelBtnText: {
+    fontSize: 15,
+    fontWeight: '900',
+    color: colors.error
+  },
+  btnDisabled: {
+    backgroundColor: '#E2DDD2',
+    borderColor: '#B8B2A6',
+    shadowOpacity: 0,
+    elevation: 0
+  },
+
+  // Reports
+  reportsSection: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2,
+    borderColor: colors.ink,
+    borderRadius: 22,
+    padding: 18,
+    shadowColor: colors.ink,
+    shadowOffset: { width: 3, height: 3 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 3,
+    marginBottom: 20
+  },
+  reportsHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 6
+  },
+  reportsTitle: {
+    fontSize: 16,
+    fontWeight: '900',
+    color: colors.ink,
+    marginLeft: 8
+  },
+  reportsDisclaimer: {
+    fontSize: 12,
+    color: colors.inkMuted,
+    marginBottom: 14,
+    lineHeight: 16
+  },
+  reportsLoadingText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: colors.inkMuted
   },
   reportCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: spacing.sm + 4,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.borderLight
+    backgroundColor: colors.lilacLight,
+    borderWidth: 1.5,
+    borderColor: colors.ink,
+    borderRadius: 14,
+    padding: 12,
+    marginBottom: 10
   },
   reportIconCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: colors.primaryLight,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: colors.ink,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12
   },
-  reportDetails: {
-    flex: 1
-  },
   reportTitle: {
-    fontSize: 14.5,
+    fontSize: 14,
     fontWeight: '800',
-    color: colors.textPrimary
+    color: colors.ink
   },
   reportMeta: {
     fontSize: 12,
-    color: colors.textSecondary,
+    color: colors.inkMuted,
     marginTop: 2
   },
   reportDate: {
     fontSize: 11,
-    color: colors.textMuted,
+    fontWeight: '700',
+    color: colors.inkSubtle,
     marginTop: 2
   },
-  emptyReportsBox: {
-    paddingVertical: spacing.lg,
-    alignItems: 'center',
-    justifyContent: 'center'
+  reportEmptyBox: {
+    paddingVertical: 12,
+    alignItems: 'center'
   },
-  emptyReportsText: {
+  reportEmptyText: {
     fontSize: 12.5,
-    color: colors.textMuted,
-    textAlign: 'center',
-    marginTop: 6
+    color: colors.inkMuted
   },
+
+  // Modal
   modalContainer: {
     flex: 1,
-    backgroundColor: colors.background
+    backgroundColor: colors.canvas,
+    padding: 20
   },
   modalHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    padding: spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.borderLight,
-    backgroundColor: colors.surface
+    justifyContent: 'space-between',
+    paddingBottom: 16,
+    borderBottomWidth: 2,
+    borderBottomColor: colors.ink,
+    marginBottom: 14
   },
   modalTitle: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: colors.textPrimary
+    fontSize: 20,
+    fontWeight: '900',
+    color: colors.ink
   },
-  closeButton: {
-    width: 44,
-    height: 44,
+  modalCloseBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2,
+    borderColor: colors.ink,
     alignItems: 'center',
     justifyContent: 'center'
   },
-  modalContent: {
-    padding: spacing.md
+  modalScroll: {
+    flex: 1
   },
-  modalSubtitle: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    marginBottom: spacing.md
+  modalSectionLabel: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: colors.inkMuted,
+    letterSpacing: 1,
+    marginBottom: 8
   },
-  modalErrorBox: {
+  modalDateCard: {
+    width: 60,
+    height: 74,
+    borderRadius: 16,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2,
+    borderColor: colors.ink,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: colors.ink,
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 2
+  },
+  modalDateCardActive: {
+    backgroundColor: colors.chartreuse
+  },
+  modalDateDay: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: colors.inkMuted
+  },
+  modalDateNum: {
+    fontSize: 18,
+    fontWeight: '900',
+    color: colors.ink
+  },
+  modalSlotsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginVertical: 10
+  },
+  modalSlotChip: {
+    width: '31%',
+    height: 46,
+    borderRadius: 12,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2,
+    borderColor: colors.ink,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: colors.ink,
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 2
+  },
+  modalSlotChipActive: {
+    backgroundColor: colors.foundation
+  },
+  modalSlotText: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: colors.ink
+  },
+  modalErrorBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.errorLight,
-    padding: spacing.md,
-    borderRadius: borderRadius.md,
-    marginBottom: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.error + '40'
+    backgroundColor: colors.coralLight,
+    borderWidth: 2,
+    borderColor: colors.error,
+    borderRadius: 12,
+    padding: 10,
+    marginBottom: 12
   },
   modalErrorText: {
     flex: 1,
-    color: colors.errorText,
-    fontSize: 13,
-    fontWeight: '600'
-  },
-  dateScroll: {
-    paddingVertical: spacing.xs,
-    marginBottom: spacing.md
-  },
-  modalDateCard: {
-    minHeight: spacing.minTouchTarget,
-    width: 66,
-    backgroundColor: colors.surface,
-    paddingVertical: spacing.xs + 2,
-    borderRadius: borderRadius.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: spacing.sm,
-    borderWidth: 1.5,
-    borderColor: colors.border
-  },
-  modalDateCardSelected: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary
-  },
-  modalDateWeekday: {
-    fontSize: 11,
+    fontSize: 12.5,
     fontWeight: '700',
-    color: colors.textSecondary
-  },
-  modalDateDayNum: {
-    fontSize: 17,
-    fontWeight: '800',
-    color: colors.textPrimary
-  },
-  modalDateTextSelected: {
-    color: '#FFFFFF'
-  },
-  pickerHeading: {
-    fontSize: 14.5,
-    fontWeight: '800',
-    color: colors.textPrimary,
-    marginBottom: spacing.sm
-  },
-  slotsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm
-  },
-  slotChip: {
-    minHeight: spacing.minTouchTarget,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    backgroundColor: colors.surface,
-    borderWidth: 1.5,
-    borderColor: colors.border,
-    borderRadius: borderRadius.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-    minWidth: '47%'
-  },
-  slotChipSelected: {
-    backgroundColor: colors.primaryLight,
-    borderColor: colors.primary
-  },
-  slotChipText: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: colors.textPrimary
-  },
-  slotChipTextSelected: {
-    color: colors.primaryDark,
-    fontWeight: '800'
-  },
-  noSlotsText: {
-    fontSize: 13,
-    color: colors.textSecondary,
-    fontStyle: 'italic',
-    marginTop: spacing.sm
+    color: colors.error
   },
   modalFooter: {
-    padding: spacing.md,
-    backgroundColor: colors.surface,
-    borderTopWidth: 1,
-    borderTopColor: colors.borderLight
+    paddingTop: 14,
+    borderTopWidth: 2,
+    borderTopColor: colors.ink
+  },
+  modalConfirmBtn: {
+    backgroundColor: colors.foundation,
+    borderRadius: 18,
+    borderWidth: 2,
+    borderColor: colors.ink,
+    height: 54,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: colors.coral,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 4
+  },
+  modalConfirmText: {
+    fontSize: 16,
+    fontWeight: '900',
+    color: colors.chartreuse
   }
 });

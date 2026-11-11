@@ -8,9 +8,9 @@ import {
   TextStyle,
   View
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import { Feather } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
-import { spacing, borderRadius } from '../theme/spacing';
+import { spacing } from '../theme/spacing';
 
 interface ButtonProps {
   title: string;
@@ -21,6 +21,7 @@ interface ButtonProps {
   accessibilityLabel?: string;
   style?: ViewStyle;
   textStyle?: TextStyle;
+  iconName?: string;
 }
 
 export const Button: React.FC<ButtonProps> = ({
@@ -31,7 +32,8 @@ export const Button: React.FC<ButtonProps> = ({
   loading = false,
   accessibilityLabel,
   style,
-  textStyle
+  textStyle,
+  iconName
 }) => {
   const isInteractive = !disabled && !loading;
 
@@ -40,7 +42,7 @@ export const Button: React.FC<ButtonProps> = ({
       return (
         <ActivityIndicator
           size="small"
-          color={variant === 'outline' ? colors.primary : '#FFFFFF'}
+          color={variant === 'primary' ? colors.chartreuse : colors.ink}
         />
       );
     }
@@ -48,11 +50,12 @@ export const Button: React.FC<ButtonProps> = ({
     const getTextColorStyle = () => {
       if (!isInteractive) return styles.disabledText;
       switch (variant) {
-        case 'outline':
-          return styles.outlineText;
         case 'secondary':
           return styles.secondaryText;
         case 'danger':
+          return styles.dangerText;
+        case 'outline':
+          return styles.outlineText;
         case 'primary':
         default:
           return styles.primaryText;
@@ -60,37 +63,22 @@ export const Button: React.FC<ButtonProps> = ({
     };
 
     return (
-      <Text style={[styles.baseText, getTextColorStyle(), textStyle]}>
-        {title}
-      </Text>
+      <View style={styles.contentRow}>
+        <Text style={[styles.baseText, getTextColorStyle(), textStyle]}>
+          {title}
+        </Text>
+        {iconName ? (
+          <Feather
+            name={iconName as any}
+            size={18}
+            color={variant === 'primary' ? colors.chartreuse : colors.ink}
+            style={styles.icon}
+          />
+        ) : null}
+      </View>
     );
   };
 
-  // If primary and interactive, render with rich clinical gradient fill
-  if (variant === 'primary' && isInteractive) {
-    return (
-      <TouchableOpacity
-        accessibilityRole="button"
-        accessibilityLabel={accessibilityLabel || title}
-        accessibilityState={{ disabled: !isInteractive }}
-        activeOpacity={0.82}
-        disabled={!isInteractive}
-        onPress={onPress}
-        style={[styles.gradientTouchableWrapper, style]}
-      >
-        <LinearGradient
-          colors={[colors.gradientStart, colors.gradientMiddle, colors.gradientEnd]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={styles.gradientContainer}
-        >
-          {renderContent()}
-        </LinearGradient>
-      </TouchableOpacity>
-    );
-  }
-
-  // Non-gradient or disabled primary
   const getContainerStyle = () => {
     if (!isInteractive) return styles.disabledContainer;
 
@@ -103,7 +91,7 @@ export const Button: React.FC<ButtonProps> = ({
         return styles.outlineContainer;
       case 'primary':
       default:
-        return styles.primaryFallbackContainer;
+        return styles.primaryContainer;
     }
   };
 
@@ -112,14 +100,10 @@ export const Button: React.FC<ButtonProps> = ({
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel || title}
       accessibilityState={{ disabled: !isInteractive }}
-      activeOpacity={0.75}
+      activeOpacity={0.85}
       disabled={!isInteractive}
       onPress={onPress}
-      style={[
-        styles.baseContainer,
-        getContainerStyle(),
-        style
-      ]}
+      style={[styles.baseContainer, getContainerStyle(), style]}
     >
       {renderContent()}
     </TouchableOpacity>
@@ -127,82 +111,95 @@ export const Button: React.FC<ButtonProps> = ({
 };
 
 const styles = StyleSheet.create({
-  gradientTouchableWrapper: {
-    minHeight: spacing.minTouchTarget,
-    minWidth: spacing.minTouchTarget,
-    borderRadius: borderRadius.md,
-    overflow: 'hidden',
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.22,
-    shadowRadius: 8,
-    elevation: 4
-  },
-  gradientContainer: {
-    flex: 1,
-    minHeight: spacing.minTouchTarget,
-    paddingHorizontal: spacing.md + 4,
-    paddingVertical: spacing.sm + 4,
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexDirection: 'row'
-  },
   baseContainer: {
     minHeight: spacing.minTouchTarget,
-    minWidth: spacing.minTouchTarget,
-    paddingHorizontal: spacing.md + 4,
-    paddingVertical: spacing.sm + 4,
-    borderRadius: borderRadius.md,
+    borderRadius: 18,
+    borderWidth: 2,
+    borderColor: colors.ink,
     alignItems: 'center',
     justifyContent: 'center',
-    flexDirection: 'row'
+    paddingVertical: 14,
+    paddingHorizontal: 22
   },
-  primaryFallbackContainer: {
-    backgroundColor: colors.primary,
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.18,
-    shadowRadius: 6,
-    elevation: 3
-  },
-  secondaryContainer: {
-    backgroundColor: colors.surfaceSubtle,
-    borderWidth: 1,
-    borderColor: colors.border
-  },
-  dangerContainer: {
-    backgroundColor: colors.error,
-    shadowColor: colors.error,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.2,
-    shadowRadius: 6,
-    elevation: 3
-  },
-  outlineContainer: {
-    backgroundColor: 'transparent',
-    borderWidth: 1.5,
-    borderColor: colors.primary
-  },
-  disabledContainer: {
-    backgroundColor: colors.disabled,
-    borderColor: colors.disabled
+  contentRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center'
   },
   baseText: {
-    fontSize: 15.5,
-    fontWeight: '700',
-    textAlign: 'center',
-    letterSpacing: 0.2
+    fontSize: 16,
+    fontWeight: '800',
+    letterSpacing: -0.2
+  },
+  icon: {
+    marginLeft: 8
+  },
+
+  // Primary: Deep ink-green with coral tactile offset shadow
+  primaryContainer: {
+    backgroundColor: colors.foundation,
+    shadowColor: colors.coral,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 4
   },
   primaryText: {
-    color: '#FFFFFF'
+    color: colors.chartreuse,
+    fontWeight: '900'
+  },
+
+  // Secondary: Chartreuse lime with dark tactile offset shadow
+  secondaryContainer: {
+    backgroundColor: colors.chartreuse,
+    shadowColor: colors.ink,
+    shadowOffset: { width: 2, height: 3 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 3
   },
   secondaryText: {
-    color: colors.textPrimary
+    color: colors.ink,
+    fontWeight: '900'
+  },
+
+  // Danger: Pastel coral with dark tactile shadow
+  dangerContainer: {
+    backgroundColor: colors.coralLight,
+    shadowColor: colors.ink,
+    shadowOffset: { width: 2, height: 3 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 3
+  },
+  dangerText: {
+    color: colors.ink,
+    fontWeight: '900'
+  },
+
+  // Outline: Off-white canvas with dark shadow
+  outlineContainer: {
+    backgroundColor: '#FFFFFF',
+    shadowColor: colors.ink,
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 2
   },
   outlineText: {
-    color: colors.primary
+    color: colors.ink,
+    fontWeight: '800'
+  },
+
+  // Disabled
+  disabledContainer: {
+    backgroundColor: '#E2DDD2',
+    borderColor: '#B8B2A6',
+    shadowOpacity: 0,
+    elevation: 0
   },
   disabledText: {
-    color: colors.disabledText
+    color: '#8A9E97',
+    fontWeight: '700'
   }
 });

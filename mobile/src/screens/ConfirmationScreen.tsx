@@ -1,12 +1,13 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { Appointment } from '../api/types';
-import { StatusBadge } from '../components/StatusBadge';
-import { Button } from '../components/Button';
+import { DoctorAvatar } from '../components/DoctorAvatar';
 import { formatDate, formatTimeRange } from '../utils/dates';
 import { colors } from '../theme/colors';
-import { spacing, borderRadius } from '../theme/spacing';
+import { spacing } from '../theme/spacing';
+import { useSafeInsets } from '../hooks/useSafeInsets';
 
 interface ConfirmationScreenProps {
   route: {
@@ -21,259 +22,389 @@ export const ConfirmationScreen: React.FC<ConfirmationScreenProps> = ({
   route,
   navigation
 }) => {
+  const insets = useSafeInsets();
   const { appointment } = route.params;
 
   const handleDone = () => {
-    // Navigate back to the start of the Doctors stack
-    navigation.popToTop();
+    navigation.navigate('DoctorsTab', { screen: 'Departments' });
+  };
+
+  const handleGoToAppointments = () => {
+    // Navigate to Appointments Tab
+    navigation.navigate('AppointmentsTab', {
+      screen: 'AppointmentsList'
+    });
   };
 
   return (
-    <ScrollView
-      contentContainerStyle={styles.container}
-      showsVerticalScrollIndicator={false}
-    >
-      {/* Elevated Success Badge with Glowing Ring */}
-      <View style={styles.successIconOuter}>
-        <View style={styles.successIconCircle}>
-          <Ionicons name="checkmark-circle" size={48} color="#10B981" />
-        </View>
-      </View>
+    <View style={styles.container}>
+      <StatusBar style="light" />
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
+        {/* Top Hero Section (Deep Ink-Green) */}
+        <View
+          style={[
+            styles.heroSection,
+            { paddingTop: Math.max(insets.top, Platform.OS === 'ios' ? 20 : 16) + 16 }
+          ]}
+        >
+          {/* Decorative Art Rings */}
+          <View style={styles.decorRing} />
 
-      <Text style={styles.title}>Booking Confirmed!</Text>
-      <Text style={styles.subtitle}>
-        Your consultation has been reserved on the hospital scheduling system.
-      </Text>
-
-      {/* Practo-Style Digital Appointment Pass Card */}
-      <View style={styles.card}>
-        {/* Pass Top Bar */}
-        <View style={styles.cardHeader}>
-          <View>
-            <Text style={styles.referenceLabel}>Booking Reference</Text>
-            <Text
-              accessibilityRole="text"
-              accessibilityLabel={`Reference number: ${appointment.reference}`}
-              style={styles.referenceValue}
-            >
-              {appointment.reference}
-            </Text>
+          {/* Success Badge */}
+          <View style={styles.badgeWrapper}>
+            <View style={styles.successCircle}>
+              <Feather name="check" size={38} color={colors.foundation} />
+            </View>
           </View>
-          <StatusBadge status={appointment.status} />
+
+          <Text style={styles.heroTitle}>You’re booked!</Text>
+          <Text style={styles.heroSubtitle}>Your appointment is confirmed.</Text>
         </View>
 
-        <View style={styles.divider} />
+        {/* Appointment Details Canvas */}
+        <View style={styles.canvasContent}>
+          {/* Appointment Ticket Card */}
+          <View style={styles.ticketCard}>
+            {/* Header: Confirmed Pill + Reference */}
+            <View style={styles.ticketHeader}>
+              <View style={styles.statusPill}>
+                <View style={styles.statusDot} />
+                <Text style={styles.statusText}>Confirmed</Text>
+              </View>
+              <Text style={styles.refText}>REF #{appointment.reference}</Text>
+            </View>
 
-        <View style={styles.detailRow}>
-          <View style={styles.detailLabelWrap}>
-            <Feather name="user" size={15} color={colors.primary} style={{ marginRight: 8 }} />
-            <Text style={styles.detailLabel}>Consulting Physician</Text>
+            {/* Doctor Info Row */}
+            <View style={styles.doctorRow}>
+              <DoctorAvatar name={appointment.doctorName} size={64} style={styles.doctorAvatar} />
+              <View style={styles.doctorInfo}>
+                <Text style={styles.doctorName}>{appointment.doctorName}</Text>
+                <Text style={styles.doctorSpecialty}>
+                  {appointment.specialty || appointment.departmentName}
+                </Text>
+              </View>
+            </View>
+
+            <View style={styles.divider} />
+
+            {/* Info Items */}
+            <View style={styles.infoRow}>
+              <View style={styles.infoIconCircle}>
+                <Feather name="calendar" size={18} color={colors.ink} />
+              </View>
+              <View>
+                <Text style={styles.infoEyebrow}>DATE</Text>
+                <Text style={styles.infoValue}>{formatDate(appointment.startsAt)}</Text>
+              </View>
+            </View>
+
+            <View style={styles.infoRow}>
+              <View style={styles.infoIconCircle}>
+                <Feather name="clock" size={18} color={colors.ink} />
+              </View>
+              <View>
+                <Text style={styles.infoEyebrow}>TIME</Text>
+                <Text style={styles.infoValue}>
+                  {formatTimeRange(appointment.startsAt, appointment.endsAt)}
+                </Text>
+              </View>
+            </View>
+
+            <View style={styles.infoRow}>
+              <View style={styles.infoIconCircle}>
+                <Ionicons name="location-outline" size={20} color={colors.ink} />
+              </View>
+              <View>
+                <Text style={styles.infoEyebrow}>LOCATION</Text>
+                <Text style={styles.infoValue}>North Wing, Floor 2</Text>
+              </View>
+            </View>
           </View>
-          <Text style={styles.detailValue}>{appointment.doctorName}</Text>
-        </View>
 
-        <View style={styles.detailRow}>
-          <View style={styles.detailLabelWrap}>
-            <Feather name="activity" size={15} color={colors.primary} style={{ marginRight: 8 }} />
-            <Text style={styles.detailLabel}>Department</Text>
+          {/* Reminder Banner */}
+          <View style={styles.reminderBanner}>
+            <View style={styles.bellCircle}>
+              <Feather name="bell" size={20} color={colors.ink} />
+            </View>
+            <View style={styles.reminderTextWrap}>
+              <Text style={styles.reminderTitle}>Reminder is on</Text>
+              <Text style={styles.reminderSubtitle}>We’ll remind you 24 hours before.</Text>
+            </View>
+            <Feather name="check" size={22} color={colors.ink} />
           </View>
-          <Text style={styles.detailValue}>{appointment.departmentName}</Text>
-        </View>
 
-        <View style={styles.detailRow}>
-          <View style={styles.detailLabelWrap}>
-            <Feather name="award" size={15} color={colors.primary} style={{ marginRight: 8 }} />
-            <Text style={styles.detailLabel}>Specialty</Text>
-          </View>
-          <Text style={styles.detailValue}>{appointment.specialty}</Text>
-        </View>
+          {/* Action Buttons */}
+          <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel="View my appointments"
+            style={styles.primaryButton}
+            onPress={handleGoToAppointments}
+            activeOpacity={0.88}
+          >
+            <Text style={styles.primaryButtonText}>View my appointments</Text>
+          </TouchableOpacity>
 
-        <View style={styles.detailRow}>
-          <View style={styles.detailLabelWrap}>
-            <Feather name="calendar" size={15} color={colors.primary} style={{ marginRight: 8 }} />
-            <Text style={styles.detailLabel}>Date</Text>
-          </View>
-          <Text style={styles.detailValue}>{formatDate(appointment.startsAt)}</Text>
+          <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel="Back to home"
+            style={styles.secondaryLink}
+            onPress={handleDone}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.secondaryLinkText}>Back to home</Text>
+          </TouchableOpacity>
         </View>
-
-        <View style={styles.detailRow}>
-          <View style={styles.detailLabelWrap}>
-            <Feather name="clock" size={15} color={colors.primary} style={{ marginRight: 8 }} />
-            <Text style={styles.detailLabel}>Time Window</Text>
-          </View>
-          <Text style={styles.detailValue}>
-            {formatTimeRange(appointment.startsAt, appointment.endsAt)}
-          </Text>
-        </View>
-      </View>
-
-      {/* Clinical Check-in Note (Zero Emojis) */}
-      <View style={styles.noteBox}>
-        <View style={styles.noteIconCircle}>
-          <Feather name="info" size={16} color={colors.primary} />
-        </View>
-        <Text style={styles.noteText}>
-          Please arrive 10 minutes prior to your scheduled consultation. You can view or manage this appointment anytime under My Appointments.
-        </Text>
-      </View>
-
-      <View style={styles.actionButtons}>
-        <Button
-          title="Done"
-          onPress={handleDone}
-          accessibilityLabel="Return to doctor directory"
-          style={styles.doneButton}
-        />
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flexGrow: 1,
-    backgroundColor: colors.background,
-    padding: spacing.lg,
-    paddingBottom: 40,
+    flex: 1,
+    backgroundColor: colors.canvas
+  },
+  scrollContent: {
+    paddingBottom: 64
+  },
+
+  // Hero Section
+  heroSection: {
+    backgroundColor: colors.foundation,
+    paddingHorizontal: 20,
+    paddingBottom: 36,
+    borderBottomLeftRadius: 36,
+    borderBottomRightRadius: 36,
+    alignItems: 'center',
+    position: 'relative',
+    overflow: 'hidden'
+  },
+  decorRing: {
+    position: 'absolute',
+    top: -20,
+    right: -40,
+    width: 170,
+    height: 170,
+    borderRadius: 85,
+    borderWidth: 28,
+    borderColor: colors.lilac,
+    opacity: 0.85
+  },
+  badgeWrapper: {
+    shadowColor: colors.coral,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 4,
+    marginBottom: 16
+  },
+  successCircle: {
+    width: 78,
+    height: 78,
+    borderRadius: 39,
+    backgroundColor: colors.chartreuse,
+    borderWidth: 3,
+    borderColor: colors.ink,
     alignItems: 'center',
     justifyContent: 'center'
   },
-  successIconOuter: {
-    width: 90,
-    height: 90,
-    borderRadius: 45,
-    backgroundColor: '#DCFCE7',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: spacing.md
+  heroTitle: {
+    fontSize: 32,
+    fontWeight: '900',
+    color: colors.chartreuse,
+    letterSpacing: -0.6,
+    marginBottom: 4
   },
-  successIconCircle: {
-    width: 74,
-    height: 74,
-    borderRadius: 37,
-    backgroundColor: colors.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
+  heroSubtitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#FFFFFF'
+  },
+
+  // Content
+  canvasContent: {
+    paddingHorizontal: 18,
+    marginTop: -16
+  },
+  ticketCard: {
+    backgroundColor: '#FFFFFF',
     borderWidth: 2,
-    borderColor: '#10B981',
-    shadowColor: '#10B981',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 10,
-    elevation: 4
-  },
-  title: {
-    fontSize: 26,
-    fontWeight: '800',
-    color: colors.textPrimary,
-    textAlign: 'center',
-    letterSpacing: -0.4
-  },
-  subtitle: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    marginTop: spacing.xs,
-    marginBottom: spacing.xl,
-    paddingHorizontal: spacing.md,
-    lineHeight: 20
-  },
-  card: {
-    width: '100%',
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.lg,
-    padding: spacing.lg,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.06,
-    shadowRadius: 12,
+    borderColor: colors.ink,
+    borderRadius: 24,
+    padding: 20,
+    shadowColor: colors.ink,
+    shadowOffset: { width: 4, height: 4 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
     elevation: 4,
-    marginBottom: spacing.lg
+    marginBottom: 16
   },
-  cardHeader: {
+  ticketHeader: {
     flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'space-between',
+    marginBottom: 16
+  },
+  statusPill: {
+    backgroundColor: colors.chartreuse,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 999,
+    borderWidth: 1.5,
+    borderColor: colors.ink,
+    flexDirection: 'row',
     alignItems: 'center'
   },
-  referenceLabel: {
+  statusDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: colors.ink,
+    marginRight: 6
+  },
+  statusText: {
     fontSize: 11,
-    color: colors.textSecondary,
     fontWeight: '800',
-    textTransform: 'uppercase',
+    color: colors.ink
+  },
+  refText: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: colors.inkMuted,
     letterSpacing: 0.5
   },
-  referenceValue: {
+  doctorRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16
+  },
+  doctorAvatar: {
+    marginRight: 14
+  },
+  doctorInfo: {
+    flex: 1
+  },
+  doctorName: {
     fontSize: 19,
     fontWeight: '900',
-    color: colors.primaryDark,
-    marginTop: 2,
-    letterSpacing: 0.3
+    color: colors.ink,
+    letterSpacing: -0.3
   },
-  divider: {
-    height: 1,
-    backgroundColor: colors.borderLight,
-    marginVertical: spacing.md
-  },
-  detailRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: spacing.xs + 3
-  },
-  detailLabelWrap: {
-    flexDirection: 'row',
-    alignItems: 'center'
-  },
-  detailLabel: {
-    fontSize: 13.5,
-    color: colors.textSecondary,
-    fontWeight: '500'
-  },
-  detailValue: {
-    fontSize: 13.5,
-    color: colors.textPrimary,
-    fontWeight: '800'
-  },
-  noteBox: {
-    width: '100%',
-    backgroundColor: colors.surface,
-    padding: spacing.md,
-    borderRadius: borderRadius.md,
-    marginBottom: spacing.xl,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.02,
-    shadowRadius: 4,
-    elevation: 1
-  },
-  noteIconCircle: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: colors.primaryLight,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 10,
+  doctorSpecialty: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: colors.inkMuted,
     marginTop: 2
   },
-  noteText: {
-    flex: 1,
-    fontSize: 12.5,
-    color: colors.textSecondary,
-    lineHeight: 18
+  divider: {
+    height: 1.5,
+    backgroundColor: '#E8E3D7',
+    marginBottom: 16
   },
-  actionButtons: {
-    width: '100%'
+  infoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 14
   },
-  doneButton: {
-    width: '100%',
-    height: 52,
-    borderRadius: borderRadius.md
+  infoIconCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.canvas,
+    borderWidth: 1.5,
+    borderColor: colors.ink,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 14
+  },
+  infoEyebrow: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: colors.inkMuted,
+    letterSpacing: 0.8
+  },
+  infoValue: {
+    fontSize: 14.5,
+    fontWeight: '800',
+    color: colors.ink,
+    marginTop: 1
+  },
+
+  // Reminder Banner
+  reminderBanner: {
+    backgroundColor: colors.lilac,
+    borderWidth: 2,
+    borderColor: colors.ink,
+    borderRadius: 20,
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    shadowColor: colors.ink,
+    shadowOffset: { width: 3, height: 3 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 3,
+    marginBottom: 20
+  },
+  bellCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: colors.ink,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 14
+  },
+  reminderTextWrap: {
+    flex: 1
+  },
+  reminderTitle: {
+    fontSize: 15,
+    fontWeight: '900',
+    color: colors.ink
+  },
+  reminderSubtitle: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: colors.inkMuted,
+    marginTop: 2
+  },
+
+  // Buttons
+  primaryButton: {
+    backgroundColor: colors.foundation,
+    borderRadius: 20,
+    borderWidth: 2,
+    borderColor: colors.ink,
+    height: 56,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: colors.coral,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 4,
+    marginBottom: 14
+  },
+  primaryButtonText: {
+    fontSize: 16.5,
+    fontWeight: '900',
+    color: colors.chartreuse,
+    letterSpacing: -0.2
+  },
+  secondaryLink: {
+    alignItems: 'center',
+    paddingVertical: 8
+  },
+  secondaryLinkText: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: colors.ink,
+    textDecorationLine: 'underline'
   }
 });

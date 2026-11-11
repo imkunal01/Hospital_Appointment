@@ -11,7 +11,10 @@ import { Appointment, VisitReportMetadata } from '../api/types';
 export function useAppointments(scope: 'upcoming' | 'past') {
   return useQuery({
     queryKey: ['appointments', scope],
-    queryFn: () => getAppointmentsApi(scope),
+    queryFn: async () => {
+      const data = await getAppointmentsApi(scope);
+      return data ?? [];
+    },
     staleTime: 60 * 1000 // 1 minute
   });
 }

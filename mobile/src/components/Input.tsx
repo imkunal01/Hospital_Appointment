@@ -8,7 +8,7 @@ import {
   ViewStyle
 } from 'react-native';
 import { colors } from '../theme/colors';
-import { spacing, borderRadius } from '../theme/spacing';
+import { spacing } from '../theme/spacing';
 
 interface InputProps extends TextInputProps {
   label: string;
@@ -34,7 +34,7 @@ export const Input: React.FC<InputProps> = ({
         <TextInput
           accessibilityLabel={label}
           style={[styles.input, style]}
-          placeholderTextColor={colors.textMuted}
+          placeholderTextColor={colors.inkSubtle}
           {...rest}
         />
         {rightElement}
@@ -56,37 +56,46 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md
   },
   label: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#1E293B',
-    marginBottom: spacing.xs + 2
+    fontSize: 13,
+    fontWeight: '800',
+    color: colors.ink,
+    letterSpacing: 0.2,
+    marginBottom: 6,
+    textTransform: 'uppercase'
   },
   inputBox: {
-    minHeight: 52, // Exceeds 48dp minimum touch target
-    borderWidth: 1.5,
-    borderColor: colors.border,
-    borderRadius: 14,
+    minHeight: 54, // Exceeds 48dp minimum touch target
+    borderWidth: 2,
+    borderColor: colors.ink,
+    borderRadius: 16,
     paddingHorizontal: spacing.md,
-    backgroundColor: colors.surface,
+    backgroundColor: '#FFFFFF',
     flexDirection: 'row',
-    alignItems: 'center'
+    alignItems: 'center',
+    shadowColor: colors.ink,
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 2
   },
   input: {
     flex: 1,
     height: '100%',
     minHeight: 48,
     fontSize: 15,
-    color: colors.textPrimary,
+    fontWeight: '600',
+    color: colors.ink,
     paddingVertical: 0
   },
   inputError: {
     borderColor: colors.error,
-    backgroundColor: colors.errorLight + '20'
+    backgroundColor: colors.errorLight,
+    shadowColor: colors.error
   },
   errorText: {
-    fontSize: 13,
+    fontSize: 12.5,
     color: colors.error,
-    marginTop: spacing.xs,
-    fontWeight: '500'
+    marginTop: 5,
+    fontWeight: '700'
   }
 });

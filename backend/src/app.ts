@@ -14,21 +14,43 @@ import { onboardingRouter } from './modules/onboarding/onboarding.routes.js';
 
 export const app = express();
 
+// Trust reverse proxy (Render, Cloudflare, AWS ALB) for accurate client IP and protocol detection
+app.set('trust proxy', 1);
+
 // Request Correlation ID (Assigns unique req.id and sets X-Request-ID response header)
 app.use(requestCorrelation);
 
 // Structured HTTP Request Logging (Single unified logger via Winston)
 app.use(requestLogger);
 
-// Security and utility middleware
+// Security headers
 app.use(helmet());
-app.use(
-  cors({
-    origin: env.CORS_ORIGIN === '*' ? true : env.CORS_ORIGIN,
-    credentials: true,
-    exposedHeaders: ['X-Request-ID', 'Idempotency-Key']
-  })
-);
+
+// Production-ready CORS configuration:
+// - Supports wildcard '*'
+// - Supports comma-separated origins (e.g. 'https://medibook.onrender.com,http://localhost:8081')
+// - Allows requests without an Origin header (mobile apps native network stack, curl, server-to-server)
+const rawOrigin = env.CORS_ORIGIN?.trim() || '*';
+const allowedOrigins = rawOrigin === '*' ? '*' : rawOrigin.split(',').map((o) => o.trim());
+
+const corsOptions: cors.CorsOptions = {
+  origin: (requestOrigin, callback) => {
+    if (!requestOrigin || allowedOrigins === '*') {
+      return callback(null, true);
+    }
+    if (Array.isArray(allowedOrigins) && allowedOrigins.includes(requestOrigin)) {
+      return callback(null, true);
+    }
+    return callback(null, false);
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Idempotency-Key', 'X-Request-ID'],
+  exposedHeaders: ['X-Request-ID', 'Idempotency-Key']
+};
+
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 app.use(express.json({ limit: '10kb' }));
 
 // Health Check Endpoint (Public)

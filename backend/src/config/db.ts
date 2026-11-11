@@ -3,7 +3,8 @@ import { env } from './env.js';
 import { logger } from '../utils/logger.js';
 
 const isProduction = env.NODE_ENV === 'production';
-const requiresSSL = env.DATABASE_URL.includes('supabase.com') || env.DATABASE_URL.includes('sslmode=require') || isProduction;
+const isLocalhost = env.DATABASE_URL.includes('localhost') || env.DATABASE_URL.includes('127.0.0.1');
+const requiresSSL = !isLocalhost && (env.DATABASE_URL.includes('supabase.com') || env.DATABASE_URL.includes('sslmode=require') || isProduction);
 
 export const pool = new Pool({
   connectionString: env.DATABASE_URL,
@@ -51,6 +52,6 @@ export async function checkDbConnection(): Promise<{ ok: boolean; latencyMs?: nu
     await pool.query('SELECT 1');
     return { ok: true, latencyMs: Date.now() - start };
   } catch (err: any) {
-    return { ok: false, error: err.message };
+    return { ok: false, error: err?.message || String(err) };
   }
 }

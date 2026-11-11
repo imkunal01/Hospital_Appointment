@@ -2,209 +2,279 @@ import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
-  FlatList,
+  ScrollView,
   TouchableOpacity,
-  TextInput,
   StyleSheet,
   RefreshControl,
   Platform
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import { StatusBar } from 'expo-status-bar';
 import { Feather, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useDepartments } from '../hooks/useCatalog';
+import { useAppointments } from '../hooks/useAppointments';
+import { useSession } from '../auth/sessionStore';
 import { ScreenState } from '../components/ScreenState';
 import { Department } from '../api/types';
 import { extractErrorMessage } from '../utils/errors';
 import { colors } from '../theme/colors';
-import { spacing, borderRadius } from '../theme/spacing';
+import { spacing } from '../theme/spacing';
 import { getDepartmentTheme } from '../theme/departmentThemes';
+import { useSafeInsets } from '../hooks/useSafeInsets';
 
 interface DepartmentsScreenProps {
   navigation: any;
 }
 
 export const DepartmentsScreen: React.FC<DepartmentsScreenProps> = ({ navigation }) => {
+  const insets = useSafeInsets();
+  const { user } = useSession();
   const { data: departments, isLoading, isError, error, refetch, isRefetching } = useDepartments();
-  const [searchQuery, setSearchQuery] = useState('');
+  const { data: upcomingAppointments } = useAppointments('upcoming');
 
-  const filteredDepartments = useMemo(() => {
-    if (!departments) return [];
-    if (!searchQuery.trim()) return departments;
-    const q = searchQuery.toLowerCase();
-    return departments.filter((d) => d.name.toLowerCase().includes(q));
-  }, [departments, searchQuery]);
+  const nextAppointment = upcomingAppointments && upcomingAppointments.length > 0 ? upcomingAppointments[0] : null;
+
+  const firstName = user?.name ? user.name.split(' ')[0] : 'Alex';
 
   const handleSelectDepartment = (dept?: Department) => {
     navigation.navigate('DoctorsList', {
       departmentId: dept?.id,
-      departmentName: dept?.name || 'All Specialties'
+      departmentName: dept?.name || 'All Specialists'
     });
   };
 
-  const renderDepartmentIcon = (deptName: string) => {
-    const theme = getDepartmentTheme(deptName);
-    if (theme.iconFamily === 'Ionicons') {
-      return <Ionicons name={theme.iconName as any} size={26} color={theme.textColor} />;
-    }
-    return <MaterialCommunityIcons name={theme.iconName as any} size={26} color={theme.textColor} />;
+  const getCalendarParts = (isoDate?: string) => {
+    if (!isoDate) return { day: '18', month: 'JUN' };
+    const d = new Date(isoDate);
+    const day = d.getDate();
+    const month = d.toLocaleDateString(undefined, { month: 'short' }).toUpperCase();
+    return { day: String(day), month };
   };
+
+  const nextDateParts = getCalendarParts(nextAppointment?.startsAt);
 
   return (
     <View style={styles.container}>
-      <ScreenState
-        loading={isLoading}
-        loadingMessage="Loading hospital specialties..."
-        error={isError ? extractErrorMessage(error) : null}
-        onRetry={refetch}
-        empty={!isLoading && (!departments || departments.length === 0)}
-        emptyMessage="No departments currently active."
+      <StatusBar style="light" />
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefetching}
+            onRefresh={refetch}
+            tintColor={colors.chartreuse}
+            colors={[colors.foundation]}
+          />
+        }
       >
-        <FlatList
-          key="departments-grid-2"
-          numColumns={2}
-          data={filteredDepartments}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.listContent}
-          columnWrapperStyle={styles.gridRow}
-          showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl
-              refreshing={isRefetching}
-              onRefresh={refetch}
-              colors={[colors.primary]}
-            />
-          }
-          ListHeaderComponent={
-            <View style={styles.header}>
-              {/* Premium Gradient Hero Section */}
-              <LinearGradient
-                colors={[colors.gradientStart, colors.gradientMiddle, colors.gradientEnd]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.heroBanner}
-              >
-                {/* Decorative depth elements */}
-                <View style={styles.heroCircleOuter} />
-                <View style={styles.heroCircleInner} />
+        {/* Top Editorial Hero Banner (Deep Ink-Green) */}
+        <View
+          style={[
+            styles.heroSection,
+            { paddingTop: Math.max(insets.top, Platform.OS === 'ios' ? 20 : 16) + 12 }
+          ]}
+        >
+          {/* Decorative Geometric Artwork */}
+          <View style={styles.decorRing} />
+          <View style={styles.decorCoralArch} />
 
-                {/* Hospital Accreditation Row */}
-                <View style={styles.hospitalBrandPill}>
-                  <MaterialCommunityIcons name="hospital-building" size={16} color="#FFFFFF" />
-                  <Text style={styles.hospitalBrandText}>MediBook Multi-Specialty Hospital</Text>
-                  <View style={styles.verifiedDot} />
-                </View>
+          {/* Top Brand Bar */}
+          <View style={styles.topBrandRow}>
+            <View style={styles.logoRow}>
+              <View style={styles.logoPlusCircle}>
+                <Feather name="plus" size={18} color={colors.foundation} />
+              </View>
+              <Text style={styles.logoText}>medibook</Text>
+            </View>
 
-                <Text style={styles.heroTitle}>Find & Consult Expert Doctors</Text>
-                <Text style={styles.heroSubtitle}>
-                  Verified specialists, instant slot booking & hospital visit records
-                </Text>
-
-                {/* Practo-Style Elevated Search Bar */}
-                <View style={styles.searchBar}>
-                  <Feather name="search" size={18} color={colors.primary} style={styles.searchIcon} />
-                  <TextInput
-                    placeholder="Search specialties (e.g. Cardiology, Ortho)..."
-                    placeholderTextColor={colors.textMuted}
-                    value={searchQuery}
-                    onChangeText={setSearchQuery}
-                    style={styles.searchInput}
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                  />
-                  {searchQuery.length > 0 && (
-                    <TouchableOpacity
-                      accessibilityRole="button"
-                      accessibilityLabel="Clear specialty search"
-                      onPress={() => setSearchQuery('')}
-                      style={styles.clearSearchBtn}
-                    >
-                      <Feather name="x" size={16} color={colors.textSecondary} />
-                    </TouchableOpacity>
-                  )}
-                </View>
-              </LinearGradient>
-
-              {/* Featured "Browse All Specialists" Banner Card */}
+            <View style={styles.bellWrapper}>
               <TouchableOpacity
                 accessibilityRole="button"
-                accessibilityLabel="Browse All Specialists"
-                style={styles.allDoctorsCard}
-                onPress={() => handleSelectDepartment(undefined)}
+                accessibilityLabel="Notifications"
+                style={styles.bellButton}
+                onPress={() => navigation.navigate('AppointmentsTab')}
                 activeOpacity={0.85}
               >
-                <View style={styles.allDoctorsIconCircle}>
-                  <MaterialCommunityIcons name="doctor" size={26} color={colors.primary} />
-                </View>
-                <View style={styles.allDoctorsInfo}>
-                  <View style={styles.allDocTitleRow}>
-                    <Text style={styles.allDoctorsTitle}>Browse All Specialists</Text>
-                    <View style={styles.allDocPill}>
-                      <Text style={styles.allDocPillText}>ALL CLINICS</Text>
-                    </View>
-                  </View>
-                  <Text style={styles.allDoctorsSubtitle}>
-                    Search across all active hospital physicians
-                  </Text>
-                </View>
-                <View style={styles.allDocChevronCircle}>
-                  <Feather name="arrow-right" size={18} color={colors.primary} />
-                </View>
+                <Feather name="bell" size={20} color={colors.ink} />
+                <View style={styles.bellDot} />
               </TouchableOpacity>
-
-              {/* Section Header */}
-              <View style={styles.sectionHeaderRow}>
-                <View style={styles.sectionAccentBar} />
-                <Text style={styles.sectionHeaderTitle}>
-                  MEDICAL SPECIALTIES ({filteredDepartments.length})
-                </Text>
-              </View>
             </View>
-          }
-          renderItem={({ item }) => {
-            const theme = getDepartmentTheme(item.name);
+          </View>
 
-            return (
+          {/* Editorial Greeting */}
+          <View style={styles.greetingPill}>
+            <Text style={styles.greetingPillText}>Good morning,</Text>
+          </View>
+
+          <Text style={styles.heroHeadline}>
+            How can we help{'\n'}today, {firstName}?
+          </Text>
+
+          {/* Quick Action CTA Card: Book an appointment */}
+          <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel="Book an appointment"
+            style={styles.ctaCard}
+            onPress={() => handleSelectDepartment()}
+            activeOpacity={0.88}
+          >
+            <View style={styles.ctaIconCircle}>
+              <Feather name="calendar" size={22} color={colors.chartreuse} />
+            </View>
+            <View style={styles.ctaTextWrap}>
+              <Text style={styles.ctaTitle}>Book an appointment</Text>
+              <Text style={styles.ctaSubtitle}>Find a doctor and choose a time</Text>
+            </View>
+            <Feather name="chevron-right" size={24} color={colors.ink} />
+          </TouchableOpacity>
+        </View>
+
+        {/* Lower Canvas Content (Warm Parchment) */}
+        <View style={styles.canvasSection}>
+          <ScreenState
+            loading={isLoading}
+            loadingMessage="Loading hospital specialties..."
+            error={isError ? extractErrorMessage(error) : null}
+            onRetry={refetch}
+            empty={!isLoading && (!departments || departments.length === 0)}
+            emptyMessage="No departments currently active."
+          >
+            {/* 1. Specialists / Choose a department */}
+            <View style={styles.sectionHeaderRow}>
+              <View>
+                <Text style={styles.eyebrow}>SPECIALISTS</Text>
+                <Text style={styles.sectionTitle}>Choose a department</Text>
+              </View>
               <TouchableOpacity
                 accessibilityRole="button"
-                accessibilityLabel={`Select ${item.name} department`}
-                style={[styles.departmentGridCard, { backgroundColor: theme.bg }]}
-                onPress={() => handleSelectDepartment(item)}
+                accessibilityLabel="See all departments"
+                style={styles.pillButton}
+                onPress={() => handleSelectDepartment()}
                 activeOpacity={0.8}
               >
-                {/* Icon Badge */}
-                <View style={styles.deptIconCircle}>
-                  {renderDepartmentIcon(item.name)}
-                </View>
-
-                {/* Department Info */}
-                <Text style={[styles.deptName, { color: theme.textColor }]} numberOfLines={1}>
-                  {item.name}
-                </Text>
-                <Text style={styles.deptSubtext}>In-Hospital Visits</Text>
-
-                {/* Bottom Action Pill */}
-                <View style={styles.deptActionRow}>
-                  <Text style={[styles.deptActionLabel, { color: theme.textColor }]}>
-                    View Doctors
-                  </Text>
-                  <Feather name="arrow-right" size={13} color={theme.textColor} />
-                </View>
+                <Text style={styles.pillButtonText}>See all</Text>
               </TouchableOpacity>
-            );
-          }}
-          ListEmptyComponent={
-            searchQuery ? (
-              <View style={styles.emptySearchContainer}>
-                <Feather name="search" size={32} color={colors.textMuted} />
-                <Text style={styles.emptySearchTitle}>No matching departments</Text>
-                <Text style={styles.emptySearchSubtitle}>
-                  No department matched "{searchQuery}". Try browsing all doctors.
+            </View>
+
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.deptCardsRow}
+            >
+              {departments?.map((dept, index) => {
+                const theme = getDepartmentTheme(dept.name);
+                return (
+                  <TouchableOpacity
+                    key={dept.id || index}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Select ${dept.name}`}
+                    style={[styles.deptCard, { backgroundColor: theme.bg }]}
+                    onPress={() => handleSelectDepartment(dept)}
+                    activeOpacity={0.85}
+                  >
+                    <View style={styles.deptIconCircle}>
+                      {theme.iconFamily === 'Ionicons' ? (
+                        <Ionicons name={theme.iconName as any} size={24} color={colors.ink} />
+                      ) : (
+                        <MaterialCommunityIcons name={theme.iconName as any} size={24} color={colors.ink} />
+                      )}
+                    </View>
+                    <Text style={styles.deptCardName} numberOfLines={1}>
+                      {dept.name.replace(' Medicine', '')}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+
+              {/* "All clinics" shortcut */}
+              <TouchableOpacity
+                accessibilityRole="button"
+                accessibilityLabel="View all clinics"
+                style={[styles.deptCard, { backgroundColor: colors.peach }]}
+                onPress={() => handleSelectDepartment()}
+                activeOpacity={0.85}
+              >
+                <View style={styles.deptIconCircle}>
+                  <MaterialCommunityIcons name="hospital-building" size={24} color={colors.ink} />
+                </View>
+                <Text style={styles.deptCardName} numberOfLines={1}>
+                  All clinics
                 </Text>
+              </TouchableOpacity>
+            </ScrollView>
+
+            {/* 2. Up Next / Your appointment */}
+            <View style={[styles.sectionHeaderRow, { marginTop: spacing.lg }]}>
+              <View>
+                <Text style={styles.eyebrow}>UP NEXT</Text>
+                <Text style={styles.sectionTitle}>Your appointment</Text>
               </View>
-            ) : null
-          }
-        />
-      </ScreenState>
+              <TouchableOpacity
+                accessibilityRole="button"
+                accessibilityLabel="View all appointments"
+                style={styles.pillButton}
+                onPress={() => navigation.navigate('AppointmentsTab')}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.pillButtonText}>View all</Text>
+              </TouchableOpacity>
+            </View>
+
+            {nextAppointment ? (
+              <TouchableOpacity
+                accessibilityRole="button"
+                accessibilityLabel={`View appointment with ${nextAppointment.doctorName}`}
+                style={styles.appointmentCard}
+                onPress={() =>
+                  navigation.navigate('AppointmentsTab', {
+                    screen: 'AppointmentDetail',
+                    params: { appointmentId: nextAppointment.id }
+                  })
+                }
+                activeOpacity={0.88}
+              >
+                <View style={styles.dateBlock}>
+                  <Text style={styles.dateBlockDay}>{nextDateParts.day}</Text>
+                  <Text style={styles.dateBlockMonth}>{nextDateParts.month}</Text>
+                </View>
+
+                <View style={styles.appointmentInfo}>
+                  <View style={styles.statusPill}>
+                    <View style={styles.statusDot} />
+                    <Text style={styles.statusText}>Confirmed</Text>
+                  </View>
+                  <Text style={styles.doctorName}>{nextAppointment.doctorName}</Text>
+                  <Text style={styles.doctorSpecialty}>
+                    {nextAppointment.specialty || nextAppointment.departmentName}
+                  </Text>
+                </View>
+
+                <Feather name="chevron-right" size={22} color={colors.ink} />
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                accessibilityRole="button"
+                accessibilityLabel="Book an appointment now"
+                style={[styles.appointmentCard, { backgroundColor: colors.lilacLight }]}
+                onPress={() => handleSelectDepartment()}
+                activeOpacity={0.85}
+              >
+                <View style={styles.dateBlock}>
+                  <Feather name="calendar" size={26} color={colors.ink} />
+                </View>
+                <View style={styles.appointmentInfo}>
+                  <View style={[styles.statusPill, { backgroundColor: colors.lilac }]}>
+                    <Text style={styles.statusText}>Ready to book</Text>
+                  </View>
+                  <Text style={styles.doctorName}>No upcoming appointments</Text>
+                  <Text style={styles.doctorSpecialty}>Tap to consult verified specialists</Text>
+                </View>
+                <Feather name="chevron-right" size={22} color={colors.ink} />
+              </TouchableOpacity>
+            )}
+          </ScreenState>
+        </View>
+      </ScrollView>
     </View>
   );
 };
@@ -212,263 +282,312 @@ export const DepartmentsScreen: React.FC<DepartmentsScreenProps> = ({ navigation
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background
+    backgroundColor: colors.canvas
   },
-  listContent: {
-    paddingBottom: 110
+  scrollContent: {
+    paddingBottom: 110 // Clearance for floating navigation dock
   },
-  header: {
-    marginBottom: spacing.sm
-  },
-  heroBanner: {
-    paddingTop: Platform.OS === 'ios' ? 20 : 16,
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.xl,
-    borderBottomLeftRadius: 28,
-    borderBottomRightRadius: 28,
+
+  // Hero Section
+  heroSection: {
+    backgroundColor: colors.foundation,
+    paddingHorizontal: 20,
+    paddingBottom: 28,
+    borderBottomLeftRadius: 36,
+    borderBottomRightRadius: 36,
     position: 'relative',
-    overflow: 'hidden',
-    marginBottom: spacing.md
+    overflow: 'hidden'
   },
-  heroCircleOuter: {
+  decorRing: {
     position: 'absolute',
-    top: -60,
-    right: -40,
-    width: 200,
-    height: 200,
-    borderRadius: 100,
-    backgroundColor: 'rgba(255, 255, 255, 0.10)'
+    top: -20,
+    right: -30,
+    width: 150,
+    height: 150,
+    borderRadius: 75,
+    borderWidth: 26,
+    borderColor: colors.lilac,
+    opacity: 0.85
   },
-  heroCircleInner: {
+  decorCoralArch: {
     position: 'absolute',
-    bottom: -30,
-    left: -20,
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)'
+    top: 50,
+    right: 40,
+    width: 80,
+    height: 100,
+    borderRadius: 40,
+    backgroundColor: colors.coral,
+    opacity: 0.95
   },
-  hospitalBrandPill: {
+  topBrandRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    alignSelf: 'flex-start',
-    backgroundColor: 'rgba(255, 255, 255, 0.22)',
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-    borderRadius: borderRadius.full,
-    marginBottom: 12
+    justifyContent: 'space-between',
+    marginBottom: 20
   },
-  hospitalBrandText: {
-    fontSize: 11.5,
-    fontWeight: '800',
-    color: '#FFFFFF',
-    marginLeft: 6,
-    letterSpacing: 0.3
-  },
-  verifiedDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#34D399',
-    marginLeft: 6
-  },
-  heroTitle: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: '#FFFFFF',
-    letterSpacing: -0.4,
-    lineHeight: 30
-  },
-  heroSubtitle: {
-    fontSize: 13,
-    color: 'rgba(255, 255, 255, 0.88)',
-    marginTop: 4,
-    marginBottom: 16,
-    lineHeight: 18
-  },
-  searchBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderRadius: borderRadius.lg,
-    paddingHorizontal: 14,
-    height: 50,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.12,
-    shadowRadius: 10,
-    elevation: 4
-  },
-  searchIcon: {
-    marginRight: 10
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 14,
-    color: colors.textPrimary,
-    height: '100%',
-    fontWeight: '500'
-  },
-  clearSearchBtn: {
-    padding: 6
-  },
-  allDoctorsCard: {
-    minHeight: spacing.minTouchTarget,
-    marginHorizontal: spacing.md,
-    backgroundColor: colors.surface,
-    padding: spacing.md,
-    borderRadius: borderRadius.lg,
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: spacing.md,
-    borderWidth: 1.5,
-    borderColor: '#D7E5FA',
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.10,
-    shadowRadius: 10,
-    elevation: 3
-  },
-  allDoctorsIconCircle: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: colors.primaryLight,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12
-  },
-  allDoctorsInfo: {
-    flex: 1
-  },
-  allDocTitleRow: {
+  logoRow: {
     flexDirection: 'row',
     alignItems: 'center'
   },
-  allDoctorsTitle: {
-    fontSize: 15,
-    fontWeight: '800',
-    color: colors.primary
+  logoPlusCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: colors.chartreuse,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 10
   },
-  allDocPill: {
-    backgroundColor: colors.primaryLight,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
+  logoText: {
+    fontSize: 22,
+    fontWeight: '900',
+    color: '#FFFFFF',
+    letterSpacing: -0.5
+  },
+  bellWrapper: {
+    shadowColor: colors.chartreuse,
+    shadowOffset: { width: 3, height: 3 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 3
+  },
+  bellButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2,
+    borderColor: colors.ink,
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative'
+  },
+  bellDot: {
+    position: 'absolute',
+    top: 9,
+    right: 10,
+    width: 8,
+    height: 8,
     borderRadius: 4,
-    marginLeft: 6
+    backgroundColor: colors.coral
   },
-  allDocPillText: {
-    fontSize: 9.5,
-    fontWeight: '800',
-    color: colors.primary
+  greetingPill: {
+    backgroundColor: colors.chartreuse,
+    alignSelf: 'flex-start',
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 999,
+    marginBottom: 10
   },
-  allDoctorsSubtitle: {
+  greetingPillText: {
     fontSize: 12,
-    color: colors.textSecondary,
+    fontWeight: '800',
+    color: colors.ink
+  },
+  heroHeadline: {
+    fontSize: 32,
+    fontWeight: '900',
+    color: '#FFFFFF',
+    letterSpacing: -0.8,
+    lineHeight: 38,
+    marginBottom: 22
+  },
+
+  // CTA Card
+  ctaCard: {
+    backgroundColor: colors.chartreuse,
+    borderWidth: 2,
+    borderColor: colors.ink,
+    borderRadius: 22,
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    shadowColor: colors.ink,
+    shadowOffset: { width: 4, height: 4 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 4
+  },
+  ctaIconCircle: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: colors.foundation,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 14
+  },
+  ctaTextWrap: {
+    flex: 1
+  },
+  ctaTitle: {
+    fontSize: 17,
+    fontWeight: '900',
+    color: colors.ink,
+    letterSpacing: -0.3
+  },
+  ctaSubtitle: {
+    fontSize: 12.5,
+    fontWeight: '600',
+    color: colors.inkMuted,
     marginTop: 2
   },
-  allDocChevronCircle: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: colors.primaryLight,
-    alignItems: 'center',
-    justifyContent: 'center'
+
+  // Canvas Section
+  canvasSection: {
+    paddingHorizontal: 18,
+    paddingTop: 24
   },
   sectionHeaderRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    marginHorizontal: spacing.md,
-    marginBottom: spacing.sm,
-    marginTop: spacing.xs
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+    marginBottom: 14
   },
-  sectionAccentBar: {
-    width: 4,
-    height: 16,
-    borderRadius: 2,
-    backgroundColor: colors.primary,
-    marginRight: 8
+  eyebrow: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: colors.inkMuted,
+    letterSpacing: 1.2,
+    textTransform: 'uppercase'
   },
-  sectionHeaderTitle: {
+  sectionTitle: {
+    fontSize: 22,
+    fontWeight: '900',
+    color: colors.ink,
+    letterSpacing: -0.5,
+    marginTop: 2
+  },
+  pillButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    borderRadius: 999,
+    borderWidth: 2,
+    borderColor: colors.ink,
+    backgroundColor: '#FFFFFF',
+    shadowColor: colors.ink,
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 2
+  },
+  pillButtonText: {
     fontSize: 12,
     fontWeight: '800',
-    color: colors.textSecondary,
-    letterSpacing: 0.8
+    color: colors.ink
   },
-  gridRow: {
-    justifyContent: 'space-between',
-    paddingHorizontal: spacing.md,
-    marginBottom: spacing.md
+
+  // Horizontal Department Cards
+  deptCardsRow: {
+    paddingRight: 20,
+    gap: 12
   },
-  departmentGridCard: {
-    width: '48%',
-    minHeight: 140,
-    borderRadius: borderRadius.lg,
-    padding: spacing.md,
+  deptCard: {
+    width: 105,
+    height: 125,
+    borderRadius: 20,
+    borderWidth: 2,
+    borderColor: colors.ink,
+    padding: 12,
     justifyContent: 'space-between',
-    borderWidth: 1,
-    borderColor: 'rgba(0, 0, 0, 0.04)',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    elevation: 2
+    shadowColor: colors.ink,
+    shadowOffset: { width: 3, height: 3 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 3
   },
   deptIconCircle: {
     width: 44,
     height: 44,
     borderRadius: 22,
     backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: colors.ink,
     alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    elevation: 2
+    justifyContent: 'center'
   },
-  deptName: {
-    fontSize: 15,
-    fontWeight: '800',
-    marginTop: 10,
+  deptCardName: {
+    fontSize: 13,
+    fontWeight: '900',
+    color: colors.ink,
     letterSpacing: -0.2
   },
-  deptSubtext: {
-    fontSize: 11,
-    color: colors.textSecondary,
-    marginTop: 1,
-    fontWeight: '500'
-  },
-  deptActionRow: {
+
+  // Appointment Card
+  appointmentCard: {
+    backgroundColor: colors.sky,
+    borderWidth: 2,
+    borderColor: colors.ink,
+    borderRadius: 22,
+    padding: 16,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: 10,
-    paddingTop: 6,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(0, 0, 0, 0.05)'
+    shadowColor: colors.ink,
+    shadowOffset: { width: 4, height: 4 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 4
   },
-  deptActionLabel: {
-    fontSize: 11,
-    fontWeight: '800'
-  },
-  emptySearchContainer: {
+  dateBlock: {
+    width: 68,
+    height: 68,
+    borderRadius: 16,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2,
+    borderColor: colors.ink,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 40,
-    paddingHorizontal: spacing.xl
+    marginRight: 14
   },
-  emptySearchTitle: {
+  dateBlockDay: {
+    fontSize: 22,
+    fontWeight: '900',
+    color: colors.ink,
+    lineHeight: 24
+  },
+  dateBlockMonth: {
+    fontSize: 11,
+    fontWeight: '900',
+    color: colors.inkMuted,
+    letterSpacing: 0.5
+  },
+  appointmentInfo: {
+    flex: 1
+  },
+  statusPill: {
+    backgroundColor: colors.chartreuse,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 999,
+    borderWidth: 1.5,
+    borderColor: colors.ink,
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    marginBottom: 4
+  },
+  statusDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: colors.ink,
+    marginRight: 5
+  },
+  statusText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: colors.ink
+  },
+  doctorName: {
     fontSize: 16,
-    fontWeight: '700',
-    color: colors.textPrimary,
-    marginTop: spacing.sm
+    fontWeight: '900',
+    color: colors.ink,
+    letterSpacing: -0.2
   },
-  emptySearchSubtitle: {
-    fontSize: 13,
-    color: colors.textSecondary,
-    marginTop: 4,
-    textAlign: 'center',
-    lineHeight: 19
+  doctorSpecialty: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: colors.inkMuted,
+    marginTop: 1
   }
 });

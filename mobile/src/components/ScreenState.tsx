@@ -3,7 +3,6 @@ import { View, Text, ActivityIndicator, StyleSheet, ViewStyle } from 'react-nati
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Button } from './Button';
 import { colors } from '../theme/colors';
-import { spacing, borderRadius } from '../theme/spacing';
 
 interface ScreenStateProps {
   loading?: boolean;
@@ -35,7 +34,7 @@ export const ScreenState: React.FC<ScreenStateProps> = ({
         style={[styles.centerContainer, style]}
       >
         <View style={styles.loadingCircle}>
-          <ActivityIndicator size="large" color={colors.primary} />
+          <ActivityIndicator size="large" color={colors.foundation} />
         </View>
         <Text style={styles.loadingText}>{loadingMessage}</Text>
       </View>
@@ -59,7 +58,7 @@ export const ScreenState: React.FC<ScreenStateProps> = ({
           <Button
             title="Try Again"
             onPress={onRetry}
-            variant="outline"
+            variant="primary"
             accessibilityLabel="Retry loading data"
             style={styles.retryButton}
           />
@@ -77,16 +76,16 @@ export const ScreenState: React.FC<ScreenStateProps> = ({
         style={[styles.centerContainer, style]}
       >
         <View style={styles.emptyIconBadge}>
-          <MaterialCommunityIcons name="clipboard-text-outline" size={32} color={colors.textSecondary} />
+          <MaterialCommunityIcons name="clipboard-text-search-outline" size={36} color={colors.ink} />
         </View>
-        <Text style={styles.emptyTitle}>Nothing to Display</Text>
+        <Text style={styles.emptyTitle}>No Records Available</Text>
         <Text style={styles.emptyMessage}>{emptyMessage}</Text>
         {onRetry && (
           <Button
             title="Refresh"
             onPress={onRetry}
-            variant="secondary"
-            accessibilityLabel="Refresh list"
+            variant="outline"
+            accessibilityLabel="Refresh current view"
             style={styles.retryButton}
           />
         )}
@@ -94,85 +93,105 @@ export const ScreenState: React.FC<ScreenStateProps> = ({
     );
   }
 
-  // 4. Normal Content
+  // 4. Content State
   return <>{children}</>;
 };
 
 const styles = StyleSheet.create({
   centerContainer: {
     flex: 1,
-    justifyContent: 'center',
     alignItems: 'center',
-    padding: spacing.xl,
-    backgroundColor: colors.background
+    justifyContent: 'center',
+    padding: 24,
+    minHeight: 280
   },
   loadingCircle: {
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: colors.primaryLight,
+    backgroundColor: colors.chartreuse,
+    borderWidth: 2,
+    borderColor: colors.ink,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: spacing.md
+    marginBottom: 16,
+    shadowColor: colors.ink,
+    shadowOffset: { width: 3, height: 3 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 3
   },
   loadingText: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    fontWeight: '600',
+    fontSize: 14.5,
+    fontWeight: '800',
+    color: colors.ink,
     textAlign: 'center'
   },
   errorIconBadge: {
-    width: 68,
-    height: 68,
-    borderRadius: 34,
-    backgroundColor: colors.errorLight,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: colors.coralLight,
+    borderWidth: 2,
+    borderColor: colors.error,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.error + '30'
+    marginBottom: 16,
+    shadowColor: colors.error,
+    shadowOffset: { width: 3, height: 3 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 3
   },
   errorTitle: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: colors.textPrimary,
-    marginBottom: spacing.xs,
+    fontSize: 19,
+    fontWeight: '900',
+    color: colors.ink,
+    marginBottom: 6,
     textAlign: 'center'
   },
   errorMessage: {
-    fontSize: 14,
-    color: colors.textSecondary,
+    fontSize: 13.5,
+    fontWeight: '600',
+    color: colors.inkMuted,
     textAlign: 'center',
-    marginBottom: spacing.lg,
-    lineHeight: 20
+    lineHeight: 19,
+    marginBottom: 20,
+    maxWidth: 300
   },
   emptyIconBadge: {
     width: 68,
     height: 68,
     borderRadius: 34,
-    backgroundColor: colors.surfaceSubtle,
+    backgroundColor: colors.lilacLight,
+    borderWidth: 2,
+    borderColor: colors.ink,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.border
+    marginBottom: 16,
+    shadowColor: colors.ink,
+    shadowOffset: { width: 3, height: 3 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 3
   },
   emptyTitle: {
     fontSize: 18,
-    fontWeight: '800',
-    color: colors.textPrimary,
-    marginBottom: spacing.xs,
+    fontWeight: '900',
+    color: colors.ink,
+    marginBottom: 6,
     textAlign: 'center'
   },
   emptyMessage: {
-    fontSize: 14,
-    color: colors.textSecondary,
+    fontSize: 13.5,
+    fontWeight: '600',
+    color: colors.inkMuted,
     textAlign: 'center',
-    marginBottom: spacing.lg,
-    lineHeight: 20
+    lineHeight: 19,
+    marginBottom: 20,
+    maxWidth: 300
   },
   retryButton: {
-    minWidth: 140,
-    borderRadius: borderRadius.md
+    minWidth: 160
   }
 });

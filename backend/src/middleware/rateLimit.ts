@@ -19,7 +19,8 @@ export function loginRateLimiter(maxRequests = 10, windowMs = 15 * 60 * 1000) {
       return next();
     }
 
-    const ip = (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress || 'unknown-ip';
+    const forwarded = req.headers['x-forwarded-for'];
+    const ip = (typeof forwarded === 'string' ? forwarded.split(',')[0].trim() : null) || req.socket.remoteAddress || 'unknown-ip';
     const now = Date.now();
     const record = loginStore.get(ip);
 

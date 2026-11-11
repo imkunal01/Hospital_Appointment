@@ -92,6 +92,7 @@ export function errorHandler(
   // 4. Unhandled Internal Server Errors (Do NOT leak stack or internal details)
   logger.error('Unhandled internal server error', err, {
     requestId,
+    statusCode: 500,
     path,
     method
   });

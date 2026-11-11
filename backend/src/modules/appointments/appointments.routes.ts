@@ -75,7 +75,22 @@ appointmentsRouter.get(
   }
 );
 
-// PATCH /appointments/:id/reschedule - Reschedule appointment to a new slot
+// PATCH & POST /appointments/:id/reschedule - Reschedule appointment to a new slot
+const handleReschedule = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const patientId = req.user!.userId;
+    const appointmentId = String(req.params.id);
+    const updated = await rescheduleAppointment(
+      patientId,
+      appointmentId,
+      req.body.newSlotId
+    );
+    res.status(200).json(updated);
+  } catch (err) {
+    next(err);
+  }
+};
+
 appointmentsRouter.patch(
   '/:id/reschedule',
   requireAuth,
@@ -83,20 +98,17 @@ appointmentsRouter.patch(
     params: appointmentIdParamSchema,
     body: rescheduleAppointmentSchema
   }),
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const patientId = req.user!.userId;
-      const appointmentId = String(req.params.id);
-      const updated = await rescheduleAppointment(
-        patientId,
-        appointmentId,
-        req.body.newSlotId
-      );
-      res.status(200).json(updated);
-    } catch (err) {
-      next(err);
-    }
-  }
+  handleReschedule
+);
+
+appointmentsRouter.post(
+  '/:id/reschedule',
+  requireAuth,
+  validate({
+    params: appointmentIdParamSchema,
+    body: rescheduleAppointmentSchema
+  }),
+  handleReschedule
 );
 
 // POST /appointments/:id/cancel - Cancel appointment and free the slot

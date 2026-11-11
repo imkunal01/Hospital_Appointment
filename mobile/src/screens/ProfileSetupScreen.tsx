@@ -8,8 +8,7 @@ import {
   Platform,
   TouchableOpacity
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Feather, Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { Input } from '../components/Input';
 import { Button } from '../components/Button';
@@ -17,9 +16,19 @@ import { updateProfileApi } from '../api/endpoints';
 import { useSession, updateSessionUser } from '../auth/sessionStore';
 import { extractErrorMessage } from '../utils/errors';
 import { colors } from '../theme/colors';
-import { spacing } from '../theme/spacing';
+import { useSafeInsets } from '../hooks/useSafeInsets';
+
+const SAMPLE_LOCALITIES = [
+  'Bengaluru Central',
+  'Koramangala',
+  'Indiranagar',
+  'Whitefield',
+  'HSR Layout',
+  'Jayanagar'
+];
 
 export const ProfileSetupScreen: React.FC = () => {
+  const insets = useSafeInsets();
   const { user } = useSession();
 
   const [name, setName] = useState(user?.name && !user.name.includes('@') ? user.name : '');
@@ -59,46 +68,33 @@ export const ProfileSetupScreen: React.FC = () => {
     if (!name.trim()) {
       setNameError('Full name is required');
       isValid = false;
-    } else if (name.trim().length < 2) {
-      setNameError('Name must be at least 2 characters');
-      isValid = false;
     }
 
     if (!dob.trim()) {
       setDobError('Date of birth is required');
       isValid = false;
-    } else if (!/^\d{4}-\d{2}-\d{2}$/.test(dob.trim())) {
-      setDobError('Please use format YYYY-MM-DD (e.g. 1998-05-14)');
+    } else if (calculatedAge === null) {
+      setDobError('Please enter a valid date in YYYY-MM-DD format');
       isValid = false;
-    } else {
-      const birthDate = new Date(dob.trim());
-      if (isNaN(birthDate.getTime()) || birthDate >= new Date()) {
-        setDobError('Date of birth must be a valid past date');
-        isValid = false;
-      }
     }
 
     if (!location.trim()) {
-      setLocationError('Location / City is required for matching');
-      isValid = false;
-    } else if (location.trim().length < 2) {
-      setLocationError('Location must be at least 2 characters');
+      setLocationError('City / Locality is required');
       isValid = false;
     }
 
     return isValid;
   };
 
-  const handleCompleteProfile = async () => {
+  const handleComplete = async () => {
     if (!validateForm()) return;
-
     setLoading(true);
-    setGeneralError('');
 
     try {
-      const response = await updateProfileApi(name.trim(), dob.trim(), location.trim());
-      // Update session store with completed onboarding profile
-      updateSessionUser(response.user);
+      const result = await updateProfileApi(name.trim(), dob.trim(), location.trim());
+      if (result?.user) {
+        updateSessionUser(result.user);
+      }
     } catch (err: any) {
       setGeneralError(extractErrorMessage(err));
     } finally {
@@ -108,8 +104,8 @@ export const ProfileSetupScreen: React.FC = () => {
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <StatusBar style="light" />
       <ScrollView
@@ -117,86 +113,65 @@ export const ProfileSetupScreen: React.FC = () => {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        {/* Top Hero Gradient with Profile Graphic */}
-        <View style={styles.heroWrapper}>
-          <LinearGradient
-            colors={[colors.gradientStart, colors.gradientMiddle, colors.gradientEnd]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.heroGradient}
-          >
-            {/* Background depth circles */}
-            <View style={styles.decorCircleTopRightOuter} />
-            <View style={styles.decorCircleTopRightMid} />
-            <View style={styles.decorCircleBottomLeftOuter} />
+        {/* Top Hero Section */}
+        <View
+          style={[
+            styles.heroSection,
+            { paddingTop: Math.max(insets.top, Platform.OS === 'ios' ? 20 : 16) + 16 }
+          ]}
+        >
+          <View style={styles.decorRing} />
+          <View style={styles.decorCoralArch} />
 
-            {/* Top Brand & Step Row */}
-            <View style={styles.brandRow}>
-              <View style={styles.brandLogoCard}>
-                <Ionicons name="fitness" size={24} color={colors.primary} />
-              </View>
-              <View style={styles.stepBadge}>
-                <Text style={styles.stepBadgeText}>STEP 2 OF 2</Text>
-              </View>
+          <View style={styles.brandRow}>
+            <View style={styles.logoPlusCircle}>
+              <Feather name="plus" size={18} color={colors.foundation} />
             </View>
+            <Text style={styles.brandTitle}>medibook</Text>
+          </View>
 
-            {/* Central 3D Floating Graphic */}
-            <View style={styles.centerGraphicContainer}>
-              <View style={styles.cardShadowOffset} />
-              <View style={styles.floatingCard}>
-                <MaterialCommunityIcons
-                  name="card-account-details-outline"
-                  size={42}
-                  color={colors.primaryDark}
-                />
-                <View style={styles.notificationBadge}>
-                  <Ionicons name="sparkles" size={16} color={colors.primary} />
-                </View>
-              </View>
-            </View>
-          </LinearGradient>
+          <View style={styles.greetingPill}>
+            <Text style={styles.greetingPillText}>Patient Onboarding</Text>
+          </View>
+
+          <Text style={styles.heroTitle}>Complete your{'\n'}patient profile</Text>
         </View>
 
-        {/* Content Section */}
-        <View style={styles.bodyContent}>
-          <Text style={styles.eyebrow}>PATIENT PERSONALIZATION</Text>
-          <Text style={styles.title}>Complete your profile</Text>
-          <Text style={styles.subtitle}>
-            Tell us a bit about yourself. Your birth date and location allow us to tailor clinical appointments and match nearby specialists.
-          </Text>
+        {/* Stepper Progress Bar */}
+        <View style={styles.stepperContainer}>
+          <View style={styles.stepperLabelRow}>
+            <Text style={styles.stepText}>STEP 2 OF 2</Text>
+            <Text style={styles.stepName}>Profile Information</Text>
+          </View>
+          <View style={styles.stepperTrack}>
+            <View style={[styles.stepperFill, { width: '100%' }]} />
+          </View>
+        </View>
 
+        {/* Form Body Canvas */}
+        <View style={styles.bodyContent}>
           {generalError ? (
-            <View
-              accessibilityRole="alert"
-              style={styles.errorAlert}
-            >
-              <Ionicons
-                name="alert-circle-outline"
-                size={18}
-                color={colors.errorText}
-                style={{ marginRight: 8 }}
-              />
-              <Text style={styles.errorAlertText}>{generalError}</Text>
+            <View style={styles.errorBanner}>
+              <Feather name="alert-circle" size={18} color={colors.error} style={{ marginRight: 8 }} />
+              <Text style={styles.errorBannerText}>{generalError}</Text>
             </View>
           ) : null}
 
-          <View style={styles.formContainer}>
-            {/* Full Name */}
-            <Input
-              label="Full Name"
-              placeholder="e.g. Alex Sharma"
-              value={name}
-              onChangeText={(text) => {
-                setName(text);
-                if (nameError) setNameError('');
-              }}
-              autoCapitalize="words"
-              error={nameError}
-            />
+          <Input
+            label="Legal Full Name"
+            placeholder="e.g. Alex Morgan"
+            value={name}
+            onChangeText={(text) => {
+              setName(text);
+              if (nameError) setNameError('');
+            }}
+            autoCapitalize="words"
+            error={nameError}
+          />
 
-            {/* Date of Birth & Live Age Calculation */}
+          <View>
             <Input
-              label="Date of Birth"
+              label="Date of Birth (YYYY-MM-DD)"
               placeholder="YYYY-MM-DD (e.g. 1998-05-14)"
               value={dob}
               onChangeText={(text) => {
@@ -207,93 +182,59 @@ export const ProfileSetupScreen: React.FC = () => {
               maxLength={10}
               error={dobError}
             />
-
-            {/* Live Age Feedback Banner */}
-            {calculatedAge !== null ? (
-              <View style={styles.ageBadgeContainer}>
-                <MaterialCommunityIcons
-                  name="cake-variant-outline"
-                  size={18}
-                  color={colors.primaryDark}
-                />
+            {calculatedAge !== null && (
+              <View style={styles.ageBadge}>
+                <Ionicons name="checkmark-circle" size={16} color={colors.foundation} style={{ marginRight: 6 }} />
                 <Text style={styles.ageBadgeText}>
-                  Calculated Age:{' '}
-                  <Text style={styles.ageHighlight}>
-                    {calculatedAge} years old {calculatedAge < 18 ? '(Pediatric)' : '(Adult)'}
-                  </Text>
+                  Calculated Age: {calculatedAge} years old ({calculatedAge >= 18 ? 'Adult' : 'Pediatric'})
                 </Text>
               </View>
-            ) : null}
+            )}
+          </View>
 
-            {/* Location (Proximity Matching Feature) */}
-            <Input
-              label="Your Location (City / Locality)"
-              placeholder="e.g. Mumbai Central, Bandra, Bengaluru"
-              value={location}
-              onChangeText={(text) => {
-                setLocation(text);
-                if (locationError) setLocationError('');
-              }}
-              error={locationError}
-            />
+          <Input
+            label="Hospital Area / Locality"
+            placeholder="e.g. Central Wing or Bengaluru South"
+            value={location}
+            onChangeText={(text) => {
+              setLocation(text);
+              if (locationError) setLocationError('');
+            }}
+            error={locationError}
+          />
 
-            {/* Location Matching Explanation Card */}
-            <View style={styles.locationInfoCard}>
-              <View style={styles.locationIconBox}>
-                <Ionicons name="location" size={18} color={colors.primary} />
-              </View>
-              <View style={styles.locationInfoTextWrap}>
-                <Text style={styles.locationInfoTitle}>Location-Based Matching</Text>
-                <Text style={styles.locationInfoBody}>
-                  We use your location to automatically rank and recommend nearest hospital wings and specialist doctors.
-                </Text>
-              </View>
-            </View>
-
-            {/* Quick Location Chips */}
-            <View style={styles.chipsRow}>
-              {['Mumbai Central', 'Bengaluru South', 'Delhi NCR', 'Hyderabad'].map((loc) => (
+          {/* Interactive Locality Chips */}
+          <Text style={styles.chipsLabel}>QUICK SELECT PREFERRED AREA</Text>
+          <View style={styles.chipsRow}>
+            {SAMPLE_LOCALITIES.map((loc) => {
+              const isSelected = location === loc;
+              return (
                 <TouchableOpacity
                   key={loc}
                   accessibilityRole="button"
-                  accessibilityLabel={`Select location ${loc}`}
-                  style={[
-                    styles.locChip,
-                    location === loc && styles.locChipActive
-                  ]}
+                  accessibilityLabel={`Select locality ${loc}`}
+                  style={[styles.chip, isSelected && styles.chipActive]}
                   onPress={() => {
                     setLocation(loc);
                     if (locationError) setLocationError('');
                   }}
+                  activeOpacity={0.8}
                 >
-                  <View style={styles.chipContentRow}>
-                    <Ionicons
-                      name="location-outline"
-                      size={14}
-                      color={location === loc ? colors.primaryDark : colors.textSecondary}
-                      style={{ marginRight: 4 }}
-                    />
-                    <Text
-                      style={[
-                        styles.locChipText,
-                        location === loc && styles.locChipTextActive
-                      ]}
-                    >
-                      {loc}
-                    </Text>
-                  </View>
+                  <Text style={[styles.chipText, isSelected && styles.chipTextActive]}>
+                    {loc}
+                  </Text>
                 </TouchableOpacity>
-              ))}
-            </View>
-
-            {/* Primary Action Button */}
-            <Button
-              title="Save & Enter MediBook"
-              onPress={handleCompleteProfile}
-              loading={loading}
-              style={styles.primaryButton}
-            />
+              );
+            })}
           </View>
+
+          <Button
+            title={loading ? 'Saving Profile...' : 'Save & Enter MediBook'}
+            accessibilityLabel="Save & Enter MediBook"
+            onPress={handleComplete}
+            loading={loading}
+            style={{ marginTop: 20 }}
+          />
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -303,259 +244,191 @@ export const ProfileSetupScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background
+    backgroundColor: colors.canvas
   },
   scrollContent: {
-    flexGrow: 1,
-    backgroundColor: colors.background
+    paddingBottom: 40
   },
-  heroWrapper: {
-    width: '100%',
-    overflow: 'hidden',
-    backgroundColor: colors.background
-  },
-  heroGradient: {
-    width: '100%',
-    paddingTop: Platform.OS === 'ios' ? 54 : 44,
-    paddingBottom: 28,
+  heroSection: {
+    backgroundColor: colors.foundation,
+    paddingHorizontal: 20,
+    paddingBottom: 32,
     borderBottomLeftRadius: 36,
     borderBottomRightRadius: 36,
     position: 'relative',
     overflow: 'hidden'
   },
-  decorCircleTopRightOuter: {
+  decorRing: {
     position: 'absolute',
-    top: -50,
-    right: -40,
-    width: 220,
-    height: 220,
-    borderRadius: 110,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)'
+    top: -20,
+    right: -30,
+    width: 150,
+    height: 150,
+    borderRadius: 75,
+    borderWidth: 26,
+    borderColor: colors.lilac,
+    opacity: 0.85
   },
-  decorCircleTopRightMid: {
+  decorCoralArch: {
     position: 'absolute',
-    top: 10,
-    right: 15,
-    width: 140,
-    height: 140,
-    borderRadius: 70,
-    backgroundColor: 'rgba(255, 255, 255, 0.06)'
-  },
-  decorCircleBottomLeftOuter: {
-    position: 'absolute',
-    bottom: -25,
-    left: -25,
-    width: 130,
-    height: 130,
-    borderRadius: 65,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)'
+    top: 50,
+    right: 40,
+    width: 80,
+    height: 100,
+    borderRadius: 40,
+    backgroundColor: colors.coral,
+    opacity: 0.95
   },
   brandRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 24,
     marginBottom: 16
   },
-  brandLogoCard: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
-    backgroundColor: colors.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 3
-  },
-  stepBadge: {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20
-  },
-  stepBadgeText: {
-    fontSize: 12,
-    fontWeight: '800',
-    color: '#FFFFFF',
-    letterSpacing: 0.5
-  },
-  centerGraphicContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 14,
-    marginBottom: 16,
-    position: 'relative'
-  },
-  cardShadowOffset: {
-    width: 88,
-    height: 88,
-    borderRadius: 24,
-    backgroundColor: 'rgba(15, 23, 42, 0.15)',
-    position: 'absolute',
-    transform: [{ translateY: 6 }, { translateX: -4 }]
-  },
-  floatingCard: {
-    width: 88,
-    height: 88,
-    borderRadius: 24,
-    backgroundColor: '#FFFFFF',
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.18,
-    shadowRadius: 14,
-    elevation: 7,
-    position: 'relative'
-  },
-  notificationBadge: {
-    position: 'absolute',
-    top: -8,
-    right: -8,
+  logoPlusCircle: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#CCFBF1',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2.5,
-    borderColor: '#FFFFFF',
-    elevation: 4
-  },
-  bodyContent: {
-    paddingHorizontal: 24,
-    paddingTop: 28,
-    paddingBottom: 36
-  },
-  eyebrow: {
-    fontSize: 12,
-    fontWeight: '800',
-    letterSpacing: 1.5,
-    color: colors.primary,
-    marginBottom: 6
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: colors.textPrimary,
-    letterSpacing: -0.5,
-    marginBottom: 6
-  },
-  subtitle: {
-    fontSize: 15,
-    color: colors.textSecondary,
-    lineHeight: 22,
-    marginBottom: 20
-  },
-  errorAlert: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.errorLight,
-    borderColor: colors.error,
-    borderWidth: 1,
-    borderRadius: 12,
-    padding: spacing.md,
-    marginBottom: spacing.md
-  },
-  errorAlertText: {
-    flex: 1,
-    color: colors.errorText,
-    fontSize: 14,
-    fontWeight: '600'
-  },
-  formContainer: {
-    marginTop: 4
-  },
-  ageBadgeContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#CCFBF1',
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-    borderRadius: 10,
-    marginTop: -8,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#99F6E4'
-  },
-  ageBadgeText: {
-    marginLeft: 8,
-    fontSize: 13,
-    color: colors.primaryDark
-  },
-  ageHighlight: {
-    fontWeight: '800',
-    color: colors.primaryDark
-  },
-  locationInfoCard: {
-    flexDirection: 'row',
-    backgroundColor: colors.surfaceSubtle,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 12
-  },
-  locationIconBox: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
-    backgroundColor: '#CCFBF1',
+    backgroundColor: colors.chartreuse,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 10
   },
-  locationInfoTextWrap: {
-    flex: 1
+  brandTitle: {
+    fontSize: 22,
+    fontWeight: '900',
+    color: '#FFFFFF',
+    letterSpacing: -0.5
   },
-  locationInfoTitle: {
+  greetingPill: {
+    backgroundColor: colors.chartreuse,
+    alignSelf: 'flex-start',
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 999,
+    marginBottom: 10
+  },
+  greetingPillText: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: colors.ink
+  },
+  heroTitle: {
+    fontSize: 30,
+    fontWeight: '900',
+    color: '#FFFFFF',
+    letterSpacing: -0.6,
+    lineHeight: 36
+  },
+
+  stepperContainer: {
+    paddingHorizontal: 18,
+    marginTop: 20,
+    marginBottom: 10
+  },
+  stepperLabelRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 6
+  },
+  stepText: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: colors.inkMuted,
+    letterSpacing: 1
+  },
+  stepName: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: colors.ink
+  },
+  stepperTrack: {
+    height: 7,
+    backgroundColor: '#E4DFD5',
+    borderRadius: 4,
+    borderWidth: 1.5,
+    borderColor: colors.ink,
+    overflow: 'hidden'
+  },
+  stepperFill: {
+    height: '100%',
+    backgroundColor: colors.chartreuse,
+    borderRadius: 3
+  },
+
+  bodyContent: {
+    paddingHorizontal: 18,
+    paddingTop: 10
+  },
+  errorBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.coralLight,
+    borderWidth: 2,
+    borderColor: colors.error,
+    borderRadius: 14,
+    padding: 12,
+    marginBottom: 14
+  },
+  errorBannerText: {
+    flex: 1,
     fontSize: 13,
     fontWeight: '700',
-    color: colors.textPrimary,
-    marginBottom: 2
+    color: colors.error
   },
-  locationInfoBody: {
+
+  ageBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.chartreuse,
+    borderWidth: 1.5,
+    borderColor: colors.ink,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    alignSelf: 'flex-start',
+    marginTop: -8,
+    marginBottom: 14
+  },
+  ageBadgeText: {
     fontSize: 12,
-    color: colors.textSecondary,
-    lineHeight: 17
+    fontWeight: '800',
+    color: colors.ink
+  },
+
+  chipsLabel: {
+    fontSize: 10.5,
+    fontWeight: '800',
+    color: colors.inkMuted,
+    letterSpacing: 1,
+    marginBottom: 8
   },
   chipsRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
-    marginBottom: 20
+    gap: 8
   },
-  locChip: {
-    minHeight: 48,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+  chip: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: colors.border,
-    justifyContent: 'center'
+    borderWidth: 2,
+    borderColor: colors.ink,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    shadowColor: colors.ink,
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 1,
+    shadowRadius: 0,
+    elevation: 2
   },
-  chipContentRow: {
-    flexDirection: 'row',
-    alignItems: 'center'
+  chipActive: {
+    backgroundColor: colors.chartreuse
   },
-  locChipActive: {
-    backgroundColor: '#CCFBF1',
-    borderColor: colors.primary
+  chipText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: colors.ink
   },
-  locChipText: {
-    fontSize: 13,
-    color: colors.textPrimary,
-    fontWeight: '600'
-  },
-  locChipTextActive: {
-    color: colors.primaryDark,
-    fontWeight: '700'
-  },
-  primaryButton: {
-    marginTop: 8,
-    height: 54,
-    borderRadius: 14,
-    backgroundColor: colors.primary
+  chipTextActive: {
+    fontWeight: '900'
   }
 });
-
