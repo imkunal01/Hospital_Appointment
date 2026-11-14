@@ -118,6 +118,51 @@ export const DoctorDetailScreen: React.FC<DoctorDetailScreenProps> = ({
     );
   };
 
+  const morningSlots = useMemo(() => {
+    return slots?.filter((s) => new Date(s.startsAt).getHours() < 12) || [];
+  }, [slots]);
+
+  const afternoonSlots = useMemo(() => {
+    return slots?.filter((s) => new Date(s.startsAt).getHours() >= 12) || [];
+  }, [slots]);
+
+  const renderSlotChip = (slot: Slot) => {
+    const isSelected = selectedSlot?.id === slot.id;
+    const isAvailable = slot.status === 'AVAILABLE';
+    const timeString = new Date(slot.startsAt).toLocaleTimeString([], {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    });
+
+    return (
+      <TouchableOpacity
+        key={slot.id}
+        disabled={!isAvailable || bookSlotMutation.isPending}
+        accessibilityRole="button"
+        accessibilityLabel={`Slot from ${formatTimeRange(slot.startsAt, slot.endsAt)}`}
+        accessibilityHint={isAvailable ? 'Double tap to select this consultation time' : 'Slot is booked'}
+        style={[
+          styles.slotChip,
+          isSelected && styles.slotChipSelected,
+          !isAvailable && styles.slotChipDisabled
+        ]}
+        onPress={() => handleSelectSlot(slot)}
+        activeOpacity={0.85}
+      >
+        <Text
+          style={[
+            styles.slotTimeText,
+            isSelected && styles.slotTimeTextSelected,
+            !isAvailable && styles.slotTimeTextDisabled
+          ]}
+        >
+          {timeString}
+        </Text>
+      </TouchableOpacity>
+    );
+  };
+
   const selectedDateObj = new Date(selectedDate + 'T00:00:00');
   const monthYearLabel = selectedDateObj.toLocaleDateString(undefined, {
     month: 'long',
@@ -258,44 +303,41 @@ export const DoctorDetailScreen: React.FC<DoctorDetailScreenProps> = ({
           empty={!isSlotsLoading && (!slots || slots.length === 0)}
           emptyMessage="No available consultation slots for this date. Please pick another day."
         >
-          {/* 3-Column Slot Grid */}
-          <View style={styles.slotsGrid}>
-            {slots?.map((slot) => {
-              const isSelected = selectedSlot?.id === slot.id;
-              const isAvailable = slot.status === 'AVAILABLE';
-              const timeString = new Date(slot.startsAt).toLocaleTimeString([], {
-                hour: 'numeric',
-                minute: '2-digit',
-                hour12: true
-              });
+          {morningSlots.length > 0 && (
+            <View style={styles.slotGroupSection}>
+              <View style={styles.slotGroupHeader}>
+                <Feather name="sun" size={15} color="#D97706" style={{ marginRight: 6 }} />
+                <Text style={styles.slotGroupTitle}>Morning</Text>
+                <View style={styles.groupCountBadge}>
+                  <Text style={styles.groupCountText}>{morningSlots.length} available</Text>
+                </View>
+              </View>
+              <View style={styles.slotsGrid}>
+                {morningSlots.map(renderSlotChip)}
+              </View>
+            </View>
+          )}
 
-              return (
-                <TouchableOpacity
-                  key={slot.id}
-                  disabled={!isAvailable || bookSlotMutation.isPending}
-                  accessibilityRole="button"
-                  accessibilityLabel={`Slot from ${formatTimeRange(slot.startsAt, slot.endsAt)}`}
-                  style={[
-                    styles.slotChip,
-                    isSelected && styles.slotChipSelected,
-                    !isAvailable && styles.slotChipDisabled
-                  ]}
-                  onPress={() => handleSelectSlot(slot)}
-                  activeOpacity={0.85}
-                >
-                  <Text
-                    style={[
-                      styles.slotTimeText,
-                      isSelected && styles.slotTimeTextSelected,
-                      !isAvailable && styles.slotTimeTextDisabled
-                    ]}
-                  >
-                    {timeString}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
+          {afternoonSlots.length > 0 && (
+            <View style={styles.slotGroupSection}>
+              <View style={styles.slotGroupHeader}>
+                <Feather name="sunset" size={15} color="#2563EB" style={{ marginRight: 6 }} />
+                <Text style={styles.slotGroupTitle}>Afternoon & Evening</Text>
+                <View style={styles.groupCountBadge}>
+                  <Text style={styles.groupCountText}>{afternoonSlots.length} available</Text>
+                </View>
+              </View>
+              <View style={styles.slotsGrid}>
+                {afternoonSlots.map(renderSlotChip)}
+              </View>
+            </View>
+          )}
+
+          {morningSlots.length === 0 && afternoonSlots.length === 0 && slots && slots.length > 0 && (
+            <View style={styles.slotsGrid}>
+              {slots.map(renderSlotChip)}
+            </View>
+          )}
         </ScreenState>
 
         {bookingError && (
@@ -546,6 +588,33 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: colors.inkMuted,
     marginTop: 2
+  },
+  slotGroupSection: {
+    marginBottom: 16
+  },
+  slotGroupHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+    paddingHorizontal: 2
+  },
+  slotGroupTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: colors.ink,
+    letterSpacing: 0.2
+  },
+  groupCountBadge: {
+    marginLeft: 8,
+    backgroundColor: '#EFF6FF',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10
+  },
+  groupCountText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: colors.brandBlue
   },
   slotsGrid: {
     flexDirection: 'row',

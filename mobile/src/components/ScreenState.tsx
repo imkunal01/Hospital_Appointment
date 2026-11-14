@@ -7,6 +7,7 @@ import { colors } from '../theme/colors';
 interface ScreenStateProps {
   loading?: boolean;
   loadingMessage?: string;
+  skeleton?: React.ReactNode;
   error?: string | null;
   onRetry?: () => void;
   empty?: boolean;
@@ -18,6 +19,7 @@ interface ScreenStateProps {
 export const ScreenState: React.FC<ScreenStateProps> = ({
   loading = false,
   loadingMessage = 'Loading hospital records...',
+  skeleton,
   error = null,
   onRetry,
   empty = false,
@@ -27,6 +29,17 @@ export const ScreenState: React.FC<ScreenStateProps> = ({
 }) => {
   // 1. Loading State
   if (loading) {
+    if (skeleton) {
+      return (
+        <View
+          accessibilityRole="progressbar"
+          accessibilityLabel={loadingMessage}
+          style={style}
+        >
+          {skeleton}
+        </View>
+      );
+    }
     return (
       <View
         accessibilityRole="progressbar"

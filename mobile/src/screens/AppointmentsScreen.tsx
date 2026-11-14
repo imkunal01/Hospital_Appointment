@@ -14,6 +14,7 @@ import { Feather, Ionicons } from '@expo/vector-icons';
 import { useSafeInsets } from '../hooks/useSafeInsets';
 import { useAppointments } from '../hooks/useAppointments';
 import { ScreenState } from '../components/ScreenState';
+import { SkeletonCard } from '../components/SkeletonCard';
 import { Appointment } from '../api/types';
 import { formatTimeRange } from '../utils/dates';
 import { extractErrorMessage } from '../utils/errors';
@@ -166,6 +167,12 @@ export const AppointmentsScreen: React.FC<AppointmentsScreenProps> = ({ navigati
       <ScreenState
         loading={isLoading}
         loadingMessage={`Loading ${activeScope} appointments...`}
+        skeleton={
+          <View style={styles.skeletonWrap}>
+            <SkeletonCard type="appointment" />
+            <SkeletonCard type="appointment" />
+          </View>
+        }
         error={isError ? extractErrorMessage(error) : null}
         onRetry={refetch}
         empty={!isLoading && (!filteredAppointments || filteredAppointments.length === 0)}
@@ -394,6 +401,10 @@ const styles = StyleSheet.create({
   },
 
   // List
+  skeletonWrap: {
+    paddingHorizontal: 18,
+    paddingTop: 8
+  },
   listContent: {
     paddingHorizontal: 18,
     paddingBottom: 110 // Clearance for floating navigation dock

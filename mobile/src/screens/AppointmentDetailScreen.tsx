@@ -65,6 +65,7 @@ export const AppointmentDetailScreen: React.FC<AppointmentDetailScreenProps> = (
   const [rescheduleDate, setRescheduleDate] = useState<string>(toISODateString(new Date()));
   const [selectedNewSlot, setSelectedNewSlot] = useState<Slot | null>(null);
   const [rescheduleError, setRescheduleError] = useState<string | null>(null);
+  const [isGuideModalVisible, setGuideModalVisible] = useState(false);
 
   // Available dates for rescheduling (next 14 days)
   const availableDates = useMemo(() => {
@@ -264,15 +265,24 @@ export const AppointmentDetailScreen: React.FC<AppointmentDetailScreenProps> = (
                 </View>
               </View>
 
-              <View style={styles.infoRow}>
+              <TouchableOpacity
+                accessibilityRole="button"
+                accessibilityLabel="View hospital directions and arrival guide"
+                accessibilityHint="Opens guide with floorplan, check-in instructions, and what to bring"
+                style={[styles.infoRow, styles.interactiveLocationRow]}
+                onPress={() => setGuideModalVisible(true)}
+                activeOpacity={0.8}
+              >
                 <View style={styles.infoIconCircle}>
                   <Ionicons name="location-outline" size={20} color={colors.ink} />
                 </View>
-                <View>
-                  <Text style={styles.infoEyebrow}>LOCATION</Text>
-                  <Text style={styles.infoValue}>North Wing, Floor 2</Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.infoEyebrow}>LOCATION & DIRECTIONS</Text>
+                  <Text style={styles.infoValue}>North Wing, Floor 2 · Suite 204</Text>
+                  <Text style={styles.guideHintText}>Tap for check-in & directions guide →</Text>
                 </View>
-              </View>
+                <Feather name="chevron-right" size={18} color={colors.inkMuted} />
+              </TouchableOpacity>
             </View>
 
             {/* Offline Notification */}
@@ -477,6 +487,110 @@ export const AppointmentDetailScreen: React.FC<AppointmentDetailScreenProps> = (
               </Text>
             </TouchableOpacity>
           </View>
+        </View>
+      </Modal>
+
+      {/* Hospital Location Guide & Directions Modal */}
+      <Modal
+        visible={isGuideModalVisible}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setGuideModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <View>
+              <Text style={styles.modalTitle}>Visit & Directions Guide</Text>
+              <Text style={styles.modalSubtitle}>MediBook Central Hospital Campus</Text>
+            </View>
+            <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityLabel="Close directions guide"
+              onPress={() => setGuideModalVisible(false)}
+              style={styles.modalCloseBtn}
+            >
+              <Feather name="x" size={20} color={colors.ink} />
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView style={styles.modalScroll} showsVerticalScrollIndicator={false}>
+            {/* Location Overview Card */}
+            <View style={styles.guideCard}>
+              <View style={styles.guideHeaderRow}>
+                <Ionicons name="business" size={24} color={colors.brandBlue} style={{ marginRight: 10 }} />
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.guideCardTitle}>North Wing · Floor 2 · Suite 204</Text>
+                  <Text style={styles.guideCardSubtitle}>{appointment?.departmentName || 'Consultation Clinic'}</Text>
+                </View>
+              </View>
+
+              <View style={styles.guideStepRow}>
+                <View style={styles.guideStepBadge}>
+                  <Text style={styles.guideStepBadgeText}>1</Text>
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.guideStepHeading}>Main Entrance & Parking</Text>
+                  <Text style={styles.guideStepBody}>Enter via Gate 2 on Medical Center Blvd. Park in P1 Underground (Levels A & B). Validated parking ticket available at reception.</Text>
+                </View>
+              </View>
+
+              <View style={styles.guideStepRow}>
+                <View style={styles.guideStepBadge}>
+                  <Text style={styles.guideStepBadgeText}>2</Text>
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.guideStepHeading}>Tower & Elevators</Text>
+                  <Text style={styles.guideStepBody}>Take North Tower Elevators B or C directly to Floor 2. Suite 204 is situated immediately to the right of the atrium.</Text>
+                </View>
+              </View>
+
+              <View style={styles.guideStepRow}>
+                <View style={styles.guideStepBadge}>
+                  <Text style={styles.guideStepBadgeText}>3</Text>
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.guideStepHeading}>Self Check-in Kiosk</Text>
+                  <Text style={styles.guideStepBody}>Scan your appointment reference barcode #{appointment?.reference} at Kiosk #3 or check in with the floor receptionist.</Text>
+                </View>
+              </View>
+            </View>
+
+            {/* What to Bring Checklist */}
+            <Text style={[styles.modalSectionLabel, { marginTop: 20 }]}>WHAT TO BRING TO YOUR VISIT</Text>
+            <View style={styles.checklistCard}>
+              <View style={styles.checkItemRow}>
+                <Ionicons name="checkmark-circle" size={20} color={colors.success} style={{ marginRight: 10 }} />
+                <Text style={styles.checkItemText}>Government-issued Photo ID or Passport</Text>
+              </View>
+              <View style={styles.checkItemRow}>
+                <Ionicons name="checkmark-circle" size={20} color={colors.success} style={{ marginRight: 10 }} />
+                <Text style={styles.checkItemText}>Health insurance card or digital policy document</Text>
+              </View>
+              <View style={styles.checkItemRow}>
+                <Ionicons name="checkmark-circle" size={20} color={colors.success} style={{ marginRight: 10 }} />
+                <Text style={styles.checkItemText}>Current medications list or prescription bottles</Text>
+              </View>
+              <View style={styles.checkItemRow}>
+                <Ionicons name="checkmark-circle" size={20} color={colors.success} style={{ marginRight: 10 }} />
+                <Text style={styles.checkItemText}>Previous relevant lab or imaging metadata</Text>
+              </View>
+            </View>
+
+            {/* Assistance note */}
+            <View style={styles.assistanceBanner}>
+              <Feather name="phone-call" size={16} color={colors.brandBlue} style={{ marginRight: 8 }} />
+              <Text style={styles.assistanceText}>Need wheelchair or escort assistance? Dial Hospital Concierge at (800) 555-0199.</Text>
+            </View>
+
+            <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityLabel="Close visit and directions guide"
+              style={styles.closeGuideBtn}
+              onPress={() => setGuideModalVisible(false)}
+            >
+              <Text style={styles.closeGuideBtnText}>Got it, thanks</Text>
+            </TouchableOpacity>
+          </ScrollView>
         </View>
       </Modal>
     </View>
@@ -908,6 +1022,142 @@ const styles = StyleSheet.create({
     elevation: 3
   },
   modalConfirmText: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#FFFFFF'
+  },
+
+  // Interactive Location & Directions Guide
+  interactiveLocationRow: {
+    paddingVertical: 4
+  },
+  guideHintText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: colors.brandBlue,
+    marginTop: 3
+  },
+  modalSubtitle: {
+    fontSize: 12.5,
+    fontWeight: '600',
+    color: colors.inkMuted,
+    marginTop: 2
+  },
+  guideCard: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    borderRadius: 20,
+    padding: 16,
+    marginBottom: 14,
+    shadowColor: colors.tactileShadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    elevation: 2
+  },
+  guideHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingBottom: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+    marginBottom: 14
+  },
+  guideCardTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: colors.ink
+  },
+  guideCardSubtitle: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: colors.inkMuted,
+    marginTop: 1
+  },
+  guideStepRow: {
+    flexDirection: 'row',
+    marginBottom: 14
+  },
+  guideStepBadge: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: '#EFF6FF',
+    borderWidth: 1.5,
+    borderColor: '#BFDBFE',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+    marginTop: 1
+  },
+  guideStepBadgeText: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: colors.brandBlue
+  },
+  guideStepHeading: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: colors.ink,
+    marginBottom: 2
+  },
+  guideStepBody: {
+    fontSize: 12.5,
+    lineHeight: 18,
+    color: colors.inkMuted,
+    fontWeight: '500'
+  },
+  checklistCard: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    borderRadius: 20,
+    padding: 16,
+    gap: 12,
+    marginBottom: 16
+  },
+  checkItemRow: {
+    flexDirection: 'row',
+    alignItems: 'center'
+  },
+  checkItemText: {
+    flex: 1,
+    fontSize: 13,
+    fontWeight: '600',
+    color: colors.ink
+  },
+  assistanceBanner: {
+    backgroundColor: '#EFF6FF',
+    borderWidth: 1.5,
+    borderColor: '#BFDBFE',
+    borderRadius: 16,
+    padding: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20
+  },
+  assistanceText: {
+    flex: 1,
+    fontSize: 12,
+    fontWeight: '600',
+    color: colors.brandBlue,
+    lineHeight: 17
+  },
+  closeGuideBtn: {
+    backgroundColor: colors.foundation,
+    borderRadius: 18,
+    height: 52,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 24,
+    shadowColor: colors.foundation,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.18,
+    shadowRadius: 6,
+    elevation: 3
+  },
+  closeGuideBtnText: {
     fontSize: 16,
     fontWeight: '800',
     color: '#FFFFFF'

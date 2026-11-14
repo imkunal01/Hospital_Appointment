@@ -19,7 +19,12 @@ export const OfflineBanner: React.FC = () => {
         <Feather name="wifi-off" size={16} color={colors.warningText} />
       </View>
       <View style={styles.textContainer}>
-        <Text style={styles.title}>You are currently Offline</Text>
+        <View style={styles.titleRow}>
+          <Text style={styles.title}>You are currently Offline</Text>
+          <View style={styles.cachedChip}>
+            <Text style={styles.cachedChipText}>CACHED</Text>
+          </View>
+        </View>
         <Text style={styles.subtitle}>
           Read-only cache mode. Booking and modifications are disabled.
         </Text>
@@ -51,6 +56,25 @@ const styles = StyleSheet.create({
   },
   textContainer: {
     flex: 1
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center'
+  },
+  cachedChip: {
+    marginLeft: 8,
+    backgroundColor: '#FEF3C7',
+    borderWidth: 1,
+    borderColor: '#F59E0B',
+    borderRadius: 6,
+    paddingHorizontal: 6,
+    paddingVertical: 1
+  },
+  cachedChipText: {
+    fontSize: 9.5,
+    fontWeight: '800',
+    color: colors.warningText,
+    letterSpacing: 0.5
   },
   title: {
     fontSize: 13,

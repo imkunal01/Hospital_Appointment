@@ -7,13 +7,15 @@ import {
   TextInput,
   StyleSheet,
   RefreshControl,
-  Platform
+  Platform,
+  ScrollView
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { useDoctors } from '../hooks/useCatalog';
 import { ScreenState } from '../components/ScreenState';
 import { DoctorAvatar } from '../components/DoctorAvatar';
+import { SkeletonCard } from '../components/SkeletonCard';
 import { Doctor } from '../api/types';
 import { extractErrorMessage } from '../utils/errors';
 import { colors } from '../theme/colors';
@@ -38,19 +40,34 @@ export const DoctorsListScreen: React.FC<DoctorsListScreenProps> = ({ route, nav
 
   const { data: doctors, isLoading, isError, error, refetch, isRefetching } = useDoctors(departmentId);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedSpecialty, setSelectedSpecialty] = useState<string>('All');
   const [selectedDoctorId, setSelectedDoctorId] = useState<string | null>(null);
+
+  const specialties = useMemo(() => {
+    if (!doctors) return ['All'];
+    const specSet = new Set<string>();
+    doctors.forEach((d) => {
+      if (d.specialty) specSet.add(d.specialty);
+    });
+    return ['All', ...Array.from(specSet)];
+  }, [doctors]);
 
   const filteredDoctors = useMemo(() => {
     if (!doctors) return [];
-    if (!searchQuery.trim()) return doctors;
-    const q = searchQuery.toLowerCase();
-    return doctors.filter(
-      (doc) =>
+    return doctors.filter((doc) => {
+      const q = searchQuery.toLowerCase().trim();
+      const matchesSearch =
+        !q ||
         doc.name.toLowerCase().includes(q) ||
         doc.specialty.toLowerCase().includes(q) ||
-        doc.departmentName.toLowerCase().includes(q)
-    );
-  }, [doctors, searchQuery]);
+        doc.departmentName.toLowerCase().includes(q);
+
+      const matchesSpecialty =
+        selectedSpecialty === 'All' || doc.specialty === selectedSpecialty;
+
+      return matchesSearch && matchesSpecialty;
+    });
+  }, [doctors, searchQuery, selectedSpecialty]);
 
   // Set default selection to first doctor when loaded
   const currentSelectedDoctor = useMemo(() => {
@@ -110,6 +127,13 @@ export const DoctorsListScreen: React.FC<DoctorsListScreenProps> = ({ route, nav
       <ScreenState
         loading={isLoading}
         loadingMessage={`Finding doctors in ${departmentName}...`}
+        skeleton={
+          <View style={styles.skeletonWrap}>
+            <SkeletonCard type="doctor" />
+            <SkeletonCard type="doctor" />
+            <SkeletonCard type="doctor" />
+          </View>
+        }
         error={isError ? extractErrorMessage(error) : null}
         onRetry={refetch}
         empty={!isLoading && (!doctors || doctors.length === 0)}
@@ -174,6 +198,42 @@ export const DoctorsListScreen: React.FC<DoctorsListScreenProps> = ({ route, nav
                   </TouchableOpacity>
                 )}
               </View>
+
+              {/* Specialty Filter Chips */}
+              {specialties.length > 2 && (
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.specialtyChipsRow}
+                >
+                  {specialties.map((spec) => {
+                    const isChipActive = selectedSpecialty === spec;
+                    return (
+                      <TouchableOpacity
+                        key={spec}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Filter by ${spec}`}
+                        accessibilityState={{ selected: isChipActive }}
+                        style={[
+                          styles.specialtyChip,
+                          isChipActive && styles.specialtyChipActive
+                        ]}
+                        onPress={() => setSelectedSpecialty(spec)}
+                        activeOpacity={0.8}
+                      >
+                        <Text
+                          style={[
+                            styles.specialtyChipText,
+                            isChipActive && styles.specialtyChipTextActive
+                          ]}
+                        >
+                          {spec}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </ScrollView>
+              )}
             </View>
           }
           renderItem={({ item, index }) => {
@@ -201,7 +261,12 @@ export const DoctorsListScreen: React.FC<DoctorsListScreenProps> = ({ route, nav
                   </View>
                   <Text style={styles.doctorName}>{item.name}</Text>
                   <Text style={styles.doctorSpecialty}>{item.specialty}</Text>
-                  <Text style={styles.experienceText}>{exp}</Text>
+                  <View style={styles.doctorMetaRow}>
+                    <Text style={styles.experienceText}>{exp}</Text>
+                    <Text style={styles.metaDot}>•</Text>
+                    <Ionicons name="location-outline" size={12} color={colors.inkMuted} style={{ marginRight: 2 }} />
+                    <Text style={styles.locationTagText}>Wing A</Text>
+                  </View>
                 </View>
 
                 {/* Custom Radio Button */}
@@ -378,6 +443,40 @@ const styles = StyleSheet.create({
   clearSearchBtn: {
     padding: 6
   },
+  specialtyChipsRow: {
+    paddingTop: 12,
+    gap: 8,
+    paddingRight: 10
+  },
+  specialtyChip: {
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 20,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    shadowColor: colors.tactileShadow,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 1
+  },
+  specialtyChipActive: {
+    backgroundColor: colors.brandBlue,
+    borderColor: colors.brandBlue
+  },
+  specialtyChipText: {
+    fontSize: 12.5,
+    fontWeight: '700',
+    color: colors.inkMuted
+  },
+  specialtyChipTextActive: {
+    color: '#FFFFFF'
+  },
+  skeletonWrap: {
+    paddingHorizontal: 18,
+    paddingTop: 16
+  },
 
   // List & Cards
   listContent: {
@@ -441,11 +540,25 @@ const styles = StyleSheet.create({
     color: colors.inkMuted,
     marginTop: 1
   },
+  doctorMetaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 3
+  },
   experienceText: {
     fontSize: 11.5,
     fontWeight: '700',
+    color: colors.inkSubtle
+  },
+  metaDot: {
+    marginHorizontal: 5,
     color: colors.inkSubtle,
-    marginTop: 2
+    fontSize: 11
+  },
+  locationTagText: {
+    fontSize: 11.5,
+    fontWeight: '600',
+    color: colors.inkMuted
   },
 
   // Radio button

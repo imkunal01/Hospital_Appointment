@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, Linking } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { Appointment } from '../api/types';
@@ -8,6 +8,7 @@ import { formatDate, formatTimeRange } from '../utils/dates';
 import { colors } from '../theme/colors';
 import { spacing } from '../theme/spacing';
 import { useSafeInsets } from '../hooks/useSafeInsets';
+import { showAlert } from '../utils/alert';
 
 interface ConfirmationScreenProps {
   route: {
@@ -34,6 +35,32 @@ export const ConfirmationScreen: React.FC<ConfirmationScreenProps> = ({
     navigation.navigate('AppointmentsTab', {
       screen: 'AppointmentsList'
     });
+  };
+
+  const handleAddToCalendar = async () => {
+    try {
+      const formatGCalDate = (isoStr: string) => {
+        return new Date(isoStr).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+      };
+
+      const start = formatGCalDate(appointment.startsAt);
+      const end = formatGCalDate(appointment.endsAt);
+      const title = encodeURIComponent(`Consultation with ${appointment.doctorName}`);
+      const details = encodeURIComponent(
+        `Appointment Ref: #${appointment.reference}\nDepartment: ${appointment.departmentName || appointment.specialty}\nHospital Visit`
+      );
+      const location = encodeURIComponent('North Wing, Floor 2, MediBook Hospital');
+      const url = `https://www.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&details=${details}&location=${location}`;
+
+      const canOpen = await Linking.canOpenURL(url);
+      if (canOpen) {
+        await Linking.openURL(url);
+      } else {
+        showAlert('Calendar', 'Unable to open calendar application.');
+      }
+    } catch {
+      showAlert('Calendar', 'Could not open calendar.');
+    }
   };
 
   return (
@@ -134,6 +161,17 @@ export const ConfirmationScreen: React.FC<ConfirmationScreenProps> = ({
           </View>
 
           {/* Action Buttons */}
+          <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel="Add appointment to device calendar"
+            style={styles.calendarButton}
+            onPress={handleAddToCalendar}
+            activeOpacity={0.85}
+          >
+            <Feather name="calendar" size={18} color={colors.brandBlue} style={{ marginRight: 8 }} />
+            <Text style={styles.calendarButtonText}>Add to Calendar</Text>
+          </TouchableOpacity>
+
           <TouchableOpacity
             accessibilityRole="button"
             accessibilityLabel="View my appointments list"
@@ -362,6 +400,27 @@ const styles = StyleSheet.create({
   },
 
   // Buttons
+  calendarButton: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    borderRadius: 18,
+    height: 52,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+    shadowColor: colors.tactileShadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 2
+  },
+  calendarButtonText: {
+    fontSize: 15.5,
+    fontWeight: '700',
+    color: colors.brandBlue
+  },
   primaryButton: {
     backgroundColor: colors.foundation,
     borderRadius: 18,
