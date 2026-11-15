@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, Linking } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, Linking, Image } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { Appointment } from '../api/types';
@@ -89,9 +89,17 @@ export const ConfirmationScreen: React.FC<ConfirmationScreenProps> = ({
           <View style={styles.ticketCard}>
             {/* Header: Confirmed Pill + Reference */}
             <View style={styles.ticketHeader}>
-              <View style={styles.statusPill}>
-                <View style={styles.statusDot} />
-                <Text style={styles.statusText}>Confirmed</Text>
+              <View style={styles.ticketBrandRow}>
+                <Image
+                  source={require('../../assets/logo.png')}
+                  style={styles.ticketLogoImg}
+                  resizeMode="contain"
+                  accessibilityLabel="MediBook Logo"
+                />
+                <View style={styles.statusPill}>
+                  <View style={styles.statusDot} />
+                  <Text style={styles.statusText}>Confirmed</Text>
+                </View>
               </View>
               <Text style={styles.refText}>REF #{appointment.reference}</Text>
             </View>
@@ -268,6 +276,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 16
+  },
+  ticketBrandRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8
+  },
+  ticketLogoImg: {
+    width: 24,
+    height: 24
   },
   statusPill: {
     backgroundColor: colors.successLight,

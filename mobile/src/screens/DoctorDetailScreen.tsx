@@ -6,7 +6,8 @@ import {
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
-  Platform
+  Platform,
+  Image
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Feather, Ionicons } from '@expo/vector-icons';
@@ -198,7 +199,12 @@ export const DoctorDetailScreen: React.FC<DoctorDetailScreenProps> = ({
 
         <Text style={styles.topBarTitle}>Date & time</Text>
 
-        <View style={{ width: 44 }} />
+        <Image
+          source={require('../../assets/logo.png')}
+          style={{ width: 26, height: 26 }}
+          resizeMode="contain"
+          accessibilityLabel="MediBook Logo"
+        />
       </View>
 
       {/* Stepper Progress Bar (Step 3 of 3) */}

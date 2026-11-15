@@ -6,7 +6,8 @@ import {
   TouchableOpacity,
   ScrollView,
   StyleSheet,
-  Platform
+  Platform,
+  Image
 } from 'react-native';
 import { Feather, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import {
@@ -107,6 +108,12 @@ export const NotificationCenterModal: React.FC<NotificationCenterModalProps> = (
           <View style={styles.headerRow}>
             <View style={{ flex: 1 }}>
               <View style={styles.eyebrowRow}>
+                <Image
+                  source={require('../../assets/logo.png')}
+                  style={styles.modalLogoImg}
+                  resizeMode="contain"
+                  accessibilityLabel="MediBook Logo"
+                />
                 <Text style={styles.eyebrow}>NOTIFICATION INBOX</Text>
                 {unreadCount > 0 && (
                   <View style={styles.unreadBadge}>
@@ -262,6 +269,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
     marginBottom: 2
+  },
+  modalLogoImg: {
+    width: 18,
+    height: 18
   },
   eyebrow: {
     fontSize: 11,

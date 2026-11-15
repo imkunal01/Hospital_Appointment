@@ -298,7 +298,12 @@ export const PreferencesScreen: React.FC<PreferencesScreenProps> = ({ route, nav
 
         <Text style={styles.topBarTitle}>Account & Settings</Text>
 
-        <View style={{ width: 42 }} />
+        <Image
+          source={require('../../assets/logo.png')}
+          style={{ width: 28, height: 28 }}
+          resizeMode="contain"
+          accessibilityLabel="MediBook Logo"
+        />
       </View>
 
       {/* Segmented Tab Bar */}

@@ -8,7 +8,8 @@ import {
   Modal,
   TouchableOpacity,
   RefreshControl,
-  Platform
+  Platform,
+  Image
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Feather, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
@@ -195,7 +196,12 @@ export const AppointmentDetailScreen: React.FC<AppointmentDetailScreenProps> = (
 
         <Text style={styles.topBarTitle}>Appointment Details</Text>
 
-        <View style={{ width: 44 }} />
+        <Image
+          source={require('../../assets/logo.png')}
+          style={{ width: 26, height: 26 }}
+          resizeMode="contain"
+          accessibilityLabel="MediBook Logo"
+        />
       </View>
 
       <ScreenState

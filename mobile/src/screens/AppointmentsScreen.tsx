@@ -7,7 +7,8 @@ import {
   TextInput,
   StyleSheet,
   RefreshControl,
-  Platform
+  Platform,
+  Image
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Feather, Ionicons } from '@expo/vector-icons';
@@ -68,16 +69,14 @@ export const AppointmentsScreen: React.FC<AppointmentsScreenProps> = ({ navigati
 
       {/* Top Editorial Bar */}
       <View style={[styles.topBar, { paddingTop: Math.max(insets.top, Platform.OS === 'ios' ? 20 : 16) + 6 }]}>
-        <View style={styles.plusWrapper}>
-          <TouchableOpacity
-            accessibilityRole="button"
-            accessibilityLabel="Quick book appointment"
-            style={styles.plusButton}
-            onPress={() => navigation.navigate('BookTab')}
-            activeOpacity={0.85}
-          >
-            <Feather name="plus" size={20} color={colors.brandBlue} />
-          </TouchableOpacity>
+        <View style={styles.brandRow}>
+          <Image
+            source={require('../../assets/logo.png')}
+            style={styles.brandLogoImg}
+            resizeMode="contain"
+            accessibilityLabel="MediBook Logo"
+          />
+          <Text style={styles.brandLogoText}>medibook</Text>
         </View>
 
         <Text style={styles.topBarTitle}>Appointments</Text>
@@ -301,6 +300,21 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 18,
     paddingBottom: 14
+  },
+  brandRow: {
+    flexDirection: 'row',
+    alignItems: 'center'
+  },
+  brandLogoImg: {
+    width: 32,
+    height: 32,
+    marginRight: 6
+  },
+  brandLogoText: {
+    fontSize: 18,
+    fontWeight: '900',
+    color: '#0A2540',
+    letterSpacing: -0.4
   },
   plusWrapper: {
     shadowColor: colors.tactileShadow,
