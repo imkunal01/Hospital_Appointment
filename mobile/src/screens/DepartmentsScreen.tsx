@@ -11,10 +11,11 @@ import {
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Feather, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { useDepartments } from '../hooks/useCatalog';
+import { useDepartments, useDoctors } from '../hooks/useCatalog';
 import { useAppointments } from '../hooks/useAppointments';
 import { useSession } from '../auth/sessionStore';
 import { ScreenState } from '../components/ScreenState';
+import { DoctorAvatar } from '../components/DoctorAvatar';
 import { Department } from '../api/types';
 import { extractErrorMessage } from '../utils/errors';
 import { colors } from '../theme/colors';
@@ -30,6 +31,7 @@ export const DepartmentsScreen: React.FC<DepartmentsScreenProps> = ({ navigation
   const insets = useSafeInsets();
   const { user } = useSession();
   const { data: departments, isLoading, isError, error, refetch, isRefetching } = useDepartments();
+  const { data: doctors } = useDoctors();
   const { data: upcomingAppointments } = useAppointments('upcoming');
 
   const nextAppointment = upcomingAppointments && upcomingAppointments.length > 0 ? upcomingAppointments[0] : null;
@@ -78,7 +80,7 @@ export const DepartmentsScreen: React.FC<DepartmentsScreenProps> = ({ navigation
 
   return (
     <View style={styles.container}>
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
@@ -86,28 +88,26 @@ export const DepartmentsScreen: React.FC<DepartmentsScreenProps> = ({ navigation
           <RefreshControl
             refreshing={isRefetching}
             onRefresh={refetch}
-            tintColor="#FFFFFF"
+            tintColor={colors.brandBlue}
             colors={[colors.brandBlue]}
           />
         }
       >
-        {/* Top Hero Banner: Deep Clinical Navy with Stethoscope Visual & Organic Curves */}
+        {/* Top Hero Banner: Clean Light Medical Ice-Blue with Stethoscope */}
         <View
           style={[
             styles.heroSection,
             { paddingTop: Math.max(insets.top, Platform.OS === 'ios' ? 20 : 16) + 12 }
           ]}
         >
-          {/* Organic Curved Wave Layers in Background */}
+          {/* Subtle Decorative Curves */}
           <View style={styles.heroWaveOvalTop} />
           <View style={styles.heroWaveArcMid} />
           <View style={styles.heroWaveBottomCurve} />
 
-          {/* Stethoscope Decorative Glow & Medical Watermark (Behind Stethoscope) */}
+          {/* Stethoscope Decorative Glow */}
           <View style={styles.stethoscopeOuterRing} />
           <View style={styles.stethoscopeGlowCircle} />
-          <View style={styles.crossWatermarkHoriz} />
-          <View style={styles.crossWatermarkVert} />
 
           {/* Stethoscope Asset - Completely Clear & Unobstructed */}
           <Image
@@ -117,7 +117,7 @@ export const DepartmentsScreen: React.FC<DepartmentsScreenProps> = ({ navigation
             accessibilityLabel="Hospital Stethoscope illustration"
           />
 
-          {/* Top Brand Bar: + medibook (NO notification bell) */}
+          {/* Top Brand Bar: + medibook */}
           <View style={styles.topBrandRow}>
             <View style={styles.logoRow}>
               <View style={styles.logoPlusCircle}>
@@ -129,7 +129,7 @@ export const DepartmentsScreen: React.FC<DepartmentsScreenProps> = ({ navigation
 
           {/* Clinical Greeting Pill with Sun Icon */}
           <View style={styles.greetingPill}>
-            <Ionicons name="sunny" size={15} color="#FBBF24" />
+            <Ionicons name="sunny" size={15} color="#D97706" />
             <Text style={styles.greetingPillText}>Good morning,</Text>
           </View>
 
@@ -153,7 +153,7 @@ export const DepartmentsScreen: React.FC<DepartmentsScreenProps> = ({ navigation
               <Text style={styles.ctaTitle}>Book an appointment</Text>
               <Text style={styles.ctaSubtitle}>Find a doctor and choose a time</Text>
             </View>
-            <Feather name="chevron-right" size={24} color="#071F38" />
+            <Feather name="chevron-right" size={24} color={colors.brandBlue} />
           </TouchableOpacity>
         </View>
 
@@ -337,6 +337,138 @@ export const DepartmentsScreen: React.FC<DepartmentsScreenProps> = ({ navigation
                 <View style={styles.emptyCardWash} />
               </TouchableOpacity>
             )}
+
+            {/* 3. Top Rated Specialists / Doctors */}
+            <View style={[styles.sectionHeaderRow, { marginTop: spacing.xl }]}>
+              <View>
+                <Text style={styles.eyebrow}>VERIFIED STAFF</Text>
+                <Text style={styles.sectionTitle}>Top rated doctors</Text>
+              </View>
+              <TouchableOpacity
+                accessibilityRole="button"
+                accessibilityLabel="See all specialists"
+                style={styles.pillButton}
+                onPress={() => navigation.navigate('DoctorsList', { departmentName: 'All Specialists' })}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.pillButtonText}>See all</Text>
+                <Feather name="arrow-right" size={14} color={colors.brandBlue} style={{ marginLeft: 4 }} />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.featuredDocsRow}
+            >
+              {doctors && doctors.slice(0, 5).map((doc) => (
+                <TouchableOpacity
+                  key={doc.id}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Consult ${doc.name}`}
+                  style={styles.featuredDocCard}
+                  onPress={() => navigation.navigate('DoctorDetail', { doctor: doc })}
+                  activeOpacity={0.88}
+                >
+                  <View style={styles.featuredAvatarRow}>
+                    <DoctorAvatar name={doc.name} size={50} />
+                    <View style={styles.ratingBadge}>
+                      <Ionicons name="star" size={11} color="#F59E0B" />
+                      <Text style={styles.ratingText}>4.9</Text>
+                    </View>
+                  </View>
+                  <Text style={styles.featuredDocName} numberOfLines={1}>{doc.name}</Text>
+                  <Text style={styles.featuredDocSpecialty} numberOfLines={1}>{doc.specialty}</Text>
+                  <View style={styles.consultPill}>
+                    <Text style={styles.consultPillText}>Book</Text>
+                    <Feather name="chevron-right" size={13} color={colors.brandBlue} />
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+
+            {/* 4. Campus Facilities & Services (2x2 Grid) */}
+            <View style={[styles.sectionHeaderRow, { marginTop: spacing.xl }]}>
+              <View>
+                <Text style={styles.eyebrow}>CAMPUS FACILITIES</Text>
+                <Text style={styles.sectionTitle}>Hospital services</Text>
+              </View>
+            </View>
+
+            <View style={styles.servicesGrid}>
+              <View style={styles.serviceTile}>
+                <View style={[styles.serviceIconWrap, { backgroundColor: '#EFF6FF' }]}>
+                  <Ionicons name="flask-outline" size={22} color={colors.brandBlue} />
+                </View>
+                <Text style={styles.serviceTitle}>Diagnostic Labs</Text>
+                <Text style={styles.serviceDesc}>Fast blood tests & pathology with digital reports.</Text>
+              </View>
+
+              <View style={styles.serviceTile}>
+                <View style={[styles.serviceIconWrap, { backgroundColor: '#FEF2F2' }]}>
+                  <MaterialCommunityIcons name="ambulance" size={24} color="#DC2626" />
+                </View>
+                <Text style={styles.serviceTitle}>24/7 Trauma Care</Text>
+                <Text style={styles.serviceDesc}>Instant emergency triage & ambulance dispatch.</Text>
+              </View>
+
+              <View style={styles.serviceTile}>
+                <View style={[styles.serviceIconWrap, { backgroundColor: '#ECFDF5' }]}>
+                  <MaterialCommunityIcons name="pill" size={22} color="#059669" />
+                </View>
+                <Text style={styles.serviceTitle}>Hospital Pharmacy</Text>
+                <Text style={styles.serviceDesc}>In-house medication dispensary & verified refills.</Text>
+              </View>
+
+              <View style={styles.serviceTile}>
+                <View style={[styles.serviceIconWrap, { backgroundColor: '#FDF4FF' }]}>
+                  <MaterialCommunityIcons name="shield-check-outline" size={22} color="#9333EA" />
+                </View>
+                <Text style={styles.serviceTitle}>Health Packages</Text>
+                <Text style={styles.serviceDesc}>Comprehensive preventive executive checkups.</Text>
+              </View>
+            </View>
+
+            {/* 5. Hospital Hours & Emergency Contact Card */}
+            <View style={[styles.sectionHeaderRow, { marginTop: spacing.xl }]}>
+              <View>
+                <Text style={styles.eyebrow}>VISITOR INFORMATION</Text>
+                <Text style={styles.sectionTitle}>Hours & campus access</Text>
+              </View>
+            </View>
+
+            <View style={styles.infoBannerCard}>
+              <View style={styles.infoBannerItem}>
+                <Feather name="clock" size={18} color={colors.brandBlue} style={{ marginRight: 10 }} />
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.infoBannerHeading}>Visiting Hours: 08:00 AM – 08:00 PM</Text>
+                  <Text style={styles.infoBannerSub}>Open all 7 days for registered patient visitors.</Text>
+                </View>
+              </View>
+              <View style={styles.bannerDivider} />
+              <View style={styles.infoBannerItem}>
+                <Ionicons name="location-outline" size={20} color={colors.brandBlue} style={{ marginRight: 8 }} />
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.infoBannerHeading}>North Wing, Medical Center Blvd</Text>
+                  <Text style={styles.infoBannerSub}>Underground parking validated at main reception.</Text>
+                </View>
+              </View>
+              <View style={styles.bannerDivider} />
+              <View style={styles.infoBannerItem}>
+                <Feather name="phone-call" size={18} color="#DC2626" style={{ marginRight: 10 }} />
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.infoBannerHeading}>Emergency Line: 1800-MEDIBOOK</Text>
+                  <Text style={styles.infoBannerSub}>Direct trauma triage & on-call specialist line.</Text>
+                </View>
+              </View>
+            </View>
+
+            {/* 6. Accreditation Trust Footer */}
+            <View style={styles.trustFooterBox}>
+              <Ionicons name="shield-checkmark" size={24} color={colors.brandBlue} style={{ marginBottom: 6 }} />
+              <Text style={styles.trustFooterTitle}>NABH & JCI Accredited Hospital</Text>
+              <Text style={styles.trustFooterSubtitle}>All 12 medical specialists are board-certified full-time clinical staff.</Text>
+            </View>
           </ScreenState>
         </View>
       </ScrollView>
@@ -350,21 +482,23 @@ const styles = StyleSheet.create({
     backgroundColor: '#F0F4FA'
   },
   scrollContent: {
-    paddingBottom: 110 // Clearance for floating navigation dock
+    paddingBottom: 130 // Clearance for floating navigation dock
   },
 
-  // Hero Section: Deep Midnight Navy with Organic Curved Waves
+  // Hero Section: Crisp Medical Ice-Blue Banner
   heroSection: {
-    backgroundColor: '#061A30',
+    backgroundColor: '#EBF4FE',
     paddingHorizontal: 20,
     paddingBottom: 32,
+    borderBottomWidth: 1.5,
+    borderBottomColor: '#DBEAFE',
     borderBottomLeftRadius: 36,
     borderBottomRightRadius: 36,
     position: 'relative',
     overflow: 'hidden'
   },
 
-  // Layered Organic Waves inside Hero
+  // Layered Organic Waves inside Hero (Soft Sky Blue)
   heroWaveOvalTop: {
     position: 'absolute',
     top: -60,
@@ -372,8 +506,8 @@ const styles = StyleSheet.create({
     width: 320,
     height: 320,
     borderRadius: 160,
-    backgroundColor: '#0E2C4F',
-    opacity: 0.8
+    backgroundColor: '#DBEAFE',
+    opacity: 0.6
   },
   heroWaveArcMid: {
     position: 'absolute',
@@ -382,8 +516,8 @@ const styles = StyleSheet.create({
     width: 260,
     height: 260,
     borderRadius: 130,
-    backgroundColor: '#174A82',
-    opacity: 0.45
+    backgroundColor: '#BFDBFE',
+    opacity: 0.4
   },
   heroWaveBottomCurve: {
     position: 'absolute',
@@ -393,8 +527,8 @@ const styles = StyleSheet.create({
     height: 55,
     borderTopLeftRadius: 120,
     borderTopRightRadius: 90,
-    backgroundColor: '#1E5896',
-    opacity: 0.35
+    backgroundColor: '#DBEAFE',
+    opacity: 0.5
   },
 
   // Stethoscope Glow and Translucent Watermark (Behind Stethoscope)
@@ -406,7 +540,7 @@ const styles = StyleSheet.create({
     height: 190,
     borderRadius: 95,
     borderWidth: 1.5,
-    borderColor: 'rgba(59, 130, 246, 0.20)'
+    borderColor: 'rgba(37, 99, 235, 0.15)'
   },
   stethoscopeGlowCircle: {
     position: 'absolute',
@@ -415,7 +549,7 @@ const styles = StyleSheet.create({
     width: 160,
     height: 160,
     borderRadius: 80,
-    backgroundColor: 'rgba(23, 74, 130, 0.55)'
+    backgroundColor: '#DCEBFE'
   },
   crossWatermarkHoriz: {
     position: 'absolute',
@@ -466,7 +600,7 @@ const styles = StyleSheet.create({
   logoText: {
     fontSize: 24,
     fontWeight: '900',
-    color: '#FFFFFF',
+    color: '#0A2540',
     letterSpacing: -0.6
   },
 
@@ -474,9 +608,9 @@ const styles = StyleSheet.create({
   greetingPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(12, 35, 65, 0.85)',
+    backgroundColor: '#DBEAFE',
     borderWidth: 1,
-    borderColor: 'rgba(59, 130, 246, 0.35)',
+    borderColor: '#BFDBFE',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
@@ -487,7 +621,7 @@ const styles = StyleSheet.create({
   greetingPillText: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: '#1D4ED8',
     marginLeft: 6
   },
 
@@ -495,7 +629,7 @@ const styles = StyleSheet.create({
   heroHeadline: {
     fontSize: 32,
     fontWeight: '900',
-    color: '#FFFFFF',
+    color: '#0A2540',
     letterSpacing: -0.8,
     lineHeight: 38,
     marginBottom: 22,
@@ -775,5 +909,174 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#64748B',
     marginTop: 2
+  },
+
+  // Featured Doctors Section
+  featuredDocsRow: {
+    gap: 12,
+    paddingRight: 16,
+    paddingVertical: 4
+  },
+  featuredDocCard: {
+    width: 150,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    padding: 14,
+    alignItems: 'center',
+    shadowColor: '#0A2540',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2
+  },
+  featuredAvatarRow: {
+    position: 'relative',
+    marginBottom: 10
+  },
+  ratingBadge: {
+    position: 'absolute',
+    bottom: -4,
+    right: -6,
+    backgroundColor: '#FEF3C7',
+    borderWidth: 1,
+    borderColor: '#FDE68A',
+    borderRadius: 10,
+    paddingHorizontal: 5,
+    paddingVertical: 1,
+    flexDirection: 'row',
+    alignItems: 'center'
+  },
+  ratingText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#92400E',
+    marginLeft: 2
+  },
+  featuredDocName: {
+    fontSize: 13.5,
+    fontWeight: '800',
+    color: '#0A2540',
+    textAlign: 'center'
+  },
+  featuredDocSpecialty: {
+    fontSize: 11,
+    color: '#64748B',
+    fontWeight: '600',
+    marginTop: 1,
+    textAlign: 'center'
+  },
+  consultPill: {
+    marginTop: 10,
+    backgroundColor: '#EFF6FF',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    flexDirection: 'row',
+    alignItems: 'center'
+  },
+  consultPillText: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#2563EB',
+    marginRight: 2
+  },
+
+  // Hospital Facilities & Services Grid
+  servicesGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+    marginTop: 4
+  },
+  serviceTile: {
+    width: '48.5%',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 18,
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    padding: 14,
+    shadowColor: '#0A2540',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 1
+  },
+  serviceIconWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 10
+  },
+  serviceTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#0A2540',
+    marginBottom: 3
+  },
+  serviceDesc: {
+    fontSize: 11.5,
+    color: '#64748B',
+    lineHeight: 16
+  },
+
+  // Visiting Hours & Hotline Card
+  infoBannerCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    padding: 16,
+    marginTop: 4,
+    shadowColor: '#0A2540',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 1
+  },
+  infoBannerItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 6
+  },
+  infoBannerHeading: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#0A2540'
+  },
+  infoBannerSub: {
+    fontSize: 11.5,
+    color: '#64748B',
+    marginTop: 1
+  },
+  bannerDivider: {
+    height: 1,
+    backgroundColor: '#F1F5F9',
+    marginVertical: 6
+  },
+
+  // Accreditation Seal
+  trustFooterBox: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 24,
+    paddingHorizontal: 20,
+    marginTop: 10,
+    marginBottom: 10
+  },
+  trustFooterTitle: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#2563EB',
+    marginBottom: 2
+  },
+  trustFooterSubtitle: {
+    fontSize: 11.5,
+    color: '#94A3B8',
+    textAlign: 'center',
+    maxWidth: '85%'
   }
 });

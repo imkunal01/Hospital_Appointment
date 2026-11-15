@@ -60,12 +60,12 @@ export const ConfirmationScreen: React.FC<ConfirmationScreenProps> = ({
 
   return (
     <View style={styles.container}>
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        {/* Top Hero Section: Deep Midnight Clinical Navy */}
+        {/* Top Hero Section: Clean Medical Ice-Blue Banner */}
         <View
           style={[
             styles.heroSection,
@@ -203,7 +203,9 @@ const styles = StyleSheet.create({
 
   // Hero Section
   heroSection: {
-    backgroundColor: colors.foundation,
+    backgroundColor: '#EBF4FE',
+    borderBottomWidth: 1.5,
+    borderBottomColor: '#DBEAFE',
     paddingHorizontal: 20,
     paddingBottom: 42,
     borderBottomLeftRadius: 36,
@@ -224,7 +226,7 @@ const styles = StyleSheet.create({
     width: 76,
     height: 76,
     borderRadius: 38,
-    backgroundColor: colors.successLight,
+    backgroundColor: '#FFFFFF',
     borderWidth: 2,
     borderColor: colors.success,
     alignItems: 'center',
@@ -233,14 +235,14 @@ const styles = StyleSheet.create({
   heroTitle: {
     fontSize: 30,
     fontWeight: '900',
-    color: '#FFFFFF',
+    color: '#0A2540',
     letterSpacing: -0.6,
     marginBottom: 4
   },
   heroSubtitle: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#DBEAFE'
+    color: '#475569'
   },
 
   // Content

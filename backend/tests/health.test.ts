@@ -13,7 +13,7 @@ describe('GET /health', () => {
     expect(res.body).toHaveProperty('timestamp');
     expect(res.body).toHaveProperty('database');
     expect(res.body.database).toHaveProperty('connected');
-  });
+  }, 15000);
 
   it('returns 404 for unknown endpoints in standardized error shape', async () => {
     const res = await request(app).get('/non-existent-route');

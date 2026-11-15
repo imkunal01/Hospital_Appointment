@@ -375,9 +375,9 @@ const styles = StyleSheet.create({
   segmentTrack: {
     height: 50,
     borderRadius: 25,
-    backgroundColor: '#0A2540',
+    backgroundColor: '#EFF6FF',
     borderWidth: 1.5,
-    borderColor: '#1E293B',
+    borderColor: '#DBEAFE',
     flexDirection: 'row',
     padding: 4
   },
@@ -388,12 +388,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center'
   },
   segmentPillActive: {
-    backgroundColor: colors.brandBlue
+    backgroundColor: colors.brandBlue,
+    shadowColor: colors.brandBlue,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.20,
+    shadowRadius: 4,
+    elevation: 2
   },
   segmentText: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#94A3B8'
+    color: '#64748B'
   },
   segmentTextActive: {
     color: '#FFFFFF',

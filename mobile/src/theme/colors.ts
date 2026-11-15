@@ -1,7 +1,9 @@
 export const colors = {
   // Professional Clinical Foundation Palette
-  foundation: '#0A2540',        // Deep clinical midnight navy
+  foundation: '#2563EB',        // Medical sapphire / royal blue for consistent CTA buttons
+  navy: '#0A2540',              // Deep clinical navy for primary headings and hero text
   canvas: '#F8FAFC',            // Crisp, spotless medical off-white / light slate
+  heroBg: '#EBF4FE',            // Fresh light medical blue wash for top banners
   ink: '#0F172A',               // Primary dark slate typography & structural borders
   inkMuted: '#475569',          // Medium slate for subtitles & secondary body
   inkSubtle: '#94A3B8',         // Subtle cool slate for captions & timestamps
@@ -36,8 +38,8 @@ export const colors = {
   skyDark: '#0284C7',
 
   // Semantic UI Mapping
-  primary: '#0A2540',           // Deep midnight navy
-  primaryDark: '#071A2E',
+  primary: '#2563EB',           // Medical royal blue CTA
+  primaryDark: '#1D4ED8',
   primaryLight: '#EFF6FF',
 
   secondary: '#2563EB',         // Medical sapphire blue

@@ -321,15 +321,15 @@ const styles = StyleSheet.create({
     height: 44,
     borderRadius: 14,
     backgroundColor: '#FFFFFF',
-    borderWidth: 2,
-    borderColor: colors.ink,
+    borderWidth: 1.5,
+    borderColor: colors.border,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: colors.ink,
-    shadowOffset: { width: 2, height: 2 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 3
+    shadowColor: colors.tactileShadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 2
   },
   topBarTitle: {
     fontSize: 18,
@@ -357,19 +357,17 @@ const styles = StyleSheet.create({
   stepName: {
     fontSize: 11,
     fontWeight: '800',
-    color: colors.ink
+    color: colors.brandBlue
   },
   stepperTrack: {
-    height: 7,
-    backgroundColor: '#E4DFD5',
-    borderRadius: 4,
-    borderWidth: 1.5,
-    borderColor: colors.ink,
+    height: 6,
+    backgroundColor: '#E2E8F0',
+    borderRadius: 3,
     overflow: 'hidden'
   },
   stepperFill: {
     height: '100%',
-    backgroundColor: colors.chartreuse,
+    backgroundColor: colors.brandBlue,
     borderRadius: 3
   },
 
@@ -398,36 +396,36 @@ const styles = StyleSheet.create({
   filterButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.chartreuse,
-    borderWidth: 2,
-    borderColor: colors.ink,
+    backgroundColor: '#EFF6FF',
+    borderWidth: 1.5,
+    borderColor: '#BFDBFE',
     borderRadius: 999,
     paddingHorizontal: 14,
     paddingVertical: 7,
-    shadowColor: colors.ink,
-    shadowOffset: { width: 2, height: 2 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
+    shadowColor: colors.brandBlue,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
     elevation: 2
   },
   filterText: {
     fontSize: 12,
-    fontWeight: '900',
-    color: colors.ink
+    fontWeight: '800',
+    color: colors.brandBlue
   },
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    borderWidth: 2,
-    borderColor: colors.ink,
+    borderWidth: 1.5,
+    borderColor: colors.border,
     borderRadius: 18,
     paddingHorizontal: 14,
     height: 50,
-    shadowColor: colors.ink,
-    shadowOffset: { width: 2, height: 2 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
+    shadowColor: colors.tactileShadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
     elevation: 2
   },
   searchIcon: {
