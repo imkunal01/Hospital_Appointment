@@ -1,6 +1,6 @@
 {
   "name": "hospital-appointment-backend",
-  "version": "1.0.0",
+  "version": "2.4.0",
   "description": "Hospital Appointment Management Backend API",
   "main": "dist/server.js",
   "engines": {
