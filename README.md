@@ -6,7 +6,15 @@
 
 <p align="center">
   <strong>Enterprise-Grade, Secure, Offline-Resilient Clinical Healthcare Platform</strong><br>
-  <em>Algions AI Labs Assessment Submission • Android & Web Platform • Version 2.4.0</em>
+  <em>Algions AI Labs Assessment Submission • Android & Web Platform • Version 2.4.1</em>
+</p>
+
+<p align="center">
+  <a href="https://drive.google.com/file/d/1IIAYmH1wrzk9loaaFdzMtknZc1iIYGow/view?usp=sharing" target="_blank">
+    <img src="https://img.shields.io/badge/⚡%20DOWNLOAD%20ANDROID%20APK-Google%20Drive-2563EB?style=for-the-badge&logo=android&logoColor=white" alt="Download APK from Google Drive" height="42" />
+  </a>
+  <br>
+  <sub>Direct Link: <a href="https://drive.google.com/file/d/1IIAYmH1wrzk9loaaFdzMtknZc1iIYGow/view?usp=sharing">MediBook-v2.4.1.apk (Google Drive)</a></sub>
 </p>
 
 <p align="center">
@@ -112,9 +120,13 @@ npx expo start
 
 ---
 
-## 8. Build Instructions
+## 8. Build Instructions & APK Download
 
-### 8.1 Reproducible APK Build via EAS
+### 8.1 Direct APK Download
+You can immediately download and test the pre-compiled Android APK directly from Google Drive:
+- **Download Standalone APK**: [MediBook v2.4.1 APK (Google Drive)](https://drive.google.com/file/d/1IIAYmH1wrzk9loaaFdzMtknZc1iIYGow/view?usp=sharing)
+
+### 8.2 Reproducible Cloud Build via EAS
 ```bash
 cd mobile
 npm install -g eas-cli
@@ -123,8 +135,9 @@ eas build -p android --profile preview
 ```
 The EAS build will generate an installable standalone `.apk` artifact directly downloadable from Expo's build portal.
 
-### 8.2 Clean-Install Verification
-1. Download the generated `.apk` file to a physical Android device or drag-and-drop into an Android Studio emulator (API 24+).
+### 8.3 Clean-Install Verification
+1. Download the `.apk` file using the Google Drive link above or EAS build artifact.
+2. Drag-and-drop into an Android Studio emulator (API 24+) or transfer to a physical Android device.
 2. Allow installation from unknown sources if prompted.
 3. Launch the app and sign in using the demo credentials below.
 
