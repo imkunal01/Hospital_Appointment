@@ -7,6 +7,7 @@ import { apiClient } from '../api/client';
 import { AuthNavigator } from './AuthNavigator';
 import { OnboardingNavigator } from './OnboardingNavigator';
 import { AppNavigator } from './AppNavigator';
+import { AppLaunchScreen } from '../components/AppLaunchScreen';
 import { WakingUpBanner } from '../components/WakingUpBanner';
 import { OfflineBanner } from '../components/OfflineBanner';
 import { colors } from '../theme/colors';
@@ -52,11 +53,7 @@ export const RootNavigator: React.FC = () => {
   }, []);
 
   if (!isInitialized) {
-    return (
-      <View style={styles.splashContainer}>
-        <ActivityIndicator size="large" color={colors.primary} />
-      </View>
-    );
+    return <AppLaunchScreen isBackendReady={isInitialized} />;
   }
 
   const renderContent = () => {

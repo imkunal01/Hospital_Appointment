@@ -16,6 +16,7 @@ import { Feather, Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { Input } from '../components/Input';
 import { Button } from '../components/Button';
+import { ClinicalProgressBar } from '../components/ClinicalProgressBar';
 import { loginApi, registerApi, googleAuthApi, resetDemoAccountApi } from '../api/endpoints';
 import { setSession } from '../auth/sessionStore';
 import { extractErrorMessage } from '../utils/errors';
@@ -326,9 +327,20 @@ export const LoginScreen: React.FC = () => {
               }
             />
 
-            {/* Sign In CTA Button (Deep Midnight Navy) */}
+            {/* Active Authentication Progress Bar */}
+            {(loading || googleLoading) && (
+              <View style={styles.loginProgressCardWrap}>
+                <ClinicalProgressBar
+                  active={loading || googleLoading}
+                  title="Authenticating Clinical Credentials"
+                  variant="inline"
+                />
+              </View>
+            )}
+
+            {/* Sign In CTA Button */}
             <Button
-              title={loading ? 'Processing...' : isSignUp ? 'Create Account' : 'Sign In'}
+              title={loading ? 'Authenticating...' : isSignUp ? 'Create Account' : 'Sign In'}
               onPress={handleLogin}
               loading={loading}
               style={styles.submitBtn}
@@ -720,6 +732,15 @@ const styles = StyleSheet.create({
     color: '#DC2626'
   },
 
+  loginProgressCardWrap: {
+    backgroundColor: '#EFF6FF',
+    borderWidth: 1.5,
+    borderColor: '#DBEAFE',
+    borderRadius: 16,
+    padding: 12,
+    marginTop: 6,
+    marginBottom: 10
+  },
   submitBtn: {
     marginTop: 6,
     marginBottom: 12

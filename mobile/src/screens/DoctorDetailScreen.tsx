@@ -15,6 +15,7 @@ import { useDoctorSlots } from '../hooks/useCatalog';
 import { useBookSlot } from '../hooks/useBooking';
 import { ScreenState } from '../components/ScreenState';
 import { DoctorAvatar } from '../components/DoctorAvatar';
+import { ClinicalProgressBar } from '../components/ClinicalProgressBar';
 import { formatDate, formatTimeRange, toISODateString } from '../utils/dates';
 import { extractErrorMessage } from '../utils/errors';
 import { showAlert } from '../utils/alert';
@@ -354,6 +355,16 @@ export const DoctorDetailScreen: React.FC<DoctorDetailScreenProps> = ({
           <View style={[styles.errorBanner, { marginBottom: 10 }]}>
             <Feather name="alert-circle" size={16} color={colors.error} style={{ marginRight: 6 }} />
             <Text style={styles.errorBannerText} numberOfLines={2}>{bookingError}</Text>
+          </View>
+        )}
+
+        {bookSlotMutation.isPending && (
+          <View style={{ marginBottom: 10, paddingHorizontal: 4 }}>
+            <ClinicalProgressBar
+              active={true}
+              title="Securing Clinical Reservation"
+              variant="inline"
+            />
           </View>
         )}
 

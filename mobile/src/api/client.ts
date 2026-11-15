@@ -48,10 +48,10 @@ apiClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
     config.headers.Authorization = `Bearer ${token}`;
   }
 
-  // Timer: if request takes > 5 seconds, notify UI that server may be waking up
+  // Timer: if request takes > 1.5 seconds, notify UI that secure connection is in progress
   const timer = setTimeout(() => {
     notifyWakingUp(true);
-  }, 5000);
+  }, 1500);
 
   // Attach timer to config so response can clear it
   (config as any).__coldStartTimer = timer;
