@@ -156,12 +156,15 @@ export const DepartmentsScreen: React.FC<DepartmentsScreenProps> = ({ navigation
             accessibilityLabel="Hospital Stethoscope illustration"
           />
 
-          {/* Top Brand Bar: + medibook & Notification Bell */}
+          {/* Top Brand Bar: medibook & Notification Bell */}
           <View style={styles.topBrandRow}>
             <View style={styles.logoRow}>
-              <View style={styles.logoPlusCircle}>
-                <Feather name="plus" size={20} color="#FFFFFF" />
-              </View>
+              <Image
+                source={require('../../assets/logo.png')}
+                style={styles.logoImg}
+                resizeMode="contain"
+                accessibilityLabel="MediBook Logo"
+              />
               <Text style={styles.logoText}>medibook</Text>
             </View>
 
@@ -686,6 +689,11 @@ const styles = StyleSheet.create({
   logoRow: {
     flexDirection: 'row',
     alignItems: 'center'
+  },
+  logoImg: {
+    width: 38,
+    height: 38,
+    marginRight: 10
   },
   logoPlusCircle: {
     width: 38,

@@ -114,9 +114,12 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
       {/* Top Clinical Header Bar */}
       <View style={[styles.topBar, { paddingTop: Math.max(insets.top, Platform.OS === 'ios' ? 20 : 16) + 8 }]}>
         <View style={styles.brandRow}>
-          <View style={styles.logoPlusCircle}>
-            <Feather name="plus" size={18} color="#FFFFFF" />
-          </View>
+          <Image
+            source={require('../../assets/logo.png')}
+            style={styles.brandLogoImg}
+            resizeMode="contain"
+            accessibilityLabel="MediBook Logo"
+          />
           <Text style={styles.brandLogoText}>medibook</Text>
         </View>
 
@@ -521,6 +524,11 @@ const styles = StyleSheet.create({
   brandRow: {
     flexDirection: 'row',
     alignItems: 'center'
+  },
+  brandLogoImg: {
+    width: 28,
+    height: 28,
+    marginRight: 6
   },
   logoPlusCircle: {
     width: 28,

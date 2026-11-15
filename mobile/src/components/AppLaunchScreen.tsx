@@ -49,9 +49,12 @@ export const AppLaunchScreen: React.FC<AppLaunchScreenProps> = ({
 
         {/* Brand Logo Row */}
         <View style={styles.brandRow}>
-          <View style={styles.logoPlusCircle}>
-            <Feather name="plus" size={24} color="#FFFFFF" />
-          </View>
+          <Image
+            source={require('../../assets/logo.png')}
+            style={styles.brandLogoImg}
+            resizeMode="contain"
+            accessibilityLabel="MediBook Logo"
+          />
           <Text style={styles.brandTitle}>medibook</Text>
         </View>
 
@@ -150,6 +153,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 12
+  },
+  brandLogoImg: {
+    width: 44,
+    height: 44,
+    marginRight: 10
   },
   logoPlusCircle: {
     width: 44,

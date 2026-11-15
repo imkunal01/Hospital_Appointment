@@ -1,9 +1,21 @@
-# MediBook — Hospital Appointment Android Application
+<p align="center">
+  <img src="Logo.png" alt="MediBook Logo" width="160" />
+</p>
 
-> Assessment: Algions AI Labs Private Limited  
-> Role: Android & Mobile App Development  
-> Assigned Domain: Hospital Management  
-> Project Title: Hospital Appointment Android Application (MediBook)
+<h1 align="center">MediBook — Hospital Appointment Platform</h1>
+
+<p align="center">
+  <strong>Enterprise-Grade, Secure, Offline-Resilient Clinical Healthcare Platform</strong><br>
+  <em>Algions AI Labs Assessment Submission • Android & Web Platform • Version 2.4.0</em>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Release-v2.4.0-2563EB?style=for-the-badge&logo=android&logoColor=white" alt="Version 2.4.0" />
+  <img src="https://img.shields.io/badge/Tests-106%20Passed-10B981?style=for-the-badge&logo=jest&logoColor=white" alt="106 Tests Passed" />
+  <img src="https://img.shields.io/badge/TypeScript-Strict-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/React%20Native-Expo%2052-000020?style=for-the-badge&logo=expo&logoColor=white" alt="Expo" />
+  <img src="https://img.shields.io/badge/Security-Android%20Keystore-0A2540?style=for-the-badge&logo=shield&logoColor=white" alt="Security" />
+</p>
 
 ---
 

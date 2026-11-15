@@ -6,7 +6,8 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
-  TouchableOpacity
+  TouchableOpacity,
+  Image
 } from 'react-native';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
@@ -123,9 +124,12 @@ export const ProfileSetupScreen: React.FC = () => {
           ]}
         >
           <View style={styles.brandRow}>
-            <View style={styles.logoPlusCircle}>
-              <Feather name="plus" size={18} color="#FFFFFF" />
-            </View>
+            <Image
+              source={require('../../assets/logo.png')}
+              style={styles.brandLogoImg}
+              resizeMode="contain"
+              accessibilityLabel="MediBook Logo"
+            />
             <Text style={styles.brandTitle}>medibook</Text>
           </View>
 
@@ -299,6 +303,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 16
+  },
+  brandLogoImg: {
+    width: 32,
+    height: 32,
+    marginRight: 10
   },
   logoPlusCircle: {
     width: 32,

@@ -156,11 +156,14 @@ export const LoginScreen: React.FC = () => {
             accessibilityLabel="Hospital Stethoscope illustration"
           />
 
-          {/* Brand Logo Row: + medibook */}
+          {/* Brand Logo Row */}
           <View style={styles.brandRow}>
-            <View style={styles.logoPlusCircle}>
-              <Feather name="plus" size={18} color="#FFFFFF" />
-            </View>
+            <Image
+              source={require('../../assets/logo.png')}
+              style={styles.brandLogoImg}
+              resizeMode="contain"
+              accessibilityLabel="MediBook Logo"
+            />
             <Text style={styles.brandTitle}>medibook</Text>
           </View>
 
@@ -527,6 +530,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 14
+  },
+  brandLogoImg: {
+    width: 36,
+    height: 36,
+    marginRight: 10
   },
   logoPlusCircle: {
     width: 32,
