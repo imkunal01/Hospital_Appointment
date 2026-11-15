@@ -93,6 +93,21 @@ describe('Onboarding Flow Tests', () => {
       expect(await findByText('Full name is required')).toBeTruthy();
       expect(endpoints.updateProfileApi).not.toHaveBeenCalled();
     });
+
+    it('opens date selector modal and updates dob field when applied', async () => {
+      const { getByRole, findByText, getByDisplayValue } = render(<ProfileSetupScreen />);
+
+      const datePickerBtn = getByRole('button', { name: /Open calendar date picker/i });
+      fireEvent.press(datePickerBtn);
+
+      expect(await findByText('DATE OF BIRTH SELECTOR')).toBeTruthy();
+
+      const applyBtn = getByRole('button', { name: /Confirm date/i });
+      fireEvent.press(applyBtn);
+
+      expect(getByDisplayValue('1998-05-14')).toBeTruthy();
+      expect(await findByText(/Calculated Age:/i)).toBeTruthy();
+    });
   });
 });
 

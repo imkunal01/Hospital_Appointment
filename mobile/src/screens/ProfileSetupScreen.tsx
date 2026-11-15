@@ -12,6 +12,7 @@ import { Feather, Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { Input } from '../components/Input';
 import { Button } from '../components/Button';
+import { DobDatePickerModal } from '../components/DobDatePickerModal';
 import { updateProfileApi } from '../api/endpoints';
 import { useSession, updateSessionUser } from '../auth/sessionStore';
 import { extractErrorMessage } from '../utils/errors';
@@ -40,6 +41,7 @@ export const ProfileSetupScreen: React.FC = () => {
   const [locationError, setLocationError] = useState('');
   const [generalError, setGeneralError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isDatePickerVisible, setDatePickerVisible] = useState(false);
 
   // Dynamic live age calculator
   const calculateAge = (dobString: string): number | null => {
@@ -178,7 +180,34 @@ export const ProfileSetupScreen: React.FC = () => {
               keyboardType="numbers-and-punctuation"
               maxLength={10}
               error={dobError}
+              rightElement={
+                <TouchableOpacity
+                  accessibilityRole="button"
+                  accessibilityLabel="Open calendar date picker"
+                  onPress={() => setDatePickerVisible(true)}
+                  style={styles.calendarIconBtn}
+                  activeOpacity={0.7}
+                >
+                  <Feather name="calendar" size={20} color={colors.foundation} />
+                </TouchableOpacity>
+              }
             />
+
+            {/* Quick Calendar Selector Pill Button */}
+            <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityLabel="Select date from calendar picker"
+              style={styles.datePickerTriggerBtn}
+              onPress={() => setDatePickerVisible(true)}
+              activeOpacity={0.8}
+            >
+              <Feather name="calendar" size={15} color={colors.foundation} style={{ marginRight: 6 }} />
+              <Text style={styles.datePickerTriggerText}>
+                {dob ? `Selected: ${dob} (Tap to change)` : 'Tap to Pick Date from Calendar'}
+              </Text>
+              <Feather name="chevron-right" size={15} color={colors.foundation} style={{ marginLeft: 'auto' }} />
+            </TouchableOpacity>
+
             {calculatedAge !== null && (
               <View style={styles.ageBadge}>
                 <Ionicons name="checkmark-circle" size={16} color={colors.foundation} style={{ marginRight: 6 }} />
@@ -234,6 +263,17 @@ export const ProfileSetupScreen: React.FC = () => {
           />
         </View>
       </ScrollView>
+
+      {/* Interactive Date of Birth Picker Modal */}
+      <DobDatePickerModal
+        visible={isDatePickerVisible}
+        value={dob}
+        onSelect={(selected) => {
+          setDob(selected);
+          if (dobError) setDobError('');
+        }}
+        onClose={() => setDatePickerVisible(false)}
+      />
     </KeyboardAvoidingView>
   );
 };
@@ -350,6 +390,29 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '700',
     color: colors.coralDark
+  },
+
+  calendarIconBtn: {
+    padding: 10,
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  datePickerTriggerBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#EFF6FF',
+    borderWidth: 1.5,
+    borderColor: '#DBEAFE',
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    marginTop: -4,
+    marginBottom: 12
+  },
+  datePickerTriggerText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: colors.foundation
   },
 
   ageBadge: {
