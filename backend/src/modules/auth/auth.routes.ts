@@ -139,14 +139,41 @@ authRouter.post(
              phone_verified = FALSE, 
              phone = NULL, 
              dob = NULL, 
-             location = NULL 
+             location = NULL,
+             avatar_url = NULL,
+             name = 'John Doe (Synthetic)',
+             password_hash = '$2b$10$igkQKasz2eImnyB8EZYzhuc5FFwAx2/wMK/JVBdLwigP2FQyA0/VO'
          WHERE email = 'patient1@example.test'
-         RETURNING id, email, onboarding_completed, phone, phone_verified`
+         RETURNING id, email, name, onboarding_completed, phone, phone_verified`
       );
+
+      const patient = result.rows[0];
+      if (patient) {
+        const apts = await query(
+          `SELECT slot_id FROM appointments 
+           WHERE patient_id = $1 AND id != 'b1111111-1111-1111-1111-111111111111'`,
+          [patient.id]
+        );
+        const slotIds = apts.rows.map(r => r.slot_id).filter(Boolean);
+        if (slotIds.length > 0) {
+          await query(
+            `UPDATE slots SET status = 'AVAILABLE' WHERE id = ANY($1::uuid[])`,
+            [slotIds]
+          );
+        }
+        await query(
+          `DELETE FROM appointments 
+           WHERE patient_id = $1 AND id != 'b1111111-1111-1111-1111-111111111111'`,
+          [patient.id]
+        );
+        await query('DELETE FROM phone_verifications WHERE user_id = $1', [patient.id]);
+        await query('DELETE FROM refresh_tokens WHERE user_id = $1', [patient.id]);
+      }
+
       res.status(200).json({
         success: true,
         message: 'Evaluator account reset to fresh onboarding state',
-        user: result.rows[0]
+        user: patient
       });
     } catch (err) {
       next(err);
