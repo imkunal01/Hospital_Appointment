@@ -62,12 +62,16 @@ export function useCancelAppointment() {
   return useMutation<
     { appointment: Appointment; message: string },
     any,
-    { appointmentId: string }
+    string | { appointmentId: string }
   >({
-    mutationFn: ({ appointmentId }) => cancelAppointmentApi(appointmentId),
+    mutationFn: (variables) => {
+      const id = typeof variables === 'string' ? variables : variables.appointmentId;
+      return cancelAppointmentApi(id);
+    },
     onSuccess: (result, variables) => {
+      const id = typeof variables === 'string' ? variables : variables.appointmentId;
       queryClient.invalidateQueries({ queryKey: ['appointments'] });
-      queryClient.setQueryData(['appointment', variables.appointmentId], result.appointment);
+      queryClient.setQueryData(['appointment', id], result.appointment);
       queryClient.invalidateQueries({ queryKey: ['slots'] });
     }
   });

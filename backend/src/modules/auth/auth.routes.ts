@@ -1,4 +1,5 @@
 import { Router, Request, Response, NextFunction } from 'express';
+import { query } from '../../config/db.js';
 import { validate } from '../../middleware/validate.js';
 import { loginRateLimiter } from '../../middleware/rateLimit.js';
 import { requireAuth } from '../../middleware/auth.js';
@@ -103,6 +104,32 @@ authRouter.post(
       res.status(200).json({
         success: true,
         message: 'Successfully logged out'
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+// POST /auth/reset-demo - Resets patient1@example.test to fresh onboarding state for evaluators
+authRouter.post(
+  '/reset-demo',
+  async (_req: Request, res: Response, next: NextFunction) => {
+    try {
+      const result = await query(
+        `UPDATE users 
+         SET onboarding_completed = FALSE, 
+             phone_verified = FALSE, 
+             phone = NULL, 
+             dob = NULL, 
+             location = NULL 
+         WHERE email = 'patient1@example.test'
+         RETURNING id, email, onboarding_completed, phone, phone_verified`
+      );
+      res.status(200).json({
+        success: true,
+        message: 'Evaluator account reset to fresh onboarding state',
+        user: result.rows[0]
       });
     } catch (err) {
       next(err);

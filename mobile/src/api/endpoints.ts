@@ -25,6 +25,14 @@ export async function googleAuthApi(email: string, name: string, googleId?: stri
   return res.data;
 }
 
+export async function resetDemoAccountApi(): Promise<void> {
+  try {
+    await apiClient.post('/auth/reset-demo');
+  } catch {
+    // Non-blocking fallback
+  }
+}
+
 export async function getMeApi() {
   const res = await apiClient.get('/auth/me');
   return res.data;

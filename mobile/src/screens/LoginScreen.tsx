@@ -7,13 +7,16 @@ import {
   KeyboardAvoidingView,
   Platform,
   TouchableOpacity,
-  Image
+  Image,
+  Modal,
+  TextInput,
+  ActivityIndicator
 } from 'react-native';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { Input } from '../components/Input';
 import { Button } from '../components/Button';
-import { loginApi, registerApi, googleAuthApi } from '../api/endpoints';
+import { loginApi, registerApi, googleAuthApi, resetDemoAccountApi } from '../api/endpoints';
 import { setSession } from '../auth/sessionStore';
 import { extractErrorMessage } from '../utils/errors';
 import { colors } from '../theme/colors';
@@ -27,13 +30,20 @@ export const LoginScreen: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [selectedDemo, setSelectedDemo] = useState<'patient1' | 'patient2' | null>('patient1');
+  const [selectedDemo, setSelectedDemo] = useState<'patient1' | null>('patient1');
 
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [generalError, setGeneralError] = useState('');
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+
+  // Google Sign-In Sheet State
+  const [isGoogleModalVisible, setGoogleModalVisible] = useState(false);
+  const [customGoogleEmail, setCustomGoogleEmail] = useState('');
+  const [customGoogleName, setCustomGoogleName] = useState('');
+  const [isCustomGoogleMode, setIsCustomGoogleMode] = useState(false);
+  const [googleModalError, setGoogleModalError] = useState('');
 
   const validateForm = (): boolean => {
     let isValid = true;
@@ -80,15 +90,22 @@ export const LoginScreen: React.FC = () => {
     }
   };
 
-  const handleGoogleSignIn = async () => {
+  const handleExecuteGoogleSignIn = async (userEmail: string, userName: string) => {
+    const trimmedEmail = userEmail.trim().toLowerCase();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!trimmedEmail || !emailRegex.test(trimmedEmail)) {
+      setGoogleModalError('Please enter a valid Google email address');
+      return;
+    }
+
     setGoogleLoading(true);
+    setGoogleModalError('');
     setGeneralError('');
+    setGoogleModalVisible(false);
 
     try {
-      const mockGoogleEmail = 'patient.google@example.test';
-      const mockGoogleName = 'Alex Morgan';
-      const mockGoogleId = 'mock-google-id-' + Date.now();
-      const session = await googleAuthApi(mockGoogleEmail, mockGoogleName, mockGoogleId);
+      const googleId = 'g-' + Math.abs(trimmedEmail.split('').reduce((a, b) => ((a << 5) - a) + b.charCodeAt(0), 0));
+      const session = await googleAuthApi(trimmedEmail, userName.trim() || 'Google User', googleId);
       await setSession(session);
     } catch (err: any) {
       setGeneralError(extractErrorMessage(err));
@@ -97,14 +114,16 @@ export const LoginScreen: React.FC = () => {
     }
   };
 
-  const fillDemo = (demoType: 'patient1' | 'patient2', demoEmail: string) => {
-    setSelectedDemo(demoType);
+  const fillDemo = (demoEmail: string = 'patient1@example.test') => {
+    setSelectedDemo('patient1');
     setEmail(demoEmail);
     setPassword('Password123!');
     setEmailError('');
     setPasswordError('');
     setGeneralError('');
     setIsSignUp(false);
+    // Auto-reset onboarding state in background so recruiters experience fresh onboarding
+    resetDemoAccountApi();
   };
 
   return (
@@ -160,98 +179,62 @@ export const LoginScreen: React.FC = () => {
           <View style={styles.formCard}>
             {/* Evaluator Quick-Sign In (Single Tap) */}
             <View style={styles.demoSection}>
-              <Text style={styles.demoEyebrow}>EVALUATOR QUICK-SIGN IN (SINGLE TAP)</Text>
-              <View style={styles.demoButtonsRow}>
-                {/* Patient 1 Button */}
-                <TouchableOpacity
-                  accessibilityRole="button"
-                  accessibilityLabel="Fill Patient 1 credentials"
-                  style={[
-                    styles.demoCard,
-                    selectedDemo === 'patient1' ? styles.demoCardActive : styles.demoCardInactive
-                  ]}
-                  onPress={() => fillDemo('patient1', 'patient1@example.test')}
-                  activeOpacity={0.85}
-                >
-                  <View
-                    style={[
-                      styles.demoIconWrap,
-                      selectedDemo === 'patient1' && styles.demoIconWrapActive
-                    ]}
-                  >
-                    <Feather
-                      name="user"
-                      size={16}
-                      color={selectedDemo === 'patient1' ? colors.brandBlue : colors.inkMuted}
-                    />
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text
-                      style={[
-                        styles.demoCardTitle,
-                        selectedDemo === 'patient1' && styles.demoCardTitleActive
-                      ]}
-                      numberOfLines={1}
-                    >
-                      Patient 1 (Jane)
-                    </Text>
-                    <Text
-                      style={[
-                        styles.demoCardSub,
-                        selectedDemo === 'patient1' && styles.demoCardSubActive
-                      ]}
-                      numberOfLines={1}
-                    >
-                      patient1@example.test
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-
-                {/* Patient 2 Button */}
-                <TouchableOpacity
-                  accessibilityRole="button"
-                  accessibilityLabel="Fill Patient 2 credentials"
-                  style={[
-                    styles.demoCard,
-                    selectedDemo === 'patient2' ? styles.demoCardActive : styles.demoCardInactive
-                  ]}
-                  onPress={() => fillDemo('patient2', 'patient2@example.test')}
-                  activeOpacity={0.85}
-                >
-                  <View
-                    style={[
-                      styles.demoIconWrap,
-                      selectedDemo === 'patient2' && styles.demoIconWrapActive
-                    ]}
-                  >
-                    <Feather
-                      name="user"
-                      size={16}
-                      color={selectedDemo === 'patient2' ? colors.brandBlue : colors.inkMuted}
-                    />
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text
-                      style={[
-                        styles.demoCardTitle,
-                        selectedDemo === 'patient2' && styles.demoCardTitleActive
-                      ]}
-                      numberOfLines={1}
-                    >
-                      Patient 2 (Sarah)
-                    </Text>
-                    <Text
-                      style={[
-                        styles.demoCardSub,
-                        selectedDemo === 'patient2' && styles.demoCardSubActive
-                      ]}
-                      numberOfLines={1}
-                    >
-                      patient2@example.test
-                    </Text>
-                  </View>
-                </TouchableOpacity>
+              <View style={styles.demoHeaderRow}>
+                <Text style={styles.demoEyebrow}>EVALUATOR QUICK-SIGN IN (SINGLE TAP)</Text>
+                <View style={styles.freshBadge}>
+                  <Text style={styles.freshBadgeText}>✨ Fresh Onboarding</Text>
+                </View>
               </View>
+
+              <TouchableOpacity
+                accessibilityRole="button"
+                accessibilityLabel="Fill Patient 1 credentials"
+                style={[
+                  styles.demoCard,
+                  styles.demoCardSingle,
+                  selectedDemo === 'patient1' ? styles.demoCardActive : styles.demoCardInactive
+                ]}
+                onPress={() => fillDemo('patient1@example.test')}
+                activeOpacity={0.85}
+              >
+                <View
+                  style={[
+                    styles.demoIconWrap,
+                    selectedDemo === 'patient1' && styles.demoIconWrapActive
+                  ]}
+                >
+                  <Feather
+                    name="user-check"
+                    size={18}
+                    color={selectedDemo === 'patient1' ? colors.brandBlue : colors.inkMuted}
+                  />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text
+                    style={[
+                      styles.demoCardTitle,
+                      selectedDemo === 'patient1' && styles.demoCardTitleActive
+                    ]}
+                    numberOfLines={1}
+                  >
+                    Evaluator Demo (Fresh Onboarding)
+                  </Text>
+                  <Text
+                    style={[
+                      styles.demoCardSub,
+                      selectedDemo === 'patient1' && styles.demoCardSubActive
+                    ]}
+                    numberOfLines={1}
+                  >
+                    patient1@example.test · Password123!
+                  </Text>
+                </View>
+                <Feather
+                  name="check-circle"
+                  size={20}
+                  color={selectedDemo === 'patient1' ? colors.brandBlue : '#CBD5E1'}
+                />
+              </TouchableOpacity>
             </View>
 
             {/* Social Sign In (Google) */}
@@ -259,7 +242,11 @@ export const LoginScreen: React.FC = () => {
               accessibilityRole="button"
               accessibilityLabel="Continue with Google"
               style={styles.googleButton}
-              onPress={handleGoogleSignIn}
+              onPress={() => {
+                setGoogleModalError('');
+                setIsCustomGoogleMode(false);
+                setGoogleModalVisible(true);
+              }}
               disabled={googleLoading || loading}
               activeOpacity={0.85}
             >
@@ -367,6 +354,124 @@ export const LoginScreen: React.FC = () => {
             </TouchableOpacity>
           </View>
         </View>
+
+        {/* Google Sign-In Account Chooser Modal */}
+        <Modal
+          visible={isGoogleModalVisible}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setGoogleModalVisible(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.googleSheetContainer}>
+              {/* Google Brand Header */}
+              <View style={styles.googleSheetHeader}>
+                <View style={styles.googleLogoWrap}>
+                  <Ionicons name="logo-google" size={24} color="#EA4335" />
+                </View>
+                <Text style={styles.googleSheetTitle}>Sign in with Google</Text>
+                <Text style={styles.googleSheetSubtitle}>Choose an account to continue to MediBook</Text>
+              </View>
+
+              {googleModalError ? (
+                <View style={styles.googleErrorBanner}>
+                  <Feather name="alert-circle" size={14} color="#B91C1C" style={{ marginRight: 6 }} />
+                  <Text style={styles.googleErrorText}>{googleModalError}</Text>
+                </View>
+              ) : null}
+
+              {!isCustomGoogleMode ? (
+                <View style={styles.googleAccountsList}>
+                  {/* 1-Tap Quick Google Sign-In */}
+                  <TouchableOpacity
+                    accessibilityRole="button"
+                    accessibilityLabel="Sign in with Alex Morgan Google account"
+                    style={styles.googleAccountCard}
+                    onPress={() => handleExecuteGoogleSignIn('alex.recruiter@gmail.com', 'Alex Morgan')}
+                    activeOpacity={0.8}
+                  >
+                    <View style={styles.googleAvatarCircle}>
+                      <Text style={styles.googleAvatarLetter}>A</Text>
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.googleAccountName}>Alex Morgan (Recruiter)</Text>
+                      <Text style={styles.googleAccountEmail}>alex.recruiter@gmail.com</Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={18} color={colors.inkMuted} />
+                  </TouchableOpacity>
+
+                  {/* Custom Real Google Account Option */}
+                  <TouchableOpacity
+                    accessibilityRole="button"
+                    accessibilityLabel="Use your Google account"
+                    style={styles.googleAccountCard}
+                    onPress={() => setIsCustomGoogleMode(true)}
+                    activeOpacity={0.8}
+                  >
+                    <View style={[styles.googleAvatarCircle, { backgroundColor: '#F1F5F9' }]}>
+                      <Feather name="user-plus" size={18} color={colors.ink} />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.googleAccountName}>Use your Google account</Text>
+                      <Text style={styles.googleAccountEmail}>Enter your real Google / Gmail address</Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={18} color={colors.inkMuted} />
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                /* Custom Google Email Form */
+                <View style={styles.customGoogleForm}>
+                  <Text style={styles.customGooglePrompt}>Enter your Google account details:</Text>
+                  <TextInput
+                    placeholder="Your Google email (e.g. name@gmail.com)"
+                    placeholderTextColor={colors.inkSubtle}
+                    value={customGoogleEmail}
+                    onChangeText={setCustomGoogleEmail}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    style={styles.googleInput}
+                  />
+                  <TextInput
+                    placeholder="Your Display Name (optional)"
+                    placeholderTextColor={colors.inkSubtle}
+                    value={customGoogleName}
+                    onChangeText={setCustomGoogleName}
+                    style={[styles.googleInput, { marginTop: 10 }]}
+                  />
+
+                  <View style={styles.customGoogleActions}>
+                    <TouchableOpacity
+                      accessibilityRole="button"
+                      accessibilityLabel="Back to accounts list"
+                      style={styles.googleCancelBtn}
+                      onPress={() => setIsCustomGoogleMode(false)}
+                    >
+                      <Text style={styles.googleCancelBtnText}>Back</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      accessibilityRole="button"
+                      accessibilityLabel="Continue with entered Google account"
+                      style={styles.googleProceedBtn}
+                      onPress={() => handleExecuteGoogleSignIn(customGoogleEmail, customGoogleName)}
+                    >
+                      <Text style={styles.googleProceedBtnText}>Continue</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              )}
+
+              <TouchableOpacity
+                accessibilityRole="button"
+                accessibilityLabel="Dismiss Google sign in sheet"
+                style={styles.googleDismissBtn}
+                onPress={() => setGoogleModalVisible(false)}
+              >
+                <Text style={styles.googleDismissText}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -472,12 +577,30 @@ const styles = StyleSheet.create({
   demoSection: {
     marginBottom: 14
   },
+  demoHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8
+  },
+  freshBadge: {
+    backgroundColor: '#ECFDF5',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#A7F3D0'
+  },
+  freshBadgeText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#047857'
+  },
   demoEyebrow: {
     fontSize: 11,
     fontWeight: '800',
     color: '#475569',
     letterSpacing: 0.8,
-    marginBottom: 8,
     textTransform: 'uppercase'
   },
   demoButtonsRow: {
@@ -488,9 +611,12 @@ const styles = StyleSheet.create({
     flex: 1,
     borderRadius: 16,
     paddingVertical: 10,
-    paddingHorizontal: 10,
+    paddingHorizontal: 12,
     flexDirection: 'row',
     alignItems: 'center'
+  },
+  demoCardSingle: {
+    width: '100%'
   },
   demoCardActive: {
     backgroundColor: '#EFF6FF',
@@ -610,5 +736,171 @@ const styles = StyleSheet.create({
   toggleTextBold: {
     color: '#2563EB',
     fontWeight: '800'
+  },
+
+  // Google Sign-In Sheet Modal
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(10, 37, 64, 0.65)',
+    justifyContent: 'flex-end'
+  },
+  googleSheetContainer: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    paddingHorizontal: 22,
+    paddingTop: 24,
+    paddingBottom: Platform.OS === 'ios' ? 40 : 26,
+    shadowColor: '#0A2540',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
+    elevation: 8
+  },
+  googleSheetHeader: {
+    alignItems: 'center',
+    marginBottom: 20
+  },
+  googleLogoWrap: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 10
+  },
+  googleSheetTitle: {
+    fontSize: 19,
+    fontWeight: '900',
+    color: '#0A2540',
+    letterSpacing: -0.3
+  },
+  googleSheetSubtitle: {
+    fontSize: 13,
+    color: '#64748B',
+    fontWeight: '600',
+    marginTop: 3,
+    textAlign: 'center'
+  },
+  googleAccountsList: {
+    gap: 12
+  },
+  googleAccountCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 14,
+    borderRadius: 18,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    shadowColor: '#0A2540',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 1
+  },
+  googleAvatarCircle: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: '#EFF6FF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12
+  },
+  googleAvatarLetter: {
+    fontSize: 18,
+    fontWeight: '900',
+    color: '#2563EB'
+  },
+  googleAccountName: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#0A2540'
+  },
+  googleAccountEmail: {
+    fontSize: 12.5,
+    color: '#64748B',
+    fontWeight: '600',
+    marginTop: 1
+  },
+  customGoogleForm: {
+    gap: 8
+  },
+  customGooglePrompt: {
+    fontSize: 13.5,
+    fontWeight: '800',
+    color: '#0A2540',
+    marginBottom: 4
+  },
+  googleInput: {
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    height: 48,
+    fontSize: 14,
+    color: '#0A2540'
+  },
+  customGoogleActions: {
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 8
+  },
+  googleCancelBtn: {
+    flex: 1,
+    height: 46,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: '#CBD5E1',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  googleCancelBtnText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#64748B'
+  },
+  googleProceedBtn: {
+    flex: 1,
+    height: 46,
+    borderRadius: 14,
+    backgroundColor: '#0A2540',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  googleProceedBtnText: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#FFFFFF'
+  },
+  googleDismissBtn: {
+    alignItems: 'center',
+    marginTop: 18,
+    paddingVertical: 8
+  },
+  googleDismissText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#64748B'
+  },
+  googleErrorBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FEF2F2',
+    borderWidth: 1,
+    borderColor: '#FCA5A5',
+    padding: 10,
+    borderRadius: 12,
+    marginBottom: 12
+  },
+  googleErrorText: {
+    fontSize: 12,
+    color: '#B91C1C',
+    fontWeight: '700'
   }
 });

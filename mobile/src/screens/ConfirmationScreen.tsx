@@ -50,16 +50,11 @@ export const ConfirmationScreen: React.FC<ConfirmationScreenProps> = ({
         `Appointment Ref: #${appointment.reference}\nDepartment: ${appointment.departmentName || appointment.specialty}\nHospital Visit`
       );
       const location = encodeURIComponent('North Wing, Floor 2, MediBook Hospital');
-      const url = `https://www.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&details=${details}&location=${location}`;
+      const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&details=${details}&location=${location}`;
 
-      const canOpen = await Linking.canOpenURL(url);
-      if (canOpen) {
-        await Linking.openURL(url);
-      } else {
-        showAlert('Calendar', 'Unable to open calendar application.');
-      }
+      await Linking.openURL(url);
     } catch {
-      showAlert('Calendar', 'Could not open calendar.');
+      showAlert('Calendar', 'Could not open calendar. Please ensure a web browser or calendar application is installed.');
     }
   };
 
