@@ -1,9 +1,12 @@
 import * as SecureStore from 'expo-secure-store';
+import { renderHook } from '@testing-library/react-native';
 import {
   setSession,
   clearSession,
   getInMemoryAccessToken,
-  setInMemoryAccessToken
+  setInMemoryAccessToken,
+  updateSessionUser,
+  useSession
 } from '../src/auth/sessionStore';
 import { UserProfile } from '../src/api/types';
 
@@ -71,6 +74,24 @@ describe('Auth Store & Secure Storage Isolation', () => {
 
     // Verify SecureStore item deleted
     expect(SecureStore.deleteItemAsync).toHaveBeenCalledWith('ha_auth_refresh_token');
+  });
+
+  it('updateSessionUser merges updated personal details into active session in memory', async () => {
+    await setSession(mockUser, 'access_token', 'refresh_token');
+    updateSessionUser({
+      ...mockUser,
+      name: 'Jane Doe Updated',
+      dob: '1995-12-01',
+      phone: '+15551234567',
+      location: 'North Wing'
+    });
+
+    // Verify updateSessionUser was applied
+    const { result } = renderHook(() => useSession());
+    expect(result.current.user?.name).toBe('Jane Doe Updated');
+    expect(result.current.user?.dob).toBe('1995-12-01');
+    expect(result.current.user?.phone).toBe('+15551234567');
+    expect(result.current.user?.location).toBe('North Wing');
   });
 });
 

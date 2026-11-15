@@ -5,7 +5,7 @@ import { PreferencesScreen } from '../screens/PreferencesScreen';
 
 export type ProfileStackParamList = {
   Profile: undefined;
-  Preferences: undefined;
+  Preferences: { initialTab?: 'personal' | 'reminders' } | undefined;
 };
 
 const Stack = createNativeStackNavigator<ProfileStackParamList>();

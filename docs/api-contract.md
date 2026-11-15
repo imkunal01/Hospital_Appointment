@@ -199,6 +199,41 @@ Retrieves currently authenticated user profile including verification and onboar
 }
 ```
 
+#### `PUT /auth/profile`
+Updates patient personal information (name, date of birth, phone number, location) in the authenticated user's profile.
+
+**Headers:**
+`Authorization: Bearer <JWT_ACCESS_TOKEN>`
+
+**Request Body:**
+```json
+{
+  "name": "Jane Doe Updated",
+  "dob": "1994-08-20",
+  "phone": "+15550199222",
+  "location": "North Wing, City Center"
+}
+```
+
+**Response `200 OK`:**
+```json
+{
+  "message": "Personal information updated successfully",
+  "user": {
+    "id": "a1111111-1111-1111-1111-111111111111",
+    "email": "patient1@example.test",
+    "name": "Jane Doe Updated",
+    "role": "PATIENT",
+    "phone": "+15550199222",
+    "phoneVerified": true,
+    "dob": "1994-08-20",
+    "location": "North Wing, City Center",
+    "onboardingCompleted": true,
+    "authProvider": "LOCAL"
+  }
+}
+```
+
 #### `POST /auth/refresh`
 Exchanges a valid, unrevoked refresh token for a fresh 15-minute access token.
 

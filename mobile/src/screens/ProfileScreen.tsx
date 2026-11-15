@@ -178,11 +178,12 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
 
             <TouchableOpacity
               accessibilityRole="button"
-              accessibilityLabel="Edit notification preferences"
+              accessibilityLabel="Edit personal information"
               style={styles.heroEditPill}
-              onPress={() => navigation.navigate('Preferences')}
+              onPress={() => navigation.navigate('Preferences', { initialTab: 'personal' })}
               activeOpacity={0.8}
             >
+              <Feather name="edit-2" size={12} color="#FFFFFF" style={{ marginRight: 4 }} />
               <Text style={styles.heroEditPillText}>Edit</Text>
             </TouchableOpacity>
           </View>
@@ -262,6 +263,43 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
           </View>
           <Feather name="chevron-right" size={20} color={colors.brandBlue} />
         </TouchableOpacity>
+
+        {/* Personal Details Card */}
+        <View style={styles.sectionWrap}>
+          <View style={styles.sectionHeaderRow}>
+            <Text style={styles.sectionTitle}>PERSONAL INFORMATION</Text>
+            <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityLabel="Edit personal details"
+              onPress={() => navigation.navigate('Preferences', { initialTab: 'personal' })}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Text style={styles.sectionActionText}>Edit</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.cardBox}>
+            <View style={styles.infoRow}>
+              <Text style={styles.infoRowLabel}>Full Name</Text>
+              <Text style={styles.infoRowValue}>{user?.name || 'Jane Doe'}</Text>
+            </View>
+            <View style={styles.cardDivider} />
+            <View style={styles.infoRow}>
+              <Text style={styles.infoRowLabel}>Date of Birth</Text>
+              <Text style={styles.infoRowValue}>{user?.dob || 'Not specified'}</Text>
+            </View>
+            <View style={styles.cardDivider} />
+            <View style={styles.infoRow}>
+              <Text style={styles.infoRowLabel}>Phone Number</Text>
+              <Text style={styles.infoRowValue}>{user?.phone || 'Not provided'}</Text>
+            </View>
+            <View style={styles.cardDivider} />
+            <View style={styles.infoRow}>
+              <Text style={styles.infoRowLabel}>Location / Area</Text>
+              <Text style={styles.infoRowValue}>{user?.location || 'Metro Hospital Wing'}</Text>
+            </View>
+          </View>
+        </View>
 
         {/* Reminders & Notifications Card */}
         <View style={styles.sectionWrap}>
@@ -738,13 +776,41 @@ const styles = StyleSheet.create({
   sectionWrap: {
     marginBottom: 20
   },
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 10
+  },
+  sectionActionText: {
+    fontSize: 12.5,
+    fontWeight: '800',
+    color: colors.brandBlue,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5
+  },
   sectionTitle: {
     fontSize: 11,
     fontWeight: '800',
     color: '#64748B',
     letterSpacing: 1.1,
-    marginBottom: 10,
     textTransform: 'uppercase'
+  },
+  infoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 13
+  },
+  infoRowLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#64748B'
+  },
+  infoRowValue: {
+    fontSize: 13.5,
+    fontWeight: '700',
+    color: '#0A2540'
   },
   cardBox: {
     backgroundColor: '#FFFFFF',

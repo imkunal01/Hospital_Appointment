@@ -8,13 +8,15 @@ import {
   registerSchema,
   googleAuthSchema,
   refreshSchema,
-  logoutSchema
+  logoutSchema,
+  updateUserProfileSchema
 } from './auth.schema.js';
 import {
   loginUser,
   registerUser,
   googleAuthUser,
   getCurrentUser,
+  updateUserProfile,
   refreshAccessToken,
   logoutUser
 } from './auth.service.js';
@@ -73,6 +75,21 @@ authRouter.get(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const result = await getCurrentUser(req.user!.userId);
+      res.status(200).json(result);
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+// PUT /auth/profile - Update personal information
+authRouter.put(
+  '/profile',
+  requireAuth,
+  validate({ body: updateUserProfileSchema }),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const result = await updateUserProfile(req.user!.userId, req.body);
       res.status(200).json(result);
     } catch (err) {
       next(err);

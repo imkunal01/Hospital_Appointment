@@ -7,7 +7,7 @@ import {
   generateRefreshToken,
   hashToken
 } from '../../utils/token.js';
-import { LoginInput, RegisterInput, GoogleAuthInput } from './auth.schema.js';
+import { LoginInput, RegisterInput, GoogleAuthInput, UpdateUserProfileInput } from './auth.schema.js';
 
 export interface UserProfileDTO {
   id: string;
@@ -212,4 +212,50 @@ export async function logoutUser(rawRefreshToken: string): Promise<void> {
     'UPDATE refresh_tokens SET revoked_at = NOW() WHERE token_hash = $1 AND revoked_at IS NULL',
     [tokenHash]
   );
+}
+
+export async function updateUserProfile(
+  userId: string,
+  input: UpdateUserProfileInput
+): Promise<{ user: UserProfileDTO; message: string }> {
+  // Check user exists
+  const userCheck = await query('SELECT id FROM users WHERE id = $1', [userId]);
+  if (userCheck.rows.length === 0) {
+    throw AppError.notFound('User not found');
+  }
+
+  // If phone is provided, ensure it is not taken by another user
+  if (input.phone) {
+    const phoneCheck = await query(
+      'SELECT id FROM users WHERE phone = $1 AND id != $2',
+      [input.phone.trim(), userId]
+    );
+    if (phoneCheck.rows.length > 0) {
+      throw AppError.validation('This phone number is already registered to another account');
+    }
+  }
+
+  // Update profile
+  const updateResult = await query(
+    `UPDATE users
+     SET name = COALESCE($1, name),
+         dob = CASE WHEN $2::text IS NOT NULL THEN $2::date ELSE dob END,
+         location = CASE WHEN $3::text IS NOT NULL THEN $3 ELSE location END,
+         phone = CASE WHEN $4::text IS NOT NULL THEN $4 ELSE phone END
+     WHERE id = $5
+     RETURNING id, email, name, role, phone, phone_verified, dob, location, onboarding_completed, auth_provider`,
+    [
+      input.name ? input.name.trim() : null,
+      input.dob ? input.dob.trim() : null,
+      input.location !== undefined ? (input.location ? input.location.trim() : null) : null,
+      input.phone !== undefined ? (input.phone ? input.phone.trim() : null) : null,
+      userId
+    ]
+  );
+
+  const updated = updateResult.rows[0];
+  return {
+    message: 'Personal information updated successfully',
+    user: mapUserRowToDTO(updated)
+  };
 }

@@ -58,6 +58,16 @@ export async function updateProfileApi(
   return res.data;
 }
 
+export async function updatePersonalInfoApi(data: {
+  name: string;
+  dob?: string | null;
+  phone?: string | null;
+  location?: string | null;
+}): Promise<{ user: UserProfile; message: string }> {
+  const res = await apiClient.put('/auth/profile', data);
+  return res.data;
+}
+
 export async function logoutApi(refreshToken: string): Promise<void> {
   await apiClient.post('/auth/logout', { refreshToken });
 }

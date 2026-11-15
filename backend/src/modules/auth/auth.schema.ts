@@ -25,9 +25,31 @@ export const logoutSchema = z.object({
   refreshToken: z.string().min(20, 'Invalid refresh token format')
 });
 
+export const updateUserProfileSchema = z.object({
+  name: z.string().trim().min(2, 'Full name must be at least 2 characters').max(100),
+  dob: z
+    .string()
+    .trim()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Date of Birth must be in YYYY-MM-DD format')
+    .refine((val) => {
+      const date = new Date(val);
+      return !isNaN(date.getTime()) && date < new Date();
+    }, 'Date of Birth must be a valid past date')
+    .optional()
+    .nullable(),
+  phone: z
+    .string()
+    .trim()
+    .regex(/^\+?[0-9]{10,15}$/, 'Please enter a valid phone number (10 to 15 digits)')
+    .optional()
+    .nullable(),
+  location: z.string().trim().max(150).optional().nullable()
+});
+
 export type LoginInput = z.infer<typeof loginSchema>;
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type GoogleAuthInput = z.infer<typeof googleAuthSchema>;
 export type RefreshInput = z.infer<typeof refreshSchema>;
 export type LogoutInput = z.infer<typeof logoutSchema>;
+export type UpdateUserProfileInput = z.infer<typeof updateUserProfileSchema>;
 

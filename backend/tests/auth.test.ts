@@ -173,5 +173,82 @@ describe('Auth Module Integration Tests', () => {
       });
     });
   });
+
+  describe('PUT /auth/profile', () => {
+    it('successfully updates user personal information and returns updated profile', async () => {
+      const validToken = signAccessToken({
+        userId: 'a1111111-1111-1111-1111-111111111111',
+        email: 'patient1@example.test',
+        role: 'PATIENT'
+      });
+
+      querySpy.mockImplementation(async (text: string, params?: any[]) => {
+        if (text.includes('SELECT id FROM users WHERE id = $1')) {
+          return {
+            rows: [{ id: 'a1111111-1111-1111-1111-111111111111' }],
+            rowCount: 1
+          } as any;
+        }
+        if (text.includes('SELECT id FROM users WHERE phone = $1')) {
+          return { rows: [], rowCount: 0 } as any;
+        }
+        if (text.includes('UPDATE users')) {
+          return {
+            rows: [
+              {
+                id: 'a1111111-1111-1111-1111-111111111111',
+                email: 'patient1@example.test',
+                name: 'Jane Doe Updated',
+                role: 'PATIENT',
+                phone: '+15550199222',
+                phone_verified: true,
+                dob: new Date('1994-08-20'),
+                location: 'South Wing, Metro Hospital',
+                onboarding_completed: true,
+                auth_provider: 'LOCAL'
+              }
+            ],
+            rowCount: 1
+          } as any;
+        }
+        return { rows: [], rowCount: 0 } as any;
+      });
+
+      const res = await request(app)
+        .put('/auth/profile')
+        .set('Authorization', `Bearer ${validToken}`)
+        .send({
+          name: 'Jane Doe Updated',
+          dob: '1994-08-20',
+          phone: '+15550199222',
+          location: 'South Wing, Metro Hospital'
+        });
+
+      expect(res.status).toBe(200);
+      expect(res.body.message).toBe('Personal information updated successfully');
+      expect(res.body.user.name).toBe('Jane Doe Updated');
+      expect(res.body.user.dob).toBe('1994-08-20');
+      expect(res.body.user.phone).toBe('+15550199222');
+    });
+
+    it('returns VALIDATION_ERROR on invalid date of birth format', async () => {
+      const validToken = signAccessToken({
+        userId: 'a1111111-1111-1111-1111-111111111111',
+        email: 'patient1@example.test',
+        role: 'PATIENT'
+      });
+
+      const res = await request(app)
+        .put('/auth/profile')
+        .set('Authorization', `Bearer ${validToken}`)
+        .send({
+          name: 'Jane Doe',
+          dob: 'not-a-date'
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toHaveProperty('code', 'VALIDATION_ERROR');
+    });
+  });
 });
 
