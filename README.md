@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Release-v2.4.0-2563EB?style=for-the-badge&logo=android&logoColor=white" alt="Version 2.4.0" />
+  <img src="https://img.shields.io/badge/Release-v2.4.1-2563EB?style=for-the-badge&logo=android&logoColor=white" alt="Version 2.4.1" />
   <img src="https://img.shields.io/badge/Tests-106%20Passed-10B981?style=for-the-badge&logo=jest&logoColor=white" alt="106 Tests Passed" />
   <img src="https://img.shields.io/badge/TypeScript-Strict-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
   <img src="https://img.shields.io/badge/React%20Native-Expo%2052-000020?style=for-the-badge&logo=expo&logoColor=white" alt="Expo" />
