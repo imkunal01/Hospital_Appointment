@@ -89,6 +89,25 @@ export function errorHandler(
     return;
   }
 
+  // 3b. Payload too large (body-parser limit exceeded)
+  if (err.type === 'entity.too.large' || err.status === 413) {
+    logger.warn('Payload too large', {
+      requestId,
+      code: 'VALIDATION_ERROR',
+      statusCode: 413,
+      path,
+      method
+    });
+
+    res.status(413).json({
+      error: {
+        code: 'VALIDATION_ERROR',
+        message: 'Uploaded file or image exceeds maximum allowed size'
+      }
+    });
+    return;
+  }
+
   // 4. Unhandled Internal Server Errors (Do NOT leak stack or internal details)
   logger.error('Unhandled internal server error', err, {
     requestId,

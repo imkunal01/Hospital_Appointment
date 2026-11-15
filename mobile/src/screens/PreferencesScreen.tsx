@@ -83,7 +83,7 @@ export const PreferencesScreen: React.FC<PreferencesScreenProps> = ({ route, nav
   useEffect(() => {
     if (user) {
       setName(user.name || '');
-      setDob(user.dob || '');
+      setDob(user.dob ? (user.dob.includes('T') ? user.dob.split('T')[0] : user.dob) : '');
       setPhone(user.phone || '');
       setLocation(user.location || '');
       setAvatarUrl(user.avatarUrl || '');
@@ -131,14 +131,15 @@ export const PreferencesScreen: React.FC<PreferencesScreenProps> = ({ route, nav
         mediaTypes: ['images'],
         allowsEditing: true,
         aspect: [1, 1],
-        quality: 0.5,
+        quality: 0.3,
         base64: true
       });
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
         const asset = result.assets[0];
+        const mime = asset.mimeType || 'image/jpeg';
         const imageUri = asset.base64
-          ? `data:image/jpeg;base64,${asset.base64}`
+          ? `data:${mime};base64,${asset.base64}`
           : asset.uri;
         setAvatarUrl(imageUri);
       }
@@ -172,12 +173,13 @@ export const PreferencesScreen: React.FC<PreferencesScreenProps> = ({ route, nav
       isValid = false;
     }
 
-    if (dob.trim()) {
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(dob.trim())) {
+    const cleanDob = dob.trim() ? (dob.trim().includes('T') ? dob.trim().split('T')[0] : dob.trim()) : '';
+    if (cleanDob) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(cleanDob)) {
         setDobError('Date of Birth must be in YYYY-MM-DD format');
         isValid = false;
       } else {
-        const parsed = new Date(dob.trim());
+        const parsed = new Date(cleanDob);
         if (isNaN(parsed.getTime()) || parsed >= new Date()) {
           setDobError('Date of Birth must be a valid past date');
           isValid = false;
@@ -205,12 +207,15 @@ export const PreferencesScreen: React.FC<PreferencesScreenProps> = ({ route, nav
 
     setSavingPersonal(true);
     try {
+      const cleanDob = dob.trim() ? (dob.trim().includes('T') ? dob.trim().split('T')[0] : dob.trim()) : null;
+      const cleanAvatar = avatarUrl && avatarUrl.trim() ? avatarUrl.trim() : null;
+
       const response = await updatePersonalInfoApi({
         name: name.trim(),
-        dob: dob.trim() || null,
+        dob: cleanDob,
         phone: phone.trim() || null,
         location: location.trim() || null,
-        avatarUrl: avatarUrl.trim() || null
+        avatarUrl: cleanAvatar
       });
 
       // Update session state in memory

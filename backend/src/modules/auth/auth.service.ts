@@ -238,23 +238,38 @@ export async function updateUserProfile(
   }
 
   // Update profile
+  const nameParam = input.name ? input.name.trim() : null;
+  const dobParam = input.dob === null ? '__CLEAR__' : input.dob ? input.dob.trim() : null;
+  const locParam = input.location === null ? '__CLEAR__' : input.location ? input.location.trim() : null;
+  const phoneParam = input.phone === null ? '__CLEAR__' : input.phone ? input.phone.trim() : null;
+  const avatarParam = input.avatarUrl === null ? '__CLEAR__' : input.avatarUrl ? input.avatarUrl.trim() : null;
+
   const updateResult = await query(
     `UPDATE users
      SET name = COALESCE($1, name),
-         dob = CASE WHEN $2::text IS NOT NULL THEN $2::date ELSE dob END,
-         location = CASE WHEN $3::text IS NOT NULL THEN $3 ELSE location END,
-         phone = CASE WHEN $4::text IS NOT NULL THEN $4 ELSE phone END,
-         avatar_url = CASE WHEN $5::text IS NOT NULL THEN $5 ELSE avatar_url END
+         dob = CASE 
+           WHEN $2::text = '__CLEAR__' THEN NULL 
+           WHEN $2::text IS NOT NULL THEN $2::date 
+           ELSE dob 
+         END,
+         location = CASE 
+           WHEN $3::text = '__CLEAR__' THEN NULL 
+           WHEN $3::text IS NOT NULL THEN $3 
+           ELSE location 
+         END,
+         phone = CASE 
+           WHEN $4::text = '__CLEAR__' THEN NULL 
+           WHEN $4::text IS NOT NULL THEN $4 
+           ELSE phone 
+         END,
+         avatar_url = CASE 
+           WHEN $5::text = '__CLEAR__' THEN NULL 
+           WHEN $5::text IS NOT NULL THEN $5 
+           ELSE avatar_url 
+         END
      WHERE id = $6
      RETURNING id, email, name, role, phone, phone_verified, dob, location, avatar_url, onboarding_completed, auth_provider`,
-    [
-      input.name ? input.name.trim() : null,
-      input.dob ? input.dob.trim() : null,
-      input.location !== undefined ? (input.location ? input.location.trim() : null) : null,
-      input.phone !== undefined ? (input.phone ? input.phone.trim() : null) : null,
-      input.avatarUrl !== undefined ? input.avatarUrl : null,
-      userId
-    ]
+    [nameParam, dobParam, locParam, phoneParam, avatarParam, userId]
   );
 
   const updated = updateResult.rows[0];

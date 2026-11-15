@@ -30,8 +30,10 @@ export const updateUserProfileSchema = z.object({
   dob: z
     .string()
     .trim()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Date of Birth must be in YYYY-MM-DD format')
+    .transform((val) => (val && val.includes('T') ? val.split('T')[0] : val))
+    .refine((val) => !val || /^\d{4}-\d{2}-\d{2}$/.test(val), 'Date of Birth must be in YYYY-MM-DD format')
     .refine((val) => {
+      if (!val) return true;
       const date = new Date(val);
       return !isNaN(date.getTime()) && date < new Date();
     }, 'Date of Birth must be a valid past date')
@@ -44,7 +46,7 @@ export const updateUserProfileSchema = z.object({
     .optional()
     .nullable(),
   location: z.string().trim().max(150).optional().nullable(),
-  avatarUrl: z.string().max(200000).optional().nullable()
+  avatarUrl: z.string().max(10000000).optional().nullable()
 });
 
 export type LoginInput = z.infer<typeof loginSchema>;

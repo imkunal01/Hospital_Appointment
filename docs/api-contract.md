@@ -200,7 +200,7 @@ Retrieves currently authenticated user profile including verification and onboar
 ```
 
 #### `PUT /auth/profile`
-Updates patient personal information (name, date of birth, phone number, location) in the authenticated user's profile.
+Updates patient personal information (name, date of birth, phone number, location, avatarUrl) in the authenticated user's profile. Supports base64 data URIs up to 10MB.
 
 **Headers:**
 `Authorization: Bearer <JWT_ACCESS_TOKEN>`
@@ -211,7 +211,8 @@ Updates patient personal information (name, date of birth, phone number, locatio
   "name": "Jane Doe Updated",
   "dob": "1994-08-20",
   "phone": "+15550199222",
-  "location": "North Wing, City Center"
+  "location": "North Wing, City Center",
+  "avatarUrl": "data:image/jpeg;base64,/9j/4AAQSkZJRg..."
 }
 ```
 
@@ -228,6 +229,7 @@ Updates patient personal information (name, date of birth, phone number, locatio
     "phoneVerified": true,
     "dob": "1994-08-20",
     "location": "North Wing, City Center",
+    "avatarUrl": "data:image/jpeg;base64,/9j/4AAQSkZJRg...",
     "onboardingCompleted": true,
     "authProvider": "LOCAL"
   }
