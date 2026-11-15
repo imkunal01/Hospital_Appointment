@@ -18,6 +18,7 @@ export interface UserProfileDTO {
   phoneVerified?: boolean;
   dob?: string | null;
   location?: string | null;
+  avatarUrl?: string | null;
   onboardingCompleted: boolean;
   authProvider?: 'LOCAL' | 'GOOGLE';
 }
@@ -39,6 +40,7 @@ function mapUserRowToDTO(user: any): UserProfileDTO {
     phoneVerified: Boolean(user.phone_verified),
     dob: user.dob ? user.dob.toISOString ? user.dob.toISOString().split('T')[0] : String(user.dob) : null,
     location: user.location ?? null,
+    avatarUrl: user.avatar_url ?? null,
     onboardingCompleted: Boolean(user.onboarding_completed),
     authProvider: user.auth_provider ?? 'LOCAL'
   };
@@ -241,14 +243,16 @@ export async function updateUserProfile(
      SET name = COALESCE($1, name),
          dob = CASE WHEN $2::text IS NOT NULL THEN $2::date ELSE dob END,
          location = CASE WHEN $3::text IS NOT NULL THEN $3 ELSE location END,
-         phone = CASE WHEN $4::text IS NOT NULL THEN $4 ELSE phone END
-     WHERE id = $5
-     RETURNING id, email, name, role, phone, phone_verified, dob, location, onboarding_completed, auth_provider`,
+         phone = CASE WHEN $4::text IS NOT NULL THEN $4 ELSE phone END,
+         avatar_url = CASE WHEN $5::text IS NOT NULL THEN $5 ELSE avatar_url END
+     WHERE id = $6
+     RETURNING id, email, name, role, phone, phone_verified, dob, location, avatar_url, onboarding_completed, auth_provider`,
     [
       input.name ? input.name.trim() : null,
       input.dob ? input.dob.trim() : null,
       input.location !== undefined ? (input.location ? input.location.trim() : null) : null,
       input.phone !== undefined ? (input.phone ? input.phone.trim() : null) : null,
+      input.avatarUrl !== undefined ? input.avatarUrl : null,
       userId
     ]
   );

@@ -7,6 +7,7 @@ export interface UserProfile {
   phoneVerified?: boolean;
   dob?: string | null;
   location?: string | null;
+  avatarUrl?: string | null;
   onboardingCompleted: boolean;
   authProvider?: 'LOCAL' | 'GOOGLE';
 }

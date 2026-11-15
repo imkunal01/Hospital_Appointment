@@ -63,6 +63,7 @@ export async function updatePersonalInfoApi(data: {
   dob?: string | null;
   phone?: string | null;
   location?: string | null;
+  avatarUrl?: string | null;
 }): Promise<{ user: UserProfile; message: string }> {
   const res = await apiClient.put('/auth/profile', data);
   return res.data;

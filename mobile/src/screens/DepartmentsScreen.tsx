@@ -24,6 +24,7 @@ import {
   subscribeNotifications,
   triggerRandomHealthTip
 } from '../notifications/notificationStore';
+import { requestNotificationPermission } from '../notifications/systemNotifications';
 import { colors } from '../theme/colors';
 import { spacing } from '../theme/spacing';
 import { getDepartmentTheme } from '../theme/departmentThemes';
@@ -46,6 +47,9 @@ export const DepartmentsScreen: React.FC<DepartmentsScreenProps> = ({ navigation
   const [unreadCount, setUnreadCount] = React.useState(0);
 
   React.useEffect(() => {
+    // Request Android system notification permission on launch
+    requestNotificationPermission();
+
     // Initial fetch of unread count
     setUnreadCount(getUnreadCount());
 

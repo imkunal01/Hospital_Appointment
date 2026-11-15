@@ -6,10 +6,12 @@ import {
   Switch,
   TouchableOpacity,
   ScrollView,
-  Platform
+  Platform,
+  Image
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Feather, Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 import { useSession, updateSessionUser } from '../auth/sessionStore';
 import { updatePersonalInfoApi } from '../api/endpoints';
 import { usePreferences, useUpdatePreferences } from '../hooks/usePreferences';
@@ -19,6 +21,10 @@ import { Input } from '../components/Input';
 import { Button } from '../components/Button';
 import { DobDatePickerModal } from '../components/DobDatePickerModal';
 import { addNotification } from '../notifications/notificationStore';
+import {
+  checkNotificationPermission,
+  requestNotificationPermission
+} from '../notifications/systemNotifications';
 import { extractErrorMessage } from '../utils/errors';
 import { showAlert } from '../utils/alert';
 import { colors } from '../theme/colors';
@@ -52,6 +58,7 @@ export const PreferencesScreen: React.FC<PreferencesScreenProps> = ({ route, nav
   const [dob, setDob] = useState(user?.dob || '');
   const [phone, setPhone] = useState(user?.phone || '');
   const [location, setLocation] = useState(user?.location || '');
+  const [avatarUrl, setAvatarUrl] = useState(user?.avatarUrl || '');
 
   // Validation Errors
   const [nameError, setNameError] = useState('');
@@ -65,6 +72,12 @@ export const PreferencesScreen: React.FC<PreferencesScreenProps> = ({ route, nav
   // Reminder Preferences State
   const [enabled, setEnabled] = useState<boolean>(true);
   const [hoursBefore, setHoursBefore] = useState<number>(24);
+  const [hasSystemNotifPermission, setHasSystemNotifPermission] = useState<boolean>(true);
+
+  // Check initial Android system notification permission
+  useEffect(() => {
+    checkNotificationPermission().then(setHasSystemNotifPermission);
+  }, []);
 
   // Sync state if session user changes
   useEffect(() => {
@@ -73,6 +86,7 @@ export const PreferencesScreen: React.FC<PreferencesScreenProps> = ({ route, nav
       setDob(user.dob || '');
       setPhone(user.phone || '');
       setLocation(user.location || '');
+      setAvatarUrl(user.avatarUrl || '');
     }
   }, [user]);
 
@@ -100,6 +114,49 @@ export const PreferencesScreen: React.FC<PreferencesScreenProps> = ({ route, nav
   };
 
   const calculatedAge = calculateAge(dob);
+
+  // Image Picker Handler
+  const handlePickImage = async () => {
+    try {
+      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permissionResult.granted) {
+        showAlert(
+          'Photo Access Needed',
+          'Please allow MediBook to access your photos so you can select your patient profile picture.'
+        );
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.5,
+        base64: true
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const asset = result.assets[0];
+        const imageUri = asset.base64
+          ? `data:image/jpeg;base64,${asset.base64}`
+          : asset.uri;
+        setAvatarUrl(imageUri);
+      }
+    } catch (err) {
+      showAlert('Photo Selection Error', extractErrorMessage(err));
+    }
+  };
+
+  // Request Android System Notification Permission
+  const handleRequestPermission = async () => {
+    const granted = await requestNotificationPermission();
+    setHasSystemNotifPermission(granted);
+    if (granted) {
+      showAlert('Notifications Allowed', 'System alerts have been enabled for your appointment reminders.');
+    } else {
+      showAlert('Permission Denied', 'Please enable notifications in Android Settings > Apps > MediBook.');
+    }
+  };
 
   const validatePersonalInfo = (): boolean => {
     let isValid = true;
@@ -152,7 +209,8 @@ export const PreferencesScreen: React.FC<PreferencesScreenProps> = ({ route, nav
         name: name.trim(),
         dob: dob.trim() || null,
         phone: phone.trim() || null,
-        location: location.trim() || null
+        location: location.trim() || null,
+        avatarUrl: avatarUrl.trim() || null
       });
 
       // Update session state in memory
@@ -162,19 +220,27 @@ export const PreferencesScreen: React.FC<PreferencesScreenProps> = ({ route, nav
       addNotification({
         type: 'REMINDER',
         title: 'Profile Updated',
-        message: 'Your personal information was updated in the patient registry.',
+        message: 'Your personal information & profile picture were saved successfully.',
         priority: 'normal',
         actionLabel: 'View Profile',
         actionTab: 'ProfileTab'
       });
 
-      showAlert('Profile Updated', 'Your personal information has been saved successfully.', [
+      showAlert('Profile Updated', 'Your personal information and profile picture have been saved.', [
         { text: 'OK' }
       ]);
     } catch (err) {
       showAlert('Update Failed', extractErrorMessage(err));
     } finally {
       setSavingPersonal(false);
+    }
+  };
+
+  const handleToggleReminders = async (val: boolean) => {
+    setEnabled(val);
+    if (val && !hasSystemNotifPermission) {
+      const granted = await requestNotificationPermission();
+      setHasSystemNotifPermission(granted);
     }
   };
 
@@ -261,7 +327,12 @@ export const PreferencesScreen: React.FC<PreferencesScreenProps> = ({ route, nav
           accessibilityLabel="Visit Reminders Tab"
           accessibilityState={{ selected: activeTab === 'reminders' }}
           style={[styles.tabButton, activeTab === 'reminders' && styles.tabButtonActive]}
-          onPress={() => setActiveTab('reminders')}
+          onPress={() => {
+            setActiveTab('reminders');
+            if (!hasSystemNotifPermission) {
+              requestNotificationPermission().then(setHasSystemNotifPermission);
+            }
+          }}
           activeOpacity={0.8}
         >
           <Feather
@@ -289,21 +360,61 @@ export const PreferencesScreen: React.FC<PreferencesScreenProps> = ({ route, nav
         >
           {activeTab === 'personal' ? (
             /* ============================================================== */
-            /* TAB 1: PERSONAL INFORMATION EDITING                            */
+            /* TAB 1: PERSONAL INFORMATION & PROFILE PICTURE                  */
             /* ============================================================== */
             <View>
-              {/* Patient Badge Card */}
-              <View style={styles.patientBadgeCard}>
-                <View style={styles.patientAvatarCircle}>
-                  <Text style={styles.patientAvatarText}>{initials}</Text>
+              {/* Profile Picture Card with Upload Action */}
+              <View style={styles.avatarSectionCard}>
+                <View style={styles.avatarWrap}>
+                  {avatarUrl ? (
+                    <Image source={{ uri: avatarUrl }} style={styles.avatarImage} />
+                  ) : (
+                    <View style={styles.patientAvatarCircle}>
+                      <Text style={styles.patientAvatarText}>{initials}</Text>
+                    </View>
+                  )}
+                  <TouchableOpacity
+                    accessibilityRole="button"
+                    accessibilityLabel="Choose profile picture from gallery"
+                    style={styles.cameraBadgeBtn}
+                    onPress={handlePickImage}
+                    activeOpacity={0.8}
+                  >
+                    <Feather name="camera" size={16} color="#FFFFFF" />
+                  </TouchableOpacity>
                 </View>
-                <View style={styles.patientBadgeTextCol}>
-                  <View style={styles.verifiedRow}>
-                    <Ionicons name="checkmark-circle" size={14} color={colors.brandBlue} style={{ marginRight: 4 }} />
-                    <Text style={styles.verifiedText}>Verified Patient Registry</Text>
+
+                <View style={styles.avatarActionCol}>
+                  <Text style={styles.avatarTitle}>Patient Profile Photo</Text>
+                  <Text style={styles.avatarSubtitle}>
+                    Upload a portrait photo from your gallery to personalize your account.
+                  </Text>
+                  <View style={styles.avatarBtnRow}>
+                    <TouchableOpacity
+                      accessibilityRole="button"
+                      accessibilityLabel="Upload profile photo"
+                      style={styles.uploadPhotoBtn}
+                      onPress={handlePickImage}
+                      activeOpacity={0.8}
+                    >
+                      <Feather name="upload" size={13} color="#FFFFFF" style={{ marginRight: 6 }} />
+                      <Text style={styles.uploadPhotoBtnText}>
+                        {avatarUrl ? 'Change Photo' : 'Upload Photo'}
+                      </Text>
+                    </TouchableOpacity>
+
+                    {Boolean(avatarUrl) && (
+                      <TouchableOpacity
+                        accessibilityRole="button"
+                        accessibilityLabel="Remove current photo"
+                        style={styles.removePhotoBtn}
+                        onPress={() => setAvatarUrl('')}
+                        activeOpacity={0.8}
+                      >
+                        <Text style={styles.removePhotoBtnText}>Remove</Text>
+                      </TouchableOpacity>
+                    )}
                   </View>
-                  <Text style={styles.badgeNameText}>{user?.name || 'Jane Doe'}</Text>
-                  <Text style={styles.badgeIdText}>Patient ID: {patientIdDisplay}</Text>
                 </View>
               </View>
 
@@ -426,9 +537,41 @@ export const PreferencesScreen: React.FC<PreferencesScreenProps> = ({ route, nav
             </View>
           ) : (
             /* ============================================================== */
-            /* TAB 2: VISIT REMINDER PREFERENCES                              */
+            /* TAB 2: VISIT REMINDER PREFERENCES & SYSTEM NOTIFICATIONS       */
             /* ============================================================== */
             <View>
+              {/* Android System Notification Status Banner */}
+              <View style={[styles.permissionCard, hasSystemNotifPermission ? styles.permissionCardActive : styles.permissionCardWarning]}>
+                <View style={[styles.permIconCircle, { backgroundColor: hasSystemNotifPermission ? '#ECFDF5' : '#FEF3C7' }]}>
+                  <Ionicons
+                    name={hasSystemNotifPermission ? 'notifications' : 'notifications-off'}
+                    size={20}
+                    color={hasSystemNotifPermission ? '#059669' : '#D97706'}
+                  />
+                </View>
+                <View style={{ flex: 1, marginRight: 8 }}>
+                  <Text style={styles.permCardTitle}>
+                    {hasSystemNotifPermission ? 'Device Notifications Active' : 'Notification Permission Needed'}
+                  </Text>
+                  <Text style={styles.permCardSub}>
+                    {hasSystemNotifPermission
+                      ? 'Android status bar & sound alerts are allowed for appointments.'
+                      : 'MediBook needs notification access to alert you on time.'}
+                  </Text>
+                </View>
+                {!hasSystemNotifPermission && (
+                  <TouchableOpacity
+                    accessibilityRole="button"
+                    accessibilityLabel="Grant notification permission"
+                    style={styles.grantPermBtn}
+                    onPress={handleRequestPermission}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={styles.grantPermBtnText}>Enable</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+
               <Text style={styles.sectionHeading}>Appointment Reminders</Text>
               <Text style={styles.sectionSubheading}>
                 Configure how and when the hospital automated dispatch delivers visit alerts.
@@ -448,7 +591,7 @@ export const PreferencesScreen: React.FC<PreferencesScreenProps> = ({ route, nav
                   </View>
                   <Switch
                     value={enabled}
-                    onValueChange={setEnabled}
+                    onValueChange={handleToggleReminders}
                     trackColor={{ false: '#E2E8F0', true: colors.brandBlue }}
                     thumbColor={enabled ? '#FFFFFF' : '#F8FAFC'}
                     ios_backgroundColor="#E2E8F0"
@@ -591,12 +734,12 @@ const styles = StyleSheet.create({
     paddingBottom: 64
   },
 
-  // Patient Badge
-  patientBadgeCard: {
+  // Profile Picture Card
+  avatarSectionCard: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    borderRadius: 18,
+    borderRadius: 20,
     padding: 16,
     borderWidth: 1,
     borderColor: '#E2E8F0',
@@ -607,46 +750,87 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 2
   },
+  avatarWrap: {
+    position: 'relative',
+    marginRight: 16
+  },
+  avatarImage: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    borderWidth: 2,
+    borderColor: colors.brandBlue
+  },
   patientAvatarCircle: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
     backgroundColor: colors.brandBlue,
     alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 14
+    justifyContent: 'center'
   },
   patientAvatarText: {
     color: '#FFFFFF',
-    fontSize: 19,
+    fontSize: 22,
     fontWeight: '900',
     letterSpacing: 0.5
   },
-  patientBadgeTextCol: {
+  cameraBadgeBtn: {
+    position: 'absolute',
+    bottom: -2,
+    right: -2,
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: '#0A2540',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: '#FFFFFF'
+  },
+  avatarActionCol: {
     flex: 1
   },
-  verifiedRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 2
-  },
-  verifiedText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: colors.brandBlue,
-    textTransform: 'uppercase',
-    letterSpacing: 0.3
-  },
-  badgeNameText: {
-    fontSize: 17,
+  avatarTitle: {
+    fontSize: 15,
     fontWeight: '800',
     color: '#0A2540'
   },
-  badgeIdText: {
-    fontSize: 12,
-    fontWeight: '600',
+  avatarSubtitle: {
+    fontSize: 11.5,
     color: '#64748B',
-    marginTop: 1
+    marginTop: 2,
+    lineHeight: 16
+  },
+  avatarBtnRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 10
+  },
+  uploadPhotoBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.brandBlue,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 8
+  },
+  uploadPhotoBtnText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '700'
+  },
+  removePhotoBtn: {
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+    borderRadius: 8,
+    backgroundColor: '#F1F5F9'
+  },
+  removePhotoBtnText: {
+    color: '#EF4444',
+    fontSize: 12,
+    fontWeight: '700'
   },
 
   // Headings
@@ -741,6 +925,54 @@ const styles = StyleSheet.create({
     color: '#94A3B8',
     marginTop: 4,
     lineHeight: 15
+  },
+
+  // Permission Banner in Reminders Tab
+  permissionCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 18,
+    padding: 14,
+    borderWidth: 1.5,
+    marginBottom: 18
+  },
+  permissionCardActive: {
+    backgroundColor: '#F0FDF4',
+    borderColor: '#BBF7D0'
+  },
+  permissionCardWarning: {
+    backgroundColor: '#FFFBEB',
+    borderColor: '#FDE68A'
+  },
+  permIconCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12
+  },
+  permCardTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#0A2540'
+  },
+  permCardSub: {
+    fontSize: 11.5,
+    color: '#64748B',
+    marginTop: 2,
+    lineHeight: 16
+  },
+  grantPermBtn: {
+    backgroundColor: colors.brandBlue,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 10
+  },
+  grantPermBtnText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '800'
   },
 
   // Reminders Card

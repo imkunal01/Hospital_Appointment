@@ -7,7 +7,8 @@ import {
   ScrollView,
   Switch,
   Platform,
-  Alert
+  Alert,
+  Image
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Feather, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
@@ -23,6 +24,7 @@ import {
   subscribeNotifications,
   triggerRandomHealthTip
 } from '../notifications/notificationStore';
+import { requestNotificationPermission } from '../notifications/systemNotifications';
 import { colors } from '../theme/colors';
 import { useSafeInsets } from '../hooks/useSafeInsets';
 
@@ -56,8 +58,11 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
     return unsubscribe;
   }, []);
 
-  const togglePush = (val: boolean) => {
+  const togglePush = async (val: boolean) => {
     setPushEnabled(val);
+    if (val) {
+      await requestNotificationPermission();
+    }
     updatePreferencesMutation.mutate({
       enabled: val,
       hoursBefore: preferences?.hoursBefore || 24
@@ -160,7 +165,11 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
 
           <View style={styles.heroTopRow}>
             <View style={styles.avatarCircle}>
-              <Text style={styles.avatarInitials}>{initials}</Text>
+              {user?.avatarUrl ? (
+                <Image source={{ uri: user.avatarUrl }} style={styles.avatarImage} />
+              ) : (
+                <Text style={styles.avatarInitials}>{initials}</Text>
+              )}
             </View>
 
             <View style={styles.patientInfoCol}>
@@ -279,6 +288,22 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
           </View>
 
           <View style={styles.cardBox}>
+            <View style={styles.infoRow}>
+              <Text style={styles.infoRowLabel}>Profile Photo</Text>
+              <View style={styles.avatarThumbRow}>
+                {user?.avatarUrl ? (
+                  <Image source={{ uri: user.avatarUrl }} style={styles.avatarMiniThumb} />
+                ) : (
+                  <View style={styles.avatarMiniPlaceholder}>
+                    <Text style={styles.avatarMiniText}>{initials}</Text>
+                  </View>
+                )}
+                <Text style={[styles.infoRowValue, { marginLeft: 8 }]}>
+                  {user?.avatarUrl ? 'Custom Portrait' : 'Default Initials'}
+                </Text>
+              </View>
+            </View>
+            <View style={styles.cardDivider} />
             <View style={styles.infoRow}>
               <Text style={styles.infoRowLabel}>Full Name</Text>
               <Text style={styles.infoRowValue}>{user?.name || 'Jane Doe'}</Text>
@@ -594,7 +619,37 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.12,
     shadowRadius: 4,
-    elevation: 2
+    elevation: 2,
+    overflow: 'hidden'
+  },
+  avatarImage: {
+    width: 60,
+    height: 60,
+    borderRadius: 30
+  },
+  avatarThumbRow: {
+    flexDirection: 'row',
+    alignItems: 'center'
+  },
+  avatarMiniThumb: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: colors.brandBlue
+  },
+  avatarMiniPlaceholder: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: colors.brandBlue,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  avatarMiniText: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontWeight: '800'
   },
   avatarInitials: {
     fontSize: 22,

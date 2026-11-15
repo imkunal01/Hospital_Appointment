@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { scheduleSystemNotification } from './systemNotifications';
 
 export type NotificationType = 'APPOINTMENT' | 'REMINDER' | 'HEALTH_TIP' | 'DOCTOR_TIP';
 
@@ -172,6 +173,9 @@ export function addNotification(
 
   // Immediately display as floating in-app toast
   showToast(newNotif);
+
+  // Deliver native system notification to Android status bar & notification shade
+  scheduleSystemNotification(newNotif.title, newNotif.message, { id: newNotif.id });
 
   return newNotif;
 }

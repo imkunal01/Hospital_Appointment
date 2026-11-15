@@ -43,7 +43,8 @@ export const updateUserProfileSchema = z.object({
     .regex(/^\+?[0-9]{10,15}$/, 'Please enter a valid phone number (10 to 15 digits)')
     .optional()
     .nullable(),
-  location: z.string().trim().max(150).optional().nullable()
+  location: z.string().trim().max(150).optional().nullable(),
+  avatarUrl: z.string().max(200000).optional().nullable()
 });
 
 export type LoginInput = z.infer<typeof loginSchema>;
