@@ -146,6 +146,14 @@ Rescheduling an appointment requires moving from an old slot to a new slot:
   3. High-contrast border and background color.
   *Color is never used as the sole conveyor of information.*
 
+### 4.4 In-App Notification System & Clinical Engagement
+- In strict adherence with the minimal permissions policy (`INTERNET` only; no invasive native FCM or push background permissions), an interactive in-app notification system is implemented client-side (`notificationStore.ts`).
+- Notifications are persisted to `AsyncStorage` with an in-memory reactive pub/sub store.
+- **Floating Banner Toasts (`InAppNotificationBanner.tsx`):** Animated slide-down cards featuring category icons (Heart for happy health tips, Stethoscope for doctor selection tips, Calendar for appointments, Clock for check-in advisories), auto-dismiss timers (5.5s), and tap-to-navigate action tabs.
+- **Notification Center Modal (`NotificationCenterModal.tsx`):** Complete inbox with category filter pills, relative timestamps, read/unread states, 'Mark all as read', and an interactive 'Get New Health Tip' generator.
+- **Action-Triggered Advisories:** Booking confirmations immediately alert patients with arrival time guidance ("Arrive 15 minutes before your slot to avoid delays or being late"). Cancellations and reschedules trigger immediate confirmation updates.
+- **Clinical Health Tips & Doctor Selection Prompts:** Randomized wellness reminders (hydration, cardiovascular exercise, fasting guidelines, sleep cycles) and doctor selection advice periodically engage the patient to maintain health literacy and proactive care management.
+
 ---
 
 ## 5. Structured Observability & Logging Architecture

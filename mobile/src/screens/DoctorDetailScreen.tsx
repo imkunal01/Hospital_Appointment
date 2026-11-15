@@ -16,6 +16,7 @@ import { useBookSlot } from '../hooks/useBooking';
 import { ScreenState } from '../components/ScreenState';
 import { DoctorAvatar } from '../components/DoctorAvatar';
 import { ClinicalProgressBar } from '../components/ClinicalProgressBar';
+import { addNotification } from '../notifications/notificationStore';
 import { formatDate, formatTimeRange, toISODateString } from '../utils/dates';
 import { extractErrorMessage } from '../utils/errors';
 import { showAlert } from '../utils/alert';
@@ -94,6 +95,15 @@ export const DoctorDetailScreen: React.FC<DoctorDetailScreenProps> = ({
       {
         onSuccess: (confirmedAppointment) => {
           isBookingRef.current = false;
+          // Trigger in-app notification & alert user to arrive on time
+          addNotification({
+            type: 'APPOINTMENT',
+            title: 'Appointment Booked!',
+            message: `Consultation with ${doctor.name} (${doctor.specialty}) is confirmed for ${selectedDate}. Please arrive 15 minutes early to avoid being late.`,
+            priority: 'high',
+            actionLabel: 'View Visits',
+            actionTab: 'AppointmentsTab'
+          });
           // Rule A5: Transition to confirmation screen ONLY after server confirms with HTTP 201/200
           navigation.navigate('Confirmation', {
             appointment: confirmedAppointment

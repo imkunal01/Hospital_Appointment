@@ -18,6 +18,12 @@ import { ScreenState } from '../components/ScreenState';
 import { DoctorAvatar } from '../components/DoctorAvatar';
 import { Department } from '../api/types';
 import { extractErrorMessage } from '../utils/errors';
+import { NotificationCenterModal } from '../components/NotificationCenterModal';
+import {
+  getUnreadCount,
+  subscribeNotifications,
+  triggerRandomHealthTip
+} from '../notifications/notificationStore';
 import { colors } from '../theme/colors';
 import { spacing } from '../theme/spacing';
 import { getDepartmentTheme } from '../theme/departmentThemes';
@@ -35,6 +41,35 @@ export const DepartmentsScreen: React.FC<DepartmentsScreenProps> = ({ navigation
   const { data: upcomingAppointments } = useAppointments('upcoming');
 
   const nextAppointment = upcomingAppointments && upcomingAppointments.length > 0 ? upcomingAppointments[0] : null;
+
+  const [isNotifModalOpen, setIsNotifModalOpen] = React.useState(false);
+  const [unreadCount, setUnreadCount] = React.useState(0);
+
+  React.useEffect(() => {
+    // Initial fetch of unread count
+    setUnreadCount(getUnreadCount());
+
+    // Subscribe to notification updates
+    const unsubscribe = subscribeNotifications(() => {
+      setUnreadCount(getUnreadCount());
+    });
+
+    // Send an engaging clinical tip shortly after opening the app (4.5s)
+    const initialTipTimer = setTimeout(() => {
+      triggerRandomHealthTip();
+    }, 4500);
+
+    // Periodic reminder / health tip every 85 seconds while active
+    const periodicTimer = setInterval(() => {
+      triggerRandomHealthTip();
+    }, 85000);
+
+    return () => {
+      unsubscribe();
+      clearTimeout(initialTipTimer);
+      clearInterval(periodicTimer);
+    };
+  }, []);
 
   // Patient 1 seed name is "Jane Doe" - default to 'Jane' matching design reference
   const firstName = user?.name ? user.name.split(' ')[0] : 'Jane';
@@ -117,7 +152,7 @@ export const DepartmentsScreen: React.FC<DepartmentsScreenProps> = ({ navigation
             accessibilityLabel="Hospital Stethoscope illustration"
           />
 
-          {/* Top Brand Bar: + medibook */}
+          {/* Top Brand Bar: + medibook & Notification Bell */}
           <View style={styles.topBrandRow}>
             <View style={styles.logoRow}>
               <View style={styles.logoPlusCircle}>
@@ -125,6 +160,23 @@ export const DepartmentsScreen: React.FC<DepartmentsScreenProps> = ({ navigation
               </View>
               <Text style={styles.logoText}>medibook</Text>
             </View>
+
+            <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityLabel={`Notification Center, ${unreadCount} unread notifications`}
+              style={styles.bellButton}
+              onPress={() => setIsNotifModalOpen(true)}
+              activeOpacity={0.8}
+            >
+              <Feather name="bell" size={20} color="#0A2540" />
+              {unreadCount > 0 && (
+                <View style={styles.unreadBadge}>
+                  <Text style={styles.unreadBadgeText}>
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </Text>
+                </View>
+              )}
+            </TouchableOpacity>
           </View>
 
           {/* Clinical Greeting Pill with Sun Icon */}
@@ -472,6 +524,12 @@ export const DepartmentsScreen: React.FC<DepartmentsScreenProps> = ({ navigation
           </ScreenState>
         </View>
       </ScrollView>
+
+      <NotificationCenterModal
+        visible={isNotifModalOpen}
+        onClose={() => setIsNotifModalOpen(false)}
+        onNavigateTab={(tab) => navigation.navigate(tab)}
+      />
     </View>
   );
 };
@@ -578,11 +636,48 @@ const styles = StyleSheet.create({
     opacity: 0.98
   },
 
-  // Top Brand Row: + medibook (NO notification bell)
+  // Top Brand Row: + medibook & notification bell
   topBrandRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 6
+    justifyContent: 'space-between',
+    marginBottom: 6,
+    zIndex: 10
+  },
+  bellButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#DBEAFE',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 3,
+    position: 'relative'
+  },
+  unreadBadge: {
+    position: 'absolute',
+    top: -2,
+    right: -2,
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: '#EF4444',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+    borderWidth: 1.5,
+    borderColor: '#FFFFFF'
+  },
+  unreadBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontWeight: '800'
   },
   logoRow: {
     flexDirection: 'row',

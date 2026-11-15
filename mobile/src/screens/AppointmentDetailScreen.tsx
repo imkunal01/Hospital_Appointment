@@ -25,6 +25,7 @@ import { DoctorAvatar } from '../components/DoctorAvatar';
 import { formatDate, formatTimeRange, toISODateString } from '../utils/dates';
 import { extractErrorMessage } from '../utils/errors';
 import { showAlert } from '../utils/alert';
+import { addNotification } from '../notifications/notificationStore';
 import { Slot } from '../api/types';
 import { colors } from '../theme/colors';
 import { useSafeInsets } from '../hooks/useSafeInsets';
@@ -108,6 +109,14 @@ export const AppointmentDetailScreen: React.FC<AppointmentDetailScreenProps> = (
             cancelMutation.mutate(appointment.id, {
               onSuccess: () => {
                 isCancellingRef.current = false;
+                addNotification({
+                  type: 'REMINDER',
+                  title: 'Appointment Cancelled',
+                  message: `Your consultation with ${appointment.doctorName} was cancelled and the slot released.`,
+                  priority: 'normal',
+                  actionLabel: 'Book Another',
+                  actionTab: 'BookTab'
+                });
                 showAlert(
                   'Appointment Cancelled',
                   'Your appointment has been cancelled and the slot released.',
@@ -141,6 +150,14 @@ export const AppointmentDetailScreen: React.FC<AppointmentDetailScreenProps> = (
           isReschedulingRef.current = false;
           setRescheduleModalVisible(false);
           setSelectedNewSlot(null);
+          addNotification({
+            type: 'REMINDER',
+            title: 'Appointment Rescheduled',
+            message: `Your visit with ${appointment.doctorName} was moved to ${formatDate(selectedNewSlot.startsAt)}. Arrive 15 minutes early to avoid delays.`,
+            priority: 'high',
+            actionLabel: 'View Visits',
+            actionTab: 'AppointmentsTab'
+          });
           showAlert(
             'Rescheduled Successfully',
             `Your appointment has been moved to ${formatDate(selectedNewSlot.startsAt)} at ${formatTimeRange(selectedNewSlot.startsAt, selectedNewSlot.endsAt)}.`,

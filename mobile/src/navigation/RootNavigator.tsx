@@ -8,6 +8,7 @@ import { AuthNavigator } from './AuthNavigator';
 import { OnboardingNavigator } from './OnboardingNavigator';
 import { AppNavigator } from './AppNavigator';
 import { AppLaunchScreen } from '../components/AppLaunchScreen';
+import { InAppNotificationBanner } from '../components/InAppNotificationBanner';
 import { WakingUpBanner } from '../components/WakingUpBanner';
 import { OfflineBanner } from '../components/OfflineBanner';
 import { colors } from '../theme/colors';
@@ -70,6 +71,7 @@ export const RootNavigator: React.FC = () => {
   return (
     <NavigationContainer>
       <View style={styles.container}>
+        <InAppNotificationBanner />
         <WakingUpBanner />
         <OfflineBanner />
         {renderContent()}

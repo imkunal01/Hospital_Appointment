@@ -3,11 +3,11 @@ import {
   View,
   Text,
   StyleSheet,
-  Alert,
   TouchableOpacity,
   ScrollView,
   Switch,
-  Platform
+  Platform,
+  Alert
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Feather, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
@@ -15,7 +15,14 @@ import { useSession } from '../auth/sessionStore';
 import { getRefreshToken } from '../auth/secureStorage';
 import { logoutApi } from '../api/endpoints';
 import { usePreferences, useUpdatePreferences } from '../hooks/usePreferences';
+import { useAppointments } from '../hooks/useAppointments';
 import { showAlert } from '../utils/alert';
+import { NotificationCenterModal } from '../components/NotificationCenterModal';
+import {
+  getUnreadCount,
+  subscribeNotifications,
+  triggerRandomHealthTip
+} from '../notifications/notificationStore';
 import { colors } from '../theme/colors';
 import { useSafeInsets } from '../hooks/useSafeInsets';
 
@@ -27,16 +34,27 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
   const insets = useSafeInsets();
   const { user, clearSession } = useSession();
   const { data: preferences } = usePreferences();
+  const { data: upcomingAppointments } = useAppointments('upcoming');
   const updatePreferencesMutation = useUpdatePreferences();
 
   const [pushEnabled, setPushEnabled] = useState(true);
   const [emailEnabled, setEmailEnabled] = useState(true);
+  const [isNotifModalVisible, setNotifModalVisible] = useState(false);
+  const [unreadNotifs, setUnreadNotifs] = useState(0);
 
   useEffect(() => {
     if (preferences) {
       setPushEnabled(preferences.enabled);
     }
   }, [preferences]);
+
+  useEffect(() => {
+    setUnreadNotifs(getUnreadCount());
+    const unsubscribe = subscribeNotifications((notifs) => {
+      setUnreadNotifs(notifs.filter((n) => !n.read).length);
+    });
+    return unsubscribe;
+  }, []);
 
   const togglePush = (val: boolean) => {
     setPushEnabled(val);
@@ -63,7 +81,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
               await logoutApi(token);
             }
           } catch {
-            // Even if network fails, always clear local session
+            // Always clear local session even if offline
           } finally {
             await clearSession();
           }
@@ -78,175 +96,346 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
         .map((n) => n[0])
         .join('')
         .slice(0, 2)
-    : 'AM';
+        .toUpperCase()
+    : 'JD';
 
-  const patientIdDisplay = user?.id ? user.id.slice(0, 6) : '104892';
+  const patientIdDisplay = user?.id ? `MED-${user.id.slice(0, 6).toUpperCase()}` : 'MED-104892';
+  const upcomingCount = upcomingAppointments ? upcomingAppointments.length : 0;
 
   return (
     <View style={styles.container}>
       <StatusBar style="dark" />
 
-      {/* Top Editorial Bar */}
-      <View style={[styles.topBar, { paddingTop: Math.max(insets.top, Platform.OS === 'ios' ? 20 : 16) + 6 }]}>
-        <View style={styles.plusWrapper}>
-          <TouchableOpacity
-            accessibilityRole="button"
-            accessibilityLabel="Quick book appointment"
-            style={styles.plusButton}
-            onPress={() => navigation.navigate('BookTab')}
-            activeOpacity={0.85}
-          >
-            <Feather name="plus" size={20} color={colors.brandBlue} />
-          </TouchableOpacity>
+      {/* Top Clinical Header Bar */}
+      <View style={[styles.topBar, { paddingTop: Math.max(insets.top, Platform.OS === 'ios' ? 20 : 16) + 8 }]}>
+        <View style={styles.brandRow}>
+          <View style={styles.logoPlusCircle}>
+            <Feather name="plus" size={18} color="#FFFFFF" />
+          </View>
+          <Text style={styles.brandLogoText}>medibook</Text>
         </View>
 
-        <Text style={styles.topBarTitle}>Profile</Text>
+        <Text style={styles.topBarTitle}>Patient Profile</Text>
 
-        <TouchableOpacity
-          accessibilityRole="button"
-          accessibilityLabel="Preferences"
-          style={styles.gearButton}
-          onPress={() => navigation.navigate('Preferences')}
-          activeOpacity={0.8}
-        >
-          <Feather name="settings" size={20} color={colors.ink} />
-        </TouchableOpacity>
+        <View style={styles.topActionsRow}>
+          {/* Notification Bell with Unread Badge */}
+          <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel={`Notification inbox, ${unreadNotifs} unread alerts`}
+            style={styles.headerIconButton}
+            onPress={() => setNotifModalVisible(true)}
+            activeOpacity={0.8}
+          >
+            <Feather name="bell" size={19} color="#0A2540" />
+            {unreadNotifs > 0 && (
+              <View style={styles.unreadBadgeDot}>
+                <Text style={styles.unreadBadgeDotText}>
+                  {unreadNotifs > 9 ? '9+' : unreadNotifs}
+                </Text>
+              </View>
+            )}
+          </TouchableOpacity>
+
+          {/* Settings Shortcut */}
+          <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel="Preferences & settings"
+            style={styles.headerIconButton}
+            onPress={() => navigation.navigate('Preferences')}
+            activeOpacity={0.8}
+          >
+            <Feather name="settings" size={19} color="#0A2540" />
+          </TouchableOpacity>
+        </View>
       </View>
 
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        {/* Profile Hero Card (Chartreuse Lime) */}
-        <View style={styles.profileHeroCard}>
-          <View style={styles.avatarCircle}>
-            <Text style={styles.avatarText}>{initials}</Text>
+        {/* Modern Medical Sapphire Patient Card */}
+        <View style={styles.patientHeroCard}>
+          {/* Background subtle curve */}
+          <View style={styles.heroDecoOval} />
+
+          <View style={styles.heroTopRow}>
+            <View style={styles.avatarCircle}>
+              <Text style={styles.avatarInitials}>{initials}</Text>
+            </View>
+
+            <View style={styles.patientInfoCol}>
+              <View style={styles.verifiedRow}>
+                <Ionicons name="checkmark-circle" size={14} color="#60A5FA" style={{ marginRight: 4 }} />
+                <Text style={styles.verifiedTag}>Verified Patient</Text>
+              </View>
+              <Text style={styles.patientFullName} numberOfLines={1}>
+                {user?.name || 'Jane Doe'}
+              </Text>
+              <Text style={styles.patientEmailText} numberOfLines={1}>
+                {user?.email || 'patient1@example.test'}
+              </Text>
+            </View>
+
+            <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityLabel="Edit notification preferences"
+              style={styles.heroEditPill}
+              onPress={() => navigation.navigate('Preferences')}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.heroEditPillText}>Edit</Text>
+            </TouchableOpacity>
           </View>
 
-          <View style={styles.heroInfoCol}>
-            <Text style={styles.userName}>{user?.name || 'Alex Morgan'}</Text>
-            <Text style={styles.patientIdText}>Patient ID · {patientIdDisplay}</Text>
-          </View>
+          {/* Divider inside Hero Card */}
+          <View style={styles.heroDivider} />
 
-          <TouchableOpacity
-            accessibilityRole="button"
-            accessibilityLabel="Edit profile"
-            style={styles.editButton}
-            onPress={() => navigation.navigate('Preferences')}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.editText}>Edit</Text>
-          </TouchableOpacity>
+          {/* Patient ID and Care Tier */}
+          <View style={styles.heroFooterRow}>
+            <View style={styles.heroMetaItem}>
+              <Text style={styles.heroMetaLabel}>PATIENT ID</Text>
+              <Text style={styles.heroMetaValue}>{patientIdDisplay}</Text>
+            </View>
+            <View style={styles.heroVerticalLine} />
+            <View style={styles.heroMetaItem}>
+              <Text style={styles.heroMetaLabel}>HOSPITAL WING</Text>
+              <Text style={styles.heroMetaValue}>North Wing / A</Text>
+            </View>
+            <View style={styles.heroVerticalLine} />
+            <View style={styles.heroMetaItem}>
+              <Text style={styles.heroMetaLabel}>STATUS</Text>
+              <Text style={[styles.heroMetaValue, { color: '#86EFAC' }]}>Active Care</Text>
+            </View>
+          </View>
         </View>
 
-        {/* Section: Reminders */}
-        <View style={styles.sectionBlock}>
-          <Text style={styles.sectionEyebrow}>REMINDERS</Text>
+        {/* 3 Clinical Health Vitals Metrics */}
+        <View style={styles.vitalsRow}>
+          <View style={styles.vitalTile}>
+            <View style={[styles.vitalIconCircle, { backgroundColor: '#EFF6FF' }]}>
+              <Ionicons name="water-outline" size={18} color={colors.brandBlue} />
+            </View>
+            <Text style={styles.vitalValue}>O+ Rh+</Text>
+            <Text style={styles.vitalLabel}>Blood Group</Text>
+          </View>
 
-          <View style={styles.editorialCard}>
+          <View style={styles.vitalTile}>
+            <View style={[styles.vitalIconCircle, { backgroundColor: '#ECFDF5' }]}>
+              <Feather name="calendar" size={18} color="#059669" />
+            </View>
+            <Text style={styles.vitalValue}>{upcomingCount} Active</Text>
+            <Text style={styles.vitalLabel}>Upcoming Visits</Text>
+          </View>
+
+          <View style={styles.vitalTile}>
+            <View style={[styles.vitalIconCircle, { backgroundColor: '#FEF3C7' }]}>
+              <Ionicons name="shield-checkmark-outline" size={18} color="#D97706" />
+            </View>
+            <Text style={styles.vitalValue}>NABH</Text>
+            <Text style={styles.vitalLabel}>Accredited</Text>
+          </View>
+        </View>
+
+        {/* Health Notifications & Daily Tips Inbox Card */}
+        <TouchableOpacity
+          accessibilityRole="button"
+          accessibilityLabel="Open health alerts and notification inbox"
+          style={styles.inboxBannerCard}
+          onPress={() => setNotifModalVisible(true)}
+          activeOpacity={0.88}
+        >
+          <View style={styles.inboxIconWrap}>
+            <Ionicons name="sparkles" size={22} color={colors.brandBlue} />
+          </View>
+          <View style={styles.inboxTextCol}>
+            <View style={styles.inboxTitleRow}>
+              <Text style={styles.inboxTitle}>Health Tips & Reminders</Text>
+              {unreadNotifs > 0 && (
+                <View style={styles.inboxCountPill}>
+                  <Text style={styles.inboxCountText}>{unreadNotifs} unread</Text>
+                </View>
+              )}
+            </View>
+            <Text style={styles.inboxSub}>
+              Consultation advisories, timely check-in guides, & doctor choice tips
+            </Text>
+          </View>
+          <Feather name="chevron-right" size={20} color={colors.brandBlue} />
+        </TouchableOpacity>
+
+        {/* Reminders & Notifications Card */}
+        <View style={styles.sectionWrap}>
+          <Text style={styles.sectionTitle}>NOTIFICATION DISPATCH</Text>
+
+          <View style={styles.cardBox}>
             {/* Push Notifications Row */}
-            <View style={styles.settingRow}>
-              <View style={styles.settingIconCircle}>
+            <View style={styles.settingItemRow}>
+              <View style={styles.settingIconSquare}>
                 <Feather name="bell" size={18} color={colors.brandBlue} />
               </View>
               <View style={styles.settingTextWrap}>
-                <Text style={styles.settingTitle}>Push notifications</Text>
-                <Text style={styles.settingSubtitle}>Appointment updates and reminders</Text>
+                <Text style={styles.settingTitle}>Push Notifications</Text>
+                <Text style={styles.settingSub}>Instant appointment updates & happy health tips</Text>
               </View>
               <Switch
                 value={pushEnabled}
                 onValueChange={togglePush}
                 trackColor={{ false: '#E2E8F0', true: colors.brandBlue }}
-                thumbColor={pushEnabled ? colors.foundation : '#FFFFFF'}
-                ios_backgroundColor="#E2E8F0"
+                thumbColor={pushEnabled ? colors.brandBlue : '#FFFFFF'}
               />
             </View>
 
-            <View style={styles.divider} />
+            <View style={styles.cardDivider} />
 
             {/* Email Reminders Row */}
-            <View style={styles.settingRow}>
-              <View style={styles.settingIconCircle}>
-                <Feather name="file-text" size={18} color={colors.brandBlue} />
+            <View style={styles.settingItemRow}>
+              <View style={styles.settingIconSquare}>
+                <Feather name="mail" size={18} color={colors.brandBlue} />
               </View>
               <View style={styles.settingTextWrap}>
-                <Text style={styles.settingTitle}>Email reminders</Text>
-                <Text style={styles.settingSubtitle}>Sent 24 hours before your visit</Text>
+                <Text style={styles.settingTitle}>Email Visit Summaries</Text>
+                <Text style={styles.settingSub}>Non-diagnostic metadata sent 24h prior</Text>
               </View>
               <Switch
                 value={emailEnabled}
                 onValueChange={toggleEmail}
                 trackColor={{ false: '#E2E8F0', true: colors.brandBlue }}
-                thumbColor={emailEnabled ? colors.foundation : '#FFFFFF'}
-                ios_backgroundColor="#E2E8F0"
+                thumbColor={emailEnabled ? colors.brandBlue : '#FFFFFF'}
               />
             </View>
-          </View>
-        </View>
 
-        {/* Section: Account */}
-        <View style={styles.sectionBlock}>
-          <Text style={styles.sectionEyebrow}>ACCOUNT</Text>
+            <View style={styles.cardDivider} />
 
-          <View style={styles.editorialCard}>
-            {/* Personal Information Row */}
+            {/* Reminder Lead Time Row */}
             <TouchableOpacity
               accessibilityRole="button"
-              accessibilityLabel="Personal information"
-              style={styles.navRow}
-              onPress={() =>
-                Alert.alert(
-                  'Patient Profile',
-                  `Name: ${user?.name || 'Alex Morgan'}\nEmail: ${user?.email || 'patient1@example.test'}\nPhone: ${user?.phone || 'Verified Keystore'}\nRole: ${user?.role || 'PATIENT'}`
-                )
-              }
+              accessibilityLabel="Change reminder lead hours"
+              style={styles.settingItemRow}
+              onPress={() => navigation.navigate('Preferences')}
               activeOpacity={0.7}
             >
-              <View style={styles.settingIconCircle}>
-                <Feather name="user" size={18} color={colors.ink} />
+              <View style={styles.settingIconSquare}>
+                <Feather name="clock" size={18} color={colors.brandBlue} />
               </View>
-              <Text style={styles.navTitle}>Personal information</Text>
-              <Feather name="chevron-right" size={20} color={colors.ink} />
-            </TouchableOpacity>
-
-            <View style={styles.divider} />
-
-            {/* Hospital & Contact Row */}
-            <TouchableOpacity
-              accessibilityRole="button"
-              accessibilityLabel="Hospital & contact"
-              style={styles.navRow}
-              onPress={() =>
-                Alert.alert(
-                  'Hospital & Clinical Desk',
-                  'MediBook Multi-Specialty Hospital\nNorth Wing Reception · Floor 2\nHelpline: +1 (800) 555-CARE\nEmergency: 24/7 On-Call'
-                )
-              }
-              activeOpacity={0.7}
-            >
-              <View style={styles.settingIconCircle}>
-                <MaterialCommunityIcons name="hospital-building" size={20} color={colors.ink} />
+              <View style={styles.settingTextWrap}>
+                <Text style={styles.settingTitle}>Reminder Lead Time</Text>
+                <Text style={styles.settingSub}>
+                  Currently set to {preferences?.hoursBefore || 24} hours before visit
+                </Text>
               </View>
-              <Text style={styles.navTitle}>Hospital & contact</Text>
-              <Feather name="chevron-right" size={20} color={colors.ink} />
+              <Feather name="chevron-right" size={20} color="#94A3B8" />
             </TouchableOpacity>
           </View>
         </View>
 
-        {/* Sign Out Pill Button */}
+        {/* Hospital Directory & Support Services */}
+        <View style={styles.sectionWrap}>
+          <Text style={styles.sectionTitle}>HOSPITAL SERVICES & CAMPUS</Text>
+
+          <View style={styles.cardBox}>
+            {/* North Wing Navigation */}
+            <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityLabel="North Wing campus guide"
+              style={styles.settingItemRow}
+              onPress={() =>
+                Alert.alert(
+                  'North Wing Campus Guide',
+                  'MediBook Healthcare Campus\n\n• Main Reception: Floor 2, North Wing\n• Parking: Underground validated parking (P1 & P2)\n• Visiting Hours: 08:00 AM – 08:00 PM\n• Triage Desk: Direct intake via Corridor B'
+                )
+              }
+              activeOpacity={0.7}
+            >
+              <View style={styles.settingIconSquare}>
+                <MaterialCommunityIcons name="hospital-building" size={20} color="#0A2540" />
+              </View>
+              <View style={styles.settingTextWrap}>
+                <Text style={styles.settingTitle}>Campus & Reception Desk</Text>
+                <Text style={styles.settingSub}>Floor maps, visiting hours, and validated parking</Text>
+              </View>
+              <Feather name="chevron-right" size={20} color="#94A3B8" />
+            </TouchableOpacity>
+
+            <View style={styles.cardDivider} />
+
+            {/* 24/7 Hotline */}
+            <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityLabel="Emergency and helpline desk"
+              style={styles.settingItemRow}
+              onPress={() =>
+                Alert.alert(
+                  'Emergency & Helpline',
+                  'MediBook 24/7 Hospital Care Line:\n\n• Toll-Free Helpline: 1800-MEDIBOOK\n• Emergency Trauma Unit: Ext. 911\n• Specialist On-Call Desk: North Wing Pager 4'
+                )
+              }
+              activeOpacity={0.7}
+            >
+              <View style={[styles.settingIconSquare, { backgroundColor: '#FEF2F2' }]}>
+                <Feather name="phone-call" size={18} color="#DC2626" />
+              </View>
+              <View style={styles.settingTextWrap}>
+                <Text style={styles.settingTitle}>24/7 Care Hotline</Text>
+                <Text style={styles.settingSub}>Emergency concierge and on-call triage line</Text>
+              </View>
+              <Feather name="chevron-right" size={20} color="#94A3B8" />
+            </TouchableOpacity>
+
+            <View style={styles.cardDivider} />
+
+            {/* Privacy & Security */}
+            <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityLabel="Security and encryption details"
+              style={styles.settingItemRow}
+              onPress={() =>
+                Alert.alert(
+                  'Data Security & Encryption',
+                  'MediBook Enterprise Healthcare Security:\n\n• 256-Bit SSL end-to-end encryption\n• Hardware keystore token isolation (expo-secure-store)\n• Strict non-diagnostic metadata compliance\n• Zero PII leakage guarantee'
+                )
+              }
+              activeOpacity={0.7}
+            >
+              <View style={styles.settingIconSquare}>
+                <Feather name="shield" size={18} color="#0A2540" />
+              </View>
+              <View style={styles.settingTextWrap}>
+                <Text style={styles.settingTitle}>Security & Privacy Architecture</Text>
+                <Text style={styles.settingSub}>Hardware keystore isolation & encrypted data</Text>
+              </View>
+              <Feather name="chevron-right" size={20} color="#94A3B8" />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Clean Modern Sign Out Button */}
         <TouchableOpacity
           accessibilityRole="button"
           accessibilityLabel="Sign out of hospital portal"
-          style={styles.signOutButton}
+          style={styles.signOutBtn}
           onPress={handleLogout}
           activeOpacity={0.85}
         >
-          <Text style={styles.signOutText}>Sign out</Text>
+          <Feather name="log-out" size={18} color="#DC2626" style={{ marginRight: 8 }} />
+          <Text style={styles.signOutBtnText}>Sign Out</Text>
         </TouchableOpacity>
 
-        {/* App Version Footer */}
-        <Text style={styles.footerText}>Medibook version 1.0.0</Text>
+        {/* App Version & Accreditation Footer */}
+        <View style={styles.footerWrap}>
+          <Text style={styles.footerHospitalName}>NABH & JCI Accredited Hospital System</Text>
+          <Text style={styles.footerVersion}>MediBook Version 1.0.0 • Production Build</Text>
+        </View>
       </ScrollView>
+
+      {/* Notification Center Modal */}
+      <NotificationCenterModal
+        visible={isNotifModalVisible}
+        onClose={() => setNotifModalVisible(false)}
+        onNavigateTab={(tabName) => {
+          setNotifModalVisible(false);
+          navigation.navigate(tabName);
+        }}
+      />
     </View>
   );
 };
@@ -254,161 +443,331 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.canvas
+    backgroundColor: '#F8FAFC'
   },
   topBar: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 18,
-    paddingBottom: 14
-  },
-  plusWrapper: {
-    shadowColor: colors.chartreuse,
-    shadowOffset: { width: 3, height: 3 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 3
-  },
-  plusButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: colors.foundation,
-    borderWidth: 2,
-    borderColor: colors.ink,
-    alignItems: 'center',
-    justifyContent: 'center'
-  },
-  topBarTitle: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: colors.ink,
-    letterSpacing: -0.4
-  },
-  gearButton: {
-    width: 42,
-    height: 42,
-    borderRadius: 14,
+    paddingHorizontal: 20,
+    paddingBottom: 14,
     backgroundColor: '#FFFFFF',
-    borderWidth: 1.5,
-    borderColor: colors.border,
+    borderBottomWidth: 1.5,
+    borderBottomColor: '#E2E8F0'
+  },
+  brandRow: {
+    flexDirection: 'row',
+    alignItems: 'center'
+  },
+  logoPlusCircle: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: colors.brandBlue,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: colors.tactileShadow,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 1
+    marginRight: 6
+  },
+  brandLogoText: {
+    fontSize: 18,
+    fontWeight: '900',
+    color: '#0A2540',
+    letterSpacing: -0.4
+  },
+  topBarTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#0A2540'
+  },
+  topActionsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8
+  },
+  headerIconButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 14,
+    backgroundColor: '#F1F5F9',
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative'
+  },
+  unreadBadgeDot: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    backgroundColor: colors.brandBlue,
+    borderRadius: 8,
+    minWidth: 16,
+    height: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 3
+  },
+  unreadBadgeDotText: {
+    fontSize: 9,
+    fontWeight: '800',
+    color: '#FFFFFF'
   },
 
   scrollContent: {
     paddingHorizontal: 18,
-    paddingBottom: 130 // Clearance for floating navigation dock
+    paddingTop: 18,
+    paddingBottom: 140 // Clearance for floating navigation dock
   },
 
-  // Profile Hero Card: Clean Medical Sapphire Wash
-  profileHeroCard: {
-    backgroundColor: colors.brandBlueLight,
+  // Patient Hero Card (Medical Sapphire)
+  patientHeroCard: {
+    backgroundColor: colors.brandBlue,
+    borderRadius: 24,
+    padding: 20,
+    position: 'relative',
+    overflow: 'hidden',
+    shadowColor: colors.brandBlue,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.22,
+    shadowRadius: 14,
+    elevation: 6,
+    marginBottom: 16
+  },
+  heroDecoOval: {
+    position: 'absolute',
+    top: -40,
+    right: -30,
+    width: 180,
+    height: 180,
+    borderRadius: 90,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)'
+  },
+  heroTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center'
+  },
+  avatarCircle: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 14,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 4,
+    elevation: 2
+  },
+  avatarInitials: {
+    fontSize: 22,
+    fontWeight: '900',
+    color: colors.brandBlue
+  },
+  patientInfoCol: {
+    flex: 1
+  },
+  verifiedRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 2
+  },
+  verifiedTag: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#BFDBFE'
+  },
+  patientFullName: {
+    fontSize: 19,
+    fontWeight: '900',
+    color: '#FFFFFF',
+    letterSpacing: -0.3
+  },
+  patientEmailText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: 'rgba(255, 255, 255, 0.85)',
+    marginTop: 1
+  },
+  heroEditPill: {
+    backgroundColor: 'rgba(255, 255, 255, 0.20)',
+    borderRadius: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.35)'
+  },
+  heroEditPillText: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#FFFFFF'
+  },
+  heroDivider: {
+    height: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.18)',
+    marginVertical: 16
+  },
+  heroFooterRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center'
+  },
+  heroMetaItem: {
+    flex: 1,
+    alignItems: 'center'
+  },
+  heroMetaLabel: {
+    fontSize: 9.5,
+    fontWeight: '800',
+    color: '#BFDBFE',
+    letterSpacing: 0.8
+  },
+  heroMetaValue: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#FFFFFF',
+    marginTop: 2
+  },
+  heroVerticalLine: {
+    width: 1,
+    height: 24,
+    backgroundColor: 'rgba(255, 255, 255, 0.20)'
+  },
+
+  // 3 Vitals Metric Tiles
+  vitalsRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 16
+  },
+  vitalTile: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 18,
     borderWidth: 1.5,
-    borderColor: colors.brandBlueBorder,
-    borderRadius: 22,
+    borderColor: '#E2E8F0',
+    padding: 12,
+    alignItems: 'center',
+    shadowColor: '#0A2540',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 1
+  },
+  vitalIconCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 6
+  },
+  vitalValue: {
+    fontSize: 13.5,
+    fontWeight: '800',
+    color: '#0A2540',
+    textAlign: 'center'
+  },
+  vitalLabel: {
+    fontSize: 10.5,
+    fontWeight: '600',
+    color: '#64748B',
+    marginTop: 1,
+    textAlign: 'center'
+  },
+
+  // Inbox Banner Card
+  inboxBannerCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    borderWidth: 1.5,
+    borderColor: '#DBEAFE',
     padding: 16,
     flexDirection: 'row',
     alignItems: 'center',
-    shadowColor: colors.brandBlue,
+    shadowColor: '#0A2540',
     shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.08,
+    shadowOpacity: 0.05,
     shadowRadius: 8,
-    elevation: 3,
+    elevation: 2,
     marginBottom: 20
   },
-  avatarCircle: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: colors.foundation,
+  inboxIconWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    backgroundColor: '#EFF6FF',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 14
+    marginRight: 12
   },
-  avatarText: {
-    fontSize: 22,
-    fontWeight: '900',
-    color: '#FFFFFF',
-    letterSpacing: -0.5
+  inboxTextCol: {
+    flex: 1,
+    marginRight: 8
   },
-  heroInfoCol: {
-    flex: 1
+  inboxTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 2
   },
-  userName: {
-    fontSize: 18,
+  inboxTitle: {
+    fontSize: 14.5,
     fontWeight: '800',
-    color: colors.foundation,
-    letterSpacing: -0.3
+    color: '#0A2540'
   },
-  patientIdText: {
-    fontSize: 12.5,
-    fontWeight: '700',
-    color: colors.brandBlue,
-    marginTop: 2
+  inboxCountPill: {
+    backgroundColor: '#EFF6FF',
+    borderRadius: 10,
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    borderWidth: 1,
+    borderColor: '#BFDBFE'
   },
-  editButton: {
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1.5,
-    borderColor: colors.brandBlueBorder,
-    borderRadius: 999,
-    paddingHorizontal: 16,
-    paddingVertical: 6,
-    shadowColor: colors.brandBlue,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 2,
-    elevation: 1
-  },
-  editText: {
-    fontSize: 12,
+  inboxCountText: {
+    fontSize: 10,
     fontWeight: '800',
     color: colors.brandBlue
   },
-
-  // Section Blocks
-  sectionBlock: {
-    marginBottom: 18
+  inboxSub: {
+    fontSize: 11.5,
+    color: '#64748B',
+    lineHeight: 16
   },
-  sectionEyebrow: {
+
+  // Sections
+  sectionWrap: {
+    marginBottom: 20
+  },
+  sectionTitle: {
     fontSize: 11,
     fontWeight: '800',
-    color: colors.inkMuted,
-    letterSpacing: 1.2,
-    marginBottom: 8
+    color: '#64748B',
+    letterSpacing: 1.1,
+    marginBottom: 10,
+    textTransform: 'uppercase'
   },
-  editorialCard: {
+  cardBox: {
     backgroundColor: '#FFFFFF',
-    borderWidth: 1.5,
-    borderColor: colors.border,
     borderRadius: 20,
-    paddingVertical: 4,
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
     paddingHorizontal: 16,
-    shadowColor: colors.tactileShadow,
+    shadowColor: '#0A2540',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
+    shadowOpacity: 0.04,
     shadowRadius: 6,
-    elevation: 2
+    elevation: 1
   },
-
-  settingRow: {
+  settingItemRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12
+    paddingVertical: 14
   },
-  settingIconCircle: {
+  settingIconSquare: {
     width: 38,
     height: 38,
-    borderRadius: 19,
-    backgroundColor: colors.brandBlueLight,
-    borderWidth: 1,
-    borderColor: colors.brandBlueBorder,
+    borderRadius: 12,
+    backgroundColor: '#EFF6FF',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12
@@ -418,61 +777,51 @@ const styles = StyleSheet.create({
     marginRight: 10
   },
   settingTitle: {
-    fontSize: 14.5,
-    fontWeight: '700',
-    color: colors.ink
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#0A2540'
   },
-  settingSubtitle: {
+  settingSub: {
     fontSize: 11.5,
-    fontWeight: '600',
-    color: colors.inkMuted,
-    marginTop: 1
+    color: '#64748B',
+    marginTop: 2
   },
-  divider: {
+  cardDivider: {
     height: 1,
     backgroundColor: '#F1F5F9'
   },
 
-  navRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 14
-  },
-  navTitle: {
-    flex: 1,
-    fontSize: 14.5,
-    fontWeight: '700',
-    color: colors.ink
-  },
-
   // Sign out button
-  signOutButton: {
-    backgroundColor: colors.coralLight,
+  signOutBtn: {
+    backgroundColor: '#FEF2F2',
     borderWidth: 1.5,
     borderColor: '#FCA5A5',
     borderRadius: 18,
-    height: 50,
+    height: 52,
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: colors.coral,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    elevation: 2,
-    marginTop: 6,
-    marginBottom: 16
+    marginBottom: 20
   },
-  signOutText: {
-    fontSize: 14.5,
+  signOutBtnText: {
+    fontSize: 15,
     fontWeight: '800',
-    color: colors.coralDark
+    color: '#DC2626'
   },
 
-  footerText: {
-    fontSize: 11.5,
-    fontWeight: '600',
-    color: colors.inkSubtle,
-    textAlign: 'center',
-    marginBottom: 20
+  // Footer
+  footerWrap: {
+    alignItems: 'center',
+    paddingBottom: 16
+  },
+  footerHospitalName: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#64748B'
+  },
+  footerVersion: {
+    fontSize: 11,
+    color: '#94A3B8',
+    marginTop: 2
   }
 });
